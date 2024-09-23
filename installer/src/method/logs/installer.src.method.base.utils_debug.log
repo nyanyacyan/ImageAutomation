@@ -1,0 +1,55 @@
+2024-09-06 21:09:18,691 - installer.src.method.base.utils - ********** _gss_direct_write 開始 **********
+2024-09-06 21:09:18,692 - installer.src.method.base.utils - スプシ: サーバーエラーのためリトライ1/3APIError: [400]: API error
+2024-09-06 21:09:18,692 - installer.src.method.base.utils - ********** _gss_direct_write 開始 **********
+2024-09-06 21:09:18,692 - installer.src.method.base.utils - スプシ: サーバーエラーのためリトライ2/3APIError: [400]: API error
+2024-09-06 21:09:18,692 - installer.src.method.base.utils - ********** _gss_direct_write 開始 **********
+2024-09-06 21:09:18,692 - installer.src.method.base.utils - スプシ: サーバーエラーのためリトライ3/3APIError: [400]: API error
+2024-09-06 21:09:18,692 - installer.src.method.base.utils - スプシ: サーバーエラーのためリトライ リトライ上限のため終了
+2024-09-08 14:17:07,884 - installer.src.method.base.utils - ********** get_data_in_gss start **********
+2024-09-08 14:17:07,884 - installer.src.method.base.utils - スプシ: 処理中にエラーが発生 'GetDataGSSAPI' object has no attribute 'sheet_name'
+2024-09-08 14:18:27,717 - installer.src.method.base.utils - ********** get_data_in_gss start **********
+2024-09-08 14:18:27,717 - installer.src.method.base.utils - スプシ: 処理中にエラーが発生 'GetDataGSSAPI' object has no attribute 'sheet_name'
+2024-09-08 14:31:56,857 - installer.src.method.base.utils - ********** get_data_in_gss start **********
+2024-09-08 14:31:56,857 - installer.src.method.base.utils - スプシ: 処理中にエラーが発生 'GetDataGSSAPI' object has no attribute 'sheetName'
+2024-09-08 14:33:17,213 - installer.src.method.base.utils - ********** get_data_in_gss start **********
+2024-09-08 14:33:17,213 - installer.src.method.base.utils - スプシ: 処理中にエラーが発生 'NoneType' object has no attribute 'open_by_key'
+2024-09-08 14:35:52,700 - installer.src.method.base.utils - ********** get_data_in_gss start **********
+2024-09-08 14:35:52,715 - installer.src.method.base.utils - スプシ: 処理中にエラーが発生 'NoneType' object has no attribute 'open_by_key'
+2024-09-08 14:41:11,905 - installer.src.method.base.utils - ********** get_data_in_gss start **********
+2024-09-08 14:41:11,905 - installer.src.method.base.utils - スプシ: 処理中にエラーが発生 'NoneType' object has no attribute 'open_by_key'
+2024-09-09 14:47:59,155 - installer.src.method.base.utils - ********** apiRequest start **********
+2024-09-09 14:54:02,550 - installer.src.method.base.utils - ********** apiRequest start **********
+2024-09-09 14:56:51,254 - installer.src.method.base.utils - ********** chatGptRequest start **********
+2024-09-09 14:56:51,255 - installer.src.method.base.utils - replyText: これはテストレスポンスです
+2024-09-09 14:56:51,255 - installer.src.method.base.utils - ********** _text_count start **********
+2024-09-09 14:56:51,255 - installer.src.method.base.utils - ********** _text_count end **********
+2024-09-09 14:56:51,255 - installer.src.method.base.utils - 文字数問題なし: 13
+2024-09-09 14:56:51,255 - installer.src.method.base.utils - ********** chatGptRequest end **********
+2024-09-10 14:04:30,229 - installer.src.method.base.utils - ********** line_image_notify start **********
+2024-09-10 14:04:30,229 - installer.src.method.base.utils - testImagePath が見つかりません:[Errno 2] No such file or directory: 'testImagePath'
+2024-09-17 16:35:29,425 - installer.src.method.base.utils - ChatGPTとのやり取り: [{'role': 'user', 'content': 'dummy'}, {'role': 'assistant', 'content': 'ああああああ'}]
+2024-09-17 16:35:29,425 - installer.src.method.base.utils - 引数:
+args=(), kwargs={'fixedPrompt': '直してください', 'beforeResult': {'userMsg': {'role': 'user', 'content': 'dummy'}, 'assistantMsg': {'role': 'assistant', 'content': 'ああああああ'}, 'chatHistory': [{'role': 'user', 'content': 'dummy'}, {'role': 'assistant', 'content': 'ああああああ'}]}, 'model': 'gpt-3.5-turbo', 'apiKey': 'dummy', 'maxTokens': 100}
+2024-09-17 16:35:29,425 - installer.src.method.base.utils - ********** reRequest start 1回目 **********
+2024-09-17 16:35:29,425 - installer.src.method.base.utils - ChatGPTとのやり取り: 
+[{'role': 'user', 'content': 'dummy'}, {'role': 'assistant', 'content': 'ああああああ'}, {'role': 'user', 'content': '直してください'}, {'role': 'assistant', 'content': 'ああああああ'}]
+2024-09-17 16:35:29,425 - installer.src.method.base.utils - ああああああ
+2024-09-17 16:35:29,426 - installer.src.method.base.utils - 文字数がオーバーのため再リクエスト
+2024-09-17 16:35:31,427 - installer.src.method.base.utils - ********** reRequest start 2回目 **********
+2024-09-17 16:35:31,427 - installer.src.method.base.utils - ChatGPTとのやり取り: 
+[{'role': 'user', 'content': 'dummy'}, {'role': 'assistant', 'content': 'ああああああ'}, {'role': 'user', 'content': '直してください'}, {'role': 'assistant', 'content': 'ああああああ'}, {'role': 'user', 'content': '直してください'}, {'role': 'assistant', 'content': 'ああああああ'}]
+2024-09-17 16:35:31,427 - installer.src.method.base.utils - ああああああ
+2024-09-17 16:35:31,427 - installer.src.method.base.utils - 文字数がオーバーのため再リクエスト
+2024-09-17 16:35:33,428 - installer.src.method.base.utils - ********** reRequest start 3回目 **********
+2024-09-17 16:35:33,429 - installer.src.method.base.utils - ChatGPTとのやり取り: 
+[{'role': 'user', 'content': 'dummy'}, {'role': 'assistant', 'content': 'ああああああ'}, {'role': 'user', 'content': '直してください'}, {'role': 'assistant', 'content': 'ああああああ'}, {'role': 'user', 'content': '直してください'}, {'role': 'assistant', 'content': 'ああああああ'}, {'role': 'user', 'content': '直してください'}, {'role': 'assistant', 'content': 'ああああああ'}]
+2024-09-17 16:35:33,429 - installer.src.method.base.utils - ああああああ
+2024-09-17 16:35:33,429 - installer.src.method.base.utils - 文字数がオーバーのため再リクエスト
+2024-09-17 16:35:33,429 - installer.src.method.base.utils - [指定回数以上の実施が合ったためエラー] {'userMsg': {'role': 'user', 'content': '直してください'}, 'assistantMsg': {'role': 'assistant', 'content': 'ああああああ'}, 'chatHistory': [{'role': 'user', 'content': 'dummy'}, {'role': 'assistant', 'content': 'ああああああ'}, {'role': 'user', 'content': '直してください'}, {'role': 'assistant', 'content': 'ああああああ'}, {'role': 'user', 'content': '直してください'}, {'role': 'assistant', 'content': 'ああああああ'}, {'role': 'user', 'content': '直してください'}, {'role': 'assistant', 'content': 'ああああああ'}]}回実施: reRequest
+2024-09-17 16:35:50,614 - installer.src.method.base.utils - ChatGPTとのやり取り: [{'role': 'user', 'content': 'dummy'}, {'role': 'assistant', 'content': 'ああああああ'}]
+2024-09-17 16:35:50,614 - installer.src.method.base.utils - 引数:
+args=(), kwargs={'data': [{'role': 'user', 'content': 'dummy'}, {'role': 'assistant', 'content': 'ああああああ'}], 'fileName': 'X-20240917'}
+2024-09-17 16:35:50,615 - installer.src.method.base.utils - ********** writeToJson start 1回目 **********
+2024-09-17 16:35:50,615 - installer.src.method.base.utils - テキストファイル書き込み完了: /Users/nyanyacyan/Desktop/Project_file/SNS_Upper/installer/resultOutput/X-20240917
+2024-09-17 16:35:50,615 - installer.src.method.base.utils - 利用した変数一覧:
+{'self': <installer.src.method.base.fileWrite.FileWrite object at 0x117d10460>, 'args': (), 'kwargs': {'data': [{'role': 'user', 'content': 'dummy'}, {'role': 'assistant', 'content': 'ああああああ'}], 'fileName': 'X-20240917'}, 'retryCount': 0, 'result': None, 'delay': 2, 'func': <function FileWrite.writeToJson at 0x11797fd30>, 'maxRetry': 1, 'notify_func': None}
