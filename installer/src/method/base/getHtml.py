@@ -88,7 +88,6 @@ class GetHtml:
 
 # ----------------------------------------------------------------------------------
 # htmlから特定のものを除去する
-# TODO ここにdivのクラスを入れて除外する
 
     def removed_html(self, html: str, remove_tags_elements: str):
         self.logger.info(f"******** remove_element start ********")

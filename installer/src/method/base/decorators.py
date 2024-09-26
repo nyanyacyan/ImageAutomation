@@ -13,7 +13,9 @@ import asyncio
 # 自作モジュール
 from .utils import Logger
 from .path import BaseToPath
-from .errorHandlers import NetworkHandler, FileWriteError, RequestRetryAction, FileReadHandler, GeneratePromptHandler
+from .sysCommand import SysCommand
+from ..const import ErrorMessage
+from .errorHandlers import NetworkHandler, FileWriteError, RequestRetryAction, FileReadHandler, GeneratePromptHandler, ChromeHandler
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -38,6 +40,8 @@ class Decorators:
         self.requestError = RequestRetryAction(debugMode=debugMode)
         self.fileHandler = FileReadHandler(debugMode=debugMode)
         self.generatePromptHandler = GeneratePromptHandler(debugMode=debugMode)
+        self.chromeHandler = ChromeHandler(debugMode=debugMode)
+        self.sysCommand = SysCommand(debugMode=debugMode)
 
 
 ####################################################################################
@@ -270,7 +274,7 @@ class Decorators:
         return wrapper
 
 
-    # ----------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------
 
 
     def generatePrompt(self, func):
@@ -298,4 +302,34 @@ class Decorators:
 
 # ----------------------------------------------------------------------------------
 
+
+    def chromeSetup(self, func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            try:
+                self.logger.info(f"********** {func.__name__} start **********")
+                self.logger.debug(f"引数:\nargs={args}, kwargs={kwargs}")
+
+                # 実行する関数を定義
+                result = func(*args, **kwargs)
+
+                self.logger.debug(f"chromeのインスタンス化に成功: {func.__name__}")
+
+                # ローカル変数をすべて出力
+                self.logger.debug(f"利用した変数一覧:\n{locals()}")
+
+                return result
+
+            except Exception as e:
+                self.chromeHandler.chromeHandler(
+                    e=e,
+                    popupTitle=ErrorMessage.chromeDriverManagerErrorTitle.value,
+                    comment=ErrorMessage.chromeDriverManagerError.value,
+                    func=self.sysCommand.restartSys()
+                )
+
+        return wrapper
+
+
+# ----------------------------------------------------------------------------------
 

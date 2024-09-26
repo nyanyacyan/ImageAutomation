@@ -5,21 +5,19 @@
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
 
-import os, sys, time, pickle
+import os, sys, time, pickle, subprocess
 import asyncio
 import gspread
 import aiohttp
+from selenium.common.exceptions import WebDriverException
 
 from googleapiclient import errors
 from typing import Callable, Optional, Any
 
-
-
-
 # 自作モジュール
 from .utils import Logger
-
-
+from .sysCommand import SysCommand
+from .popup import Popup
 
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
@@ -441,6 +439,40 @@ class GeneratePromptHandler:
 
         # sys.exit(1)
         return None
+
+
+# ----------------------------------------------------------------------------------
+# **********************************************************************************
+
+
+class ChromeHandler:
+    def __init__(self, debugMode=True):
+
+        # logger
+        self.getLogger = Logger(__name__, debugMode=debugMode)
+        self.logger = self.getLogger.getLogger()
+
+        # instance
+        self.popup = Popup(debugMode=debugMode)
+        self.sysCommand = SysCommand(debugMode=debugMode)
+
+
+# ----------------------------------------------------------------------------------
+
+
+    def chromeHandler(self, e: Exception, popupTitle: str, comment: str, func: Optional[Callable[[], None]]):
+        errorMessage = {
+            subprocess.CalledProcessError: "[Chromeのバージョンが不正です。PCの再起動が必要です。]",
+            RuntimeError: "[Chromeのバージョンが不一致です。PCの再起動が必要です。]",
+            ValueError: "[Chromeのバージョンが不一致です。PCの再起動が必要です。]",
+            WebDriverException: "[Chromeを正しく起動できませんでした。PCの再起動が必要です。]"
+        }
+
+        errorType = type(e)
+        errorMessage = errorMessage.get(errorType, "[Chromeを正しく起動できませんでした。PCの再起動が必要です。再起動でも改善されない場合には作成者にご連絡下さい]")
+        self.logger.error(f"{errorMessage}: {e}")
+
+        self.popup.popupCommentChoice(popupTitle=popupTitle, comment=comment, func=func)
 
 
 # ----------------------------------------------------------------------------------

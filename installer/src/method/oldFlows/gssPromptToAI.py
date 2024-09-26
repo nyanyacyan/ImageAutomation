@@ -89,7 +89,6 @@ class GetPromptGSS:
 
         time.sleep(3)
 
-        #TODO DataFrameからPrompt部分を取得
 
 
         time.sleep(3)
