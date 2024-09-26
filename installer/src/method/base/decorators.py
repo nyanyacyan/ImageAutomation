@@ -325,7 +325,7 @@ class Decorators:
                     e=e,
                     popupTitle=ErrorMessage.chromeDriverManagerErrorTitle.value,
                     comment=ErrorMessage.chromeDriverManagerError.value,
-                    func=self.sysCommand.restartSys()
+                    func=self.sysCommand.restartSys
                 )
 
         return wrapper

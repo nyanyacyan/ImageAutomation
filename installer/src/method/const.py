@@ -18,7 +18,7 @@ class Debug(Enum):
 
 class ErrorMessage(Enum):
     ApiRequestError='上限までリクエストをしましたがエラー'
-    chromeDriverManagerError='システムの再起動で改善する可能性があります。システムを再起動しますか？'
+    chromeDriverManagerError='PCの再起動で\n改善する可能性があります。PCの再起動をされますか？'
     chromeDriverManagerErrorTitle='Chromeが正しくinstallできませんでした。'
 
 

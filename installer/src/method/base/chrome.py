@@ -12,7 +12,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 # 自作モジュール
 from .utils import Logger
 # from ..const import FileName
-from .path import BaseToPath
+# from .path import BaseToPath
 from .decorators import Decorators
 
 decoInstance = Decorators(debugMode=True)
@@ -28,10 +28,11 @@ class ChromeManager:
         self.logger = self.getLogger.getLogger()
 
         # インスタンス
-        self.path = BaseToPath(debugMode=debugMode)
+        # self.path = BaseToPath(debugMode=debugMode)
 
 
 # ----------------------------------------------------------------------------------
+
 
     @decoInstance.chromeSetup
     def setupChrome(self):
@@ -45,12 +46,8 @@ class ChromeManager:
 
     @property
     def getChromeDriverPath(self):
-        try:
-            # ChromeDriverManagerでインストールされたChromeDriverのパスを取得
-            return ChromeDriverManager().install()
-        except (ValueError, RuntimeError) as e:
-            self.logger.error(f"ChromeDriverManagerが正しく動作できませんでした: {e}")
-            raise
+        # ChromeDriverManagerでインストールされたChromeDriverのパスを取得
+        return ChromeDriverManager().install()
 
 
 # ----------------------------------------------------------------------------------
@@ -116,3 +113,9 @@ class ChromeManager:
 
 
 # ----------------------------------------------------------------------------------
+
+
+if __name__ == '__main__':
+    chromeSetup = ChromeManager(debugMode=True)
+    chrome = chromeSetup.setupChrome
+    chrome.get('https://www.google.co.jp/')
