@@ -1,6 +1,6 @@
 # coding: utf-8
 # ----------------------------------------------------------------------------------
-
+# testOK
 # ----------------------------------------------------------------------------------
 # import
 import subprocess
@@ -68,7 +68,7 @@ class ChromeManager:
     @property
     def setupChromeOption(self):
 
-        chromeDriverVersion = self.getChromeDriverVersion()
+        chromeDriverVersion = self.getChromeDriverVersion
         self.logger.warning(f"インストールされた ChromeDriver バージョン: {chromeDriverVersion}")
 
         chromeOptions = Options()
@@ -113,9 +113,3 @@ class ChromeManager:
 
 
 # ----------------------------------------------------------------------------------
-
-
-if __name__ == '__main__':
-    chromeSetup = ChromeManager(debugMode=True)
-    chrome = chromeSetup.setupChrome
-    chrome.get('https://www.google.co.jp/')

@@ -6,7 +6,6 @@
 # import
 
 import pytest
-import aiohttp
 from unittest.mock import patch, AsyncMock
 
 # 自作モジュール
