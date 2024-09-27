@@ -1,6 +1,16 @@
 # coding: utf-8
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
+# TODO 最新のCookieテキストを確認→問題なければCookieログイン
+# TODO 問題なければこれでログイン
+# TODO 問題会った場合には
+# TODO ログイン画面にアクセス
+# TODO IDとパスを入力してログイン
+# TODO Cookieの取得
+# TODO Cookieログイン
+
+
+
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
 import os
@@ -20,27 +30,32 @@ from selenium.webdriver.support.ui import WebDriverWait
 # 自作モジュール
 from .utils import Logger
 from .driverWait import Wait
+from .fileRead import ResultFileRead
+
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # **********************************************************************************
 
 
 class Login:
-    def __init__(self, chrome: WebDriver, url: str, debugMode=True):
+    def __init__(self, chrome: WebDriver, loginUrl: str, url: str, debugMode=True):
         # logger
         self.getLogger = Logger(__name__, debugMode=debugMode)
         self.logger = self.getLogger.getLogger()
 
         self.chrome = chrome
+        self.loginUrl = loginUrl
         self.url = url
-        self.driverWait = Wait(chrome=self.chrome, debugMode=debugMode)
 
+        self.driverWait = Wait(chrome=self.chrome, debugMode=debugMode)
+        self.fileRead = ResultFileRead(debugMode=debugMode)
 
 
 # ----------------------------------------------------------------------------------
 
 
     def openSite(self):
+        self.logger.debug(f"url: {self.url}")
         return self.chrome.get(self.url)
 
 
@@ -85,89 +100,86 @@ class Login:
 
 
 # ----------------------------------------------------------------------------------
-# Cookieを使ってログイン
-
-    def cookieLogin(self):
-        # cookiesを初期化
-        cookies = []
-
-        # Cookieのフルパス
-        pickle_file_path = self._get_full_path(file_name=file_name)
-
-        # urlを事前確認
-        self.logger.debug(f"{field_name}: main_url: {main_url}")
-
-        # Cookieファイルを展開
-        cookies = self._pickle_load(pickle_file_path=pickle_file_path, field_name=field_name)
-
-        self.logger.debug(f"{field_name} cookies: {cookies}")
-
-        self.chrome.get(main_url)
-
-        for c in cookies:
-            self.chrome.add_cookie(c)
-
-        self.chrome.get(main_url)
-
-        time.sleep(60)
-
-        self.logger.info(f"{field_name}: Cookieを使ってメイン画面にアクセス")
 
 
-        current_url = self.chrome.current_url
-        self.logger.info(f"{field_name}: current_url: {current_url}")
+    def addCookie(self, cookie):
+        return self.chrome.add_cookie(cookie_dict=cookie)
 
 
-        if main_url == current_url:
-            self.logger.info(f"{field_name}: Cookieでのログイン成功")
+# ----------------------------------------------------------------------------------
 
-        else:
-            self.logger.warning("Cookieでのログイン失敗 sessionでのログインに変更")
-            session = requests.Session()
+    @property
+    def session(self):
+        # sessionを定義（セッションの箱を作ってるイメージ）
+        return requests.Session()
 
 
-            # セッションでのログイン
-            # 項目はその時に応じて変更が必要
+# ----------------------------------------------------------------------------------
+
+
+    def sessionSetting(self, cookies):
+        if cookies:
+            session = self.session
             cookie = cookies[0]
             session.cookies.set(
                 name=cookie['name'],
                 value=cookie['value'],
                 domain=cookie['domain'],
                 path=cookie['path'],
-                # expires=cookie['expiry'],
-                # secure=cookie['secure'],
-                # rest={'HttpOnly': cookie['httpOnly'], 'SameSite': cookie['sameSite']}
             )
-
-            self.logger.debug(f"name{cookie['name']},{cookie['value']},{cookie['domain']},{cookie['path']}")
-
-            response = session.get(main_url)
-
-            if main_url == self.chrome.current_url:
-                self.logger.info(f"{field_name}: sessionでのログイン成功")
-
-            else:
-                self.logger.error(f"{field_name}: sessionでのログイン 失敗")
-                raise
-
-            # テキスト化
-            res_text = response.text
-            self.logger.debug(f"res_text: {res_text}"[:30])
-
-
-        try:
-            # ログインした後のページ読み込みの完了確認
-            WebDriverWait(self.chrome, 5).until(
-            lambda driver: driver.execute_script('return document.readyState') == 'complete'
-            )
-            self.logger.debug(f"{field_name}: ログインページ読み込み 完了")
-
-        except Exception as e:
-            self.logger.error(f"{field_name}: ログイン処理中 にエラーが発生: {e}")
+            self.logger.debug(f"Cookieの中身:\nname{cookie['name']},{cookie['value']},{cookie['domain']},{cookie['path']}")
+            return session
+        else:
+            self.logger.error(f"cookiesがありません")
+            return None
 
 
 # ----------------------------------------------------------------------------------
 
+
+    def loginCheck(self):
+        if self.url == self.currentUrl:
+            self.logger.info(f"{__name__}: ログインに成功")
+            return True
+        else:
+            self.logger.error(f"{__name__}: ログインに失敗")
+            return False
+
+
+# ----------------------------------------------------------------------------------
+
+
+    def sessionLogin(self, cookies):
+        session = self.sessionSetting(cookies=cookies)
+        session.get(self.url)
+
+        if not self.loginCheck():
+            self.logger.error(f"セッションを使ったログインにも失敗しました:\n{cookies[30:]}")
+            return None
+
+
+# ----------------------------------------------------------------------------------
+
+# Cookieを使ってログイン
+
+    def cookieLogin(self):
+        # pickleファイルの読込
+        cookies = self.fileRead.readCookieLatestResult()
+
+        # サイトを開いてCookieを追加
+        self.openSite()
+        for cookie in cookies:
+            self.addCookie(cookie=cookie)
+
+        # サイトをリロードしてCookieの適用を試行
+        self.openSite()
+
+        if not self.loginCheck():
+            self.sessionLogin(cookies=cookies)
+        return
+
+
+# ----------------------------------------------------------------------------------
 # 対象のサイトを開く
 
     def sever_open_site(self, url, by_pattern, check_path, notifyFunc, field_name):
