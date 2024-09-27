@@ -147,24 +147,19 @@ class Login:
 
 
 # ----------------------------------------------------------------------------------
-
+# sessionログイン
 
     def sessionLogin(self, cookies):
         session = self.sessionSetting(cookies=cookies)
         session.get(self.url)
 
-        if not self.loginCheck():
-            self.logger.error(f"セッションを使ったログインにも失敗しました:\n{cookies[30:]}")
-            return None
+        return self.loginCheck()
 
 
 # ----------------------------------------------------------------------------------
+# Cookieログイン
 
-# Cookieを使ってログイン
-
-    def cookieLogin(self):
-        # pickleファイルの読込
-        cookies = self.fileRead.readCookieLatestResult()
+    def cookieLogin(self, cookies):
 
         # サイトを開いてCookieを追加
         self.openSite()
@@ -174,9 +169,25 @@ class Login:
         # サイトをリロードしてCookieの適用を試行
         self.openSite()
 
-        if not self.loginCheck():
-            self.sessionLogin(cookies=cookies)
-        return
+        return self.loginCheck()
+
+
+# ----------------------------------------------------------------------------------
+# 2段階ログイン
+
+    def switchLogin(self):
+        # pickleファイルの読込
+        cookies = self.fileRead.readCookieLatestResult()
+
+        if self.cookieLogin(cookies=cookies):
+            self.logger.info(f"Cookieログインに成功")
+        else:
+            self.logger.error("Cookieログインに失敗したためセッションログインに切り替えます")
+            if self.sessionLogin(cookies=cookies):
+                self.logger.info(f"Cookieログインに成功")
+            else:
+                self.logger.error(f"セッションログインにも失敗: {cookies[30:]}")
+        return None
 
 
 # ----------------------------------------------------------------------------------
