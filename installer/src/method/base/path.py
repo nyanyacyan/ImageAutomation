@@ -5,6 +5,7 @@
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 # import
+import os
 from pathlib import Path
 from datetime import datetime
 
@@ -165,6 +166,26 @@ class BaseToPath:
         self.logger.debug(f"FilePath: {FilePath}")
 
         return FilePath
+
+
+# ----------------------------------------------------------------------------------
+
+
+    def writeFileDateNamePath(self, extension: str, subDirName: str, levelsUp: int = 4, dirName: str = 'resultOutput'):
+        resultOutputPath = self.getResultOutputPath(levelsUp=levelsUp, dirName=dirName)
+        fileFullPath = os.path.join(resultOutputPath, subDirName, f'{self.currentDate}{extension}')
+        self.logger.debug(f"fileFullPath: {fileFullPath}")
+        return fileFullPath
+
+
+# ----------------------------------------------------------------------------------
+# cookies格納の場所へのPath
+
+    def writeCookiesFileDateNamePath(self, extension: str, levelsUp: int = 4, dirName: str = 'resultOutput', subDirName: str = 'cookies'):
+        resultOutputPath = self.getResultOutputPath(levelsUp=levelsUp, dirName=dirName)
+        fileFullPath = os.path.join(resultOutputPath, subDirName, f'{self.currentDate}{extension}')
+        self.logger.debug(f"fileFullPath: {fileFullPath}")
+        return fileFullPath
 
 
 # ----------------------------------------------------------------------------------

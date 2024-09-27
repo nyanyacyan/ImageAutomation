@@ -1,13 +1,13 @@
 # coding: utf-8
-# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
 # 2023/9/16  更新
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
 
-import os, csv, json, yaml, shutil
+import os, csv, json, yaml, pickle
 import pandas as pd
 from datetime import datetime
-from typing import Any
+from typing import List, Dict, Any
 from fpdf import FPDF
 
 # 自作モジュール
@@ -49,14 +49,14 @@ class FileWrite:
 # text
 
     @decoInstance.fileRetryAction(maxRetry=2, delay=2)
-    def writeToText(self, data: Any, fileName: str):
-
+    def writeToText(self, data: Any, fileName: str, extension: str=".txt"):
         fullPath = self.path.getWriteFilePath(fileName=fileName)
+        filePath = os.path.join(fullPath, f'{self.currentDate}{extension}')
 
         if data and fileName:
             self.logger.debug(f"data:\n{data}")
 
-            with open(f'{fullPath}.txt', 'w', encoding='utf-8') as file:
+            with open(filePath, 'w', encoding='utf-8') as file:
                 file.write(data)
 
             self._existsCheck(fullPath=fullPath)
@@ -66,14 +66,13 @@ class FileWrite:
 # csv
 
     @decoInstance.fileRetryAction(maxRetry=2, delay=2)
-    def writeToCsv(self, data: Any, fileName: str):
-
+    def writeToCsv(self, data: Any, fileName: str, extension: str=".csv"):
         fullPath = self.path.getWriteFilePath(fileName=fileName)
+        filePath = os.path.join(fullPath, f'{self.currentDate}{extension}')
 
         if data and fileName:
-            self.logger.warning(f"data:\n{data}")
             #? newline=''→Windows環境にて余計な空行を防ぐOP
-            with open(f'{fullPath}.csv', 'w', newline='', encoding='utf-8') as file:
+            with open(filePath, 'w', newline='', encoding='utf-8') as file:
                 csvWriter = csv.writer(file)  # CSV形式で書き込む
                 csvWriter.writerows(data)  # 通常は1行にまとめってしまうのを開業してきれいにしてくれる
 
@@ -84,12 +83,12 @@ class FileWrite:
 # json
 
     @decoInstance.fileRetryAction(maxRetry=2, delay=2)
-    def writeToJson(self, data: Any, fileName: str):
-
+    def writeToJson(self, data: Any, fileName: str, extension: str=".json"):
         fullPath = self.path.getWriteFilePath(fileName=fileName)
+        filePath = os.path.join(fullPath, f'{self.currentDate}{extension}')
 
         if data and fileName:
-            with open(f'{fullPath}.json', 'w', encoding='utf-8') as file:
+            with open(filePath, 'w', encoding='utf-8') as file:
                 #? ensure_ascii=False→日本語をそのまま維持する
                 #? indent=4→改行とスペースを適正にしてjsonファイルを見やすくするため
                 json.dump(data, file, ensure_ascii=False, indent=4)
@@ -98,15 +97,31 @@ class FileWrite:
 
 
 # ----------------------------------------------------------------------------------
+# pickle
+#? picklesのディレクトリに入れたい場合にはoverrideさせていれる
+
+    @decoInstance.fileRetryAction(maxRetry=2, delay=2)
+    def writeToPickle(self, data: Any, fileName: str, extension: str=".pkl"):
+        fullPath = self.path.getWriteFilePath(fileName=fileName)
+        filePath = os.path.join(fullPath, f'{self.currentDate}{extension}')
+
+        if data and fileName:
+            with open(filePath, 'wb') as file:
+                pickle.dump(data, file)
+
+            self._existsCheck(fullPath=fullPath)
+
+
+# ----------------------------------------------------------------------------------
 # excel
 
     @decoInstance.fileRetryAction(maxRetry=2, delay=2)
-    def writeToExcel(self, data: pd.DataFrame, fileName: str):
-
+    def writeToExcel(self, data: pd.DataFrame, fileName: str, extension: str=".xlsx"):
         fullPath = self.path.getWriteFilePath(fileName=fileName)
+        filePath = os.path.join(fullPath, f'{self.currentDate}{extension}')
 
         if data and fileName:
-            data.to_excel(f"{fileName}.xlsx", index=False)
+            data.to_excel(filePath, index=False)
 
             self._existsCheck(fullPath=fullPath)
 
@@ -115,12 +130,12 @@ class FileWrite:
 # YAML
 
     @decoInstance.fileRetryAction(maxRetry=2, delay=2)
-    def writeToYaml(self, data: pd.DataFrame, fileName: str):
-
+    def writeToYaml(self, data: pd.DataFrame, fileName: str, extension: str=".json"):
         fullPath = self.path.getWriteFilePath(fileName=fileName)
+        filePath = os.path.join(fullPath, f'{self.currentDate}{extension}')
 
         if data and fileName:
-            with open(f'{fullPath}.json', 'w', encoding='utf-8') as file:
+            with open(filePath, 'w', encoding='utf-8') as file:
                 #? allow_unicode=True→日本語をそのまま維持する
                 yaml.dump(data, file, allow_unicode=True)
 
@@ -157,11 +172,11 @@ class LimitFileWrite:
 # ----------------------------------------------------------------------------------
 
 
-    def cleanWriteFiles(self, fullPath, extension: str, keepWrites: int=3):
+    def cleanWriteFiles(self, filePath, extension: str, keepWrites: int=3):
         validPrefixes = tuple(str(i).zfill(4) for i in range(10000))
 
         writeFiles = [
-            file for file in os.listdir(fullPath)
+            file for file in os.listdir(filePath)
             if file.startswith(validPrefixes) and file.endswith(extension)
         ]
 
@@ -169,7 +184,7 @@ class LimitFileWrite:
             writeFiles.sort()
 
             oldFile = writeFiles[0]
-            fileToRemove = os.path.join(fullPath, oldFile)
+            fileToRemove = os.path.join(filePath, oldFile)
             if os.path.exists(fileToRemove):
                 os.remove(fileToRemove)
                 self.logger.info(f"{keepWrites}つ以上のファイルを検知: {oldFile} を削除")
@@ -179,84 +194,119 @@ class LimitFileWrite:
 # text
 
     @decoInstance.fileRetryAction(maxRetry=2, delay=2)
-    def writeToText(self, data: Any, fileName: str, extension: str=".txt"):
-        fullPath = self.path.getWriteFilePath(fileName=fileName)
-        filePath = os.path.join(fullPath, f'{self.currentDate}{extension}')
+    def writeToText(self, data: Any, subDirName: str, extension: str=".txt"):
+        filePath = self.path.writeFileDateNamePath(subDirName=subDirName, extension=extension)
 
-        if data and fileName:
+        if data and subDirName:
             with open(filePath, 'w', encoding='utf-8') as file:
                 file.write(data)
 
             self._existsCheck(filePath=filePath)
-            self.cleanWriteFiles(fullPath=fullPath, extension=extension)
+            self.cleanWriteFiles(filePath=filePath, extension=extension)
 
 
 # ----------------------------------------------------------------------------------
 # csv
 
     @decoInstance.fileRetryAction(maxRetry=2, delay=2)
-    def writeToCsv(self, data: Any, fileName: str, extension: str=".csv"):
-        fullPath = self.path.getWriteFilePath(fileName=fileName)
-        filePath = os.path.join(fullPath, f'{self.currentDate}{extension}')
+    def writeToCsv(self, data: Any, subDirName: str, extension: str=".csv"):
+        filePath = self.path.writeFileDateNamePath(subDirName=subDirName, extension=extension)
 
-        if data and fileName:
+        if data and subDirName:
             #? newline=''→Windows環境にて余計な空行を防ぐOP
             with open(filePath, 'w', newline='', encoding='utf-8') as file:
                 csvWriter = csv.writer(file)  # CSV形式で書き込む
                 csvWriter.writerows(data)  # 通常は1行にまとめってしまうのを開業してきれいにしてくれる
 
             self._existsCheck(filePath=filePath)
-            self.cleanWriteFiles(fullPath=fullPath, extension=extension)
+            self.cleanWriteFiles(filePath=filePath, extension=extension)
 
 
 # ----------------------------------------------------------------------------------
 # json
 
     @decoInstance.fileRetryAction(maxRetry=2, delay=2)
-    def writeToJson(self, data: Any, fileName: str, extension: str=".json"):
-        fullPath = self.path.getWriteFilePath(fileName=fileName)
-        filePath = os.path.join(fullPath, f'{self.currentDate}{extension}')
+    def writeToJson(self, data: Any, subDirName: str, extension: str=".json"):
+        filePath = self.path.writeFileDateNamePath(subDirName=subDirName, extension=extension)
 
-        if data and fileName:
+        if data and subDirName:
             with open(filePath, 'w', encoding='utf-8') as file:
                 #? ensure_ascii=False→日本語をそのまま維持する
                 #? indent=4→改行とスペースを適正にしてjsonファイルを見やすくするため
                 json.dump(data, file, ensure_ascii=False, indent=4)
 
             self._existsCheck(filePath=filePath)
-            self.cleanWriteFiles(fullPath=fullPath, extension=extension)
+            self.cleanWriteFiles(filePath=filePath, extension=extension)
+
+
+# ----------------------------------------------------------------------------------
+# pickle
+#? picklesのディレクトリに入れたい場合にはoverrideさせていれる
+
+    @decoInstance.fileRetryAction(maxRetry=2, delay=2)
+    def writeToPickle(self, data: Any, subDirName: str, extension: str=".pkl"):
+        filePath = self.path.writeFileDateNamePath(subDirName=subDirName, extension=extension)
+
+        if data and subDirName:
+            with open(filePath, 'wb') as file:
+                pickle.dump(data, file)
+
+            self._existsCheck(filePath=filePath)
+            self.cleanWriteFiles(filePath=filePath, extension=extension)
 
 
 # ----------------------------------------------------------------------------------
 # excel
 
     @decoInstance.fileRetryAction(maxRetry=2, delay=2)
-    def writeToExcel(self, data: pd.DataFrame, fileName: str, extension: str=".xlsx"):
-        fullPath = self.path.getWriteFilePath(fileName=fileName)
-        filePath = os.path.join(fullPath, f'{self.currentDate}{extension}')
+    def writeToExcel(self, data: pd.DataFrame, subDirName: str, extension: str=".xlsx"):
+        filePath = self.path.writeFileDateNamePath(subDirName=subDirName, extension=extension)
 
-        if data and fileName:
+        if data and subDirName:
             data.to_excel(filePath, index=False)
 
             self._existsCheck(filePath=filePath)
-            self.cleanWriteFiles(fullPath=fullPath, extension=extension)
+            self.cleanWriteFiles(filePath=filePath, extension=extension)
 
 
 # ----------------------------------------------------------------------------------
 # YAML
 
     @decoInstance.fileRetryAction(maxRetry=2, delay=2)
-    def writeToYaml(self, data: pd.DataFrame, fileName: str, extension: str=".yaml"):
-        fullPath = self.path.getWriteFilePath(fileName=fileName)
-        filePath = os.path.join(fullPath, f'{self.currentDate}{extension}')
+    def writeToYaml(self, data: pd.DataFrame, subDirName: str, extension: str=".yaml"):
+        filePath = self.path.writeFileDateNamePath(subDirName=subDirName, extension=extension)
 
-        if data and fileName:
+        if data and subDirName:
             with open(filePath, 'w', encoding='utf-8') as file:
                 #? allow_unicode=True→日本語をそのまま維持する
                 yaml.dump(data, file, allow_unicode=True)
 
             self._existsCheck(filePath=filePath)
-            self.cleanWriteFiles(fullPath=fullPath, extension=extension)
+            self.cleanWriteFiles(filePath=filePath, extension=extension)
+
+
+# ----------------------------------------------------------------------------------
+# cookies→text
+
+    @decoInstance.fileRetryAction(maxRetry=2, delay=2)
+    def cookiesWriteToText(self, cookies: List[Dict[str, Any]], extension: str="Cookie.txt"):
+        filePath = self.path.writeCookiesFileDateNamePath(extension=extension)
+
+        if cookies :
+            self.logger.debug(f"cookies:\n{cookies[30:]}")
+
+            with open(filePath, 'w', encoding='utf-8') as file:
+                for cookie in cookies:
+                    if 'expiry' in cookie:
+                        expiryTimestamp = cookie['expiry']
+                        expiryDatetime = datetime.utcfromtimestamp(expiryTimestamp)
+
+                        cookieExpiryTimestamp = f"Cookie: {cookie['name']} の有効期限は「{expiryDatetime}」\n"
+
+                        file.write(cookieExpiryTimestamp)
+
+            self._existsCheck(filePath=filePath)
+            self.cleanWriteFiles(filePath=filePath, extension=extension)
 
 
 # ----------------------------------------------------------------------------------

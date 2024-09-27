@@ -45,10 +45,19 @@ class Login:
 
 # ----------------------------------------------------------------------------------
 
+
     def CheckSiteStatus(self) -> None:
         self.driver_wait.jsPageChecker()
 
 
+# ----------------------------------------------------------------------------------
+
+    @property
+    def getCookies(self):
+        return self.chrome.get_cookies()
+
+
+# ----------------------------------------------------------------------------------
         try:
             print(f'by_pattern: {by_pattern}')
             self.logger.debug(f"IDなどを入力 ができるかを確認")
