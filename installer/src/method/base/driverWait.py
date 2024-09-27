@@ -1,9 +1,7 @@
 # coding: utf-8
-# ----------------------------------------------------------------------------------
-# 2023/3/27更新
+# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
-#! webdriverをどこが開いているのかを確認しながら実装が必要。
-# ----------------------------------------------------------------------------------
+# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
 
 import requests
@@ -23,24 +21,17 @@ from selenium.common.exceptions import (TimeoutException)
 from .utils import Logger
 
 
-####################################################################################
-# from driver_utils import Wait
-# self.driver_wait = Wait(chrome=chrome, debugMode=debugMode)
+# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+# **********************************************************************************
+
 
 class Wait:
     def __init__(self, chrome, debugMode=True):
         self.chrome = chrome
-        self.logger = self.getLogger(debugMode=debugMode)
 
-        # self.error_discord = ErrorDiscord(chrome=self.chrome, discord_url=discord_url)
-
-####################################################################################
-# Loggerセットアップ
-
-    def getLogger(self, debugMode=True):
-        debugMode = os.getenv('debugMode', 'False') == 'True'
-        logger_instance = Logger(__name__, debugMode=debugMode)
-        return logger_instance.get_logger()
+        # logger
+        self.getLogger = Logger(__name__, debugMode=debugMode)
+        self.logger = self.getLogger.getLogger()
 
 
 # ----------------------------------------------------------------------------------
@@ -138,21 +129,18 @@ class Wait:
 
 # ----------------------------------------------------------------------------------
 # 次のページに移動後にページがちゃんと開いてる状態か全体を確認してチェックする
-#? JavaScriptCommand
-# self.driver_wait._js_page_update_checker(field_name=, timeout=10)
 
-    def _js_page_checker(self, field_name, timeout=10):
-        try:
+    def jsPageChecker(self, timeout=10):
             WebDriverWait(self.chrome, timeout).until(lambda driver: driver.execute_script('return document.readyState')=='complete')
-            self.logger.debug(f"{field_name} ページが更新されてます。")
+            self.logger.debug(f"{__name__} ページが更新されてます。")
 
-        except TimeoutException as e:
-            self.logger.error(f"{field_name} ページが更新されるまで、{timeout}秒以上経過したためタイムアウト: {e}")
-            raise
+        # except TimeoutException as e:
+        #     self.logger.error(f"{field_name} ページが更新されるまで、{timeout}秒以上経過したためタイムアウト: {e}")
+        #     raise
 
-        except Exception as e:
-            self.logger.error(f"{field_name} ページが更新されるまでの待機中になんらかのエラーが発生: {e}")
-            raise
+        # except Exception as e:
+        #     self.logger.error(f"{field_name} ページが更新されるまでの待機中になんらかのエラーが発生: {e}")
+        #     raise
 
 
 # ----------------------------------------------------------------------------------

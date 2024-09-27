@@ -1,8 +1,8 @@
 # coding: utf-8
-# ----------------------------------------------------------------------------------
-# 2023/3/29更新
+# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
-# ----------------------------------------------------------------------------------
+# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+# import
 import os
 import pickle
 import time
@@ -21,11 +21,11 @@ from selenium.webdriver.support.ui import WebDriverWait
 from .utils import Logger
 from .driverWait import Wait
 
-# ----------------------------------------------------------------------------------
-####################################################################################
+# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+# **********************************************************************************
 
 
-class AutoLogin:
+class Login:
     def __init__(self, chrome, debugMode=True):
         # logger
         self.getLogger = Logger(__name__, debugMode=debugMode)
@@ -36,27 +36,24 @@ class AutoLogin:
 
 
 
-####################################################################################
 # ----------------------------------------------------------------------------------
 # 対象のサイトを開く
 
-    def open_site(self, url, by_pattern, check_path, field_name):
+    def openSite(self, url):
+        return self.chrome.get(url)
 
-        # サイトを開く前にurlを確認
-        self.logger.debug(f"{field_name} url: {url}")
-        self.logger.debug(f"{field_name} by_pattern: {by_pattern} , check_path: {check_path}")
 
-        self.logger.info("対象のサイトを開く")
+# ----------------------------------------------------------------------------------
 
-        self.chrome.get(url)
-        current_url = self.chrome.current_url
-        self.logger.debug(f"{field_name} URL: {current_url}")
+    def CheckSiteStatus(self) -> None:
+        self.driver_wait.jsPageChecker()
+
 
         try:
             print(f'by_pattern: {by_pattern}')
             self.logger.debug(f"IDなどを入力 ができるかを確認")
 
-            self.driver_wait._element_clickable(by_pattern=by_pattern, element_path=check_path, field_name=field_name)
+            
 
             self.logger.debug(f"{field_name}  入力準備 完了")
 
