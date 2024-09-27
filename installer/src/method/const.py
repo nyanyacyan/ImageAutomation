@@ -8,10 +8,48 @@ from enum import Enum
 
 
 # ----------------------------------------------------------------------------------
+
+
+class Dir(Enum):
+    result='resultOutput'
+    input='inputData'
+
+
+# ----------------------------------------------------------------------------------
+
+
+class SubDir(Enum):
+    pickles='pickles'
+    cookies='cookies'
+
+
+# ----------------------------------------------------------------------------------
+
+
+class Extension(Enum):
+    text='.txt'
+    csv='.csv'
+    json='.json'
+    pickle='.pkl'
+    excel='.xlsx'
+    yaml='.yaml'
+    cookie='cookie.pkl'
+    cookieText='cookie.txt'
+
+
+# ----------------------------------------------------------------------------------
+
+
+class Encoding(Enum):
+    utf8='utf-8'
+
+
+# ----------------------------------------------------------------------------------
 # DiscordUrl
 
 class Debug(Enum):
     discord = 'https://discord.com/api/webhooks/1220239805204660314/niMRY1OVJwYh3PY9X9EfF2O6C7ZPhukRDoXfsXlwGBz4n1HKE81MA1B6TQiy2FUnzHfk'
+
 
 # ----------------------------------------------------------------------------------
 # エラーメッセージ
@@ -20,7 +58,6 @@ class ErrorMessage(Enum):
     ApiRequestError='上限までリクエストをしましたがエラー'
     chromeDriverManagerError='PCの再起動で\n改善する可能性があります。PCの再起動をされますか？'
     chromeDriverManagerErrorTitle='Chromeが正しくinstallできませんでした。'
-
 
 
 # ----------------------------------------------------------------------------------

@@ -12,6 +12,7 @@ from fpdf import FPDF
 
 # 自作モジュール
 from .utils import Logger
+from ..const import Extension
 from .path import BaseToPath
 from .errorHandlers import FileWriteError
 from .decorators import Decorators
@@ -194,7 +195,7 @@ class LimitFileWrite:
 # text
 
     @decoInstance.fileRetryAction(maxRetry=2, delay=2)
-    def writeToText(self, data: Any, subDirName: str, extension: str=".txt"):
+    def writeToText(self, data: Any, subDirName: str, extension: str=Extension.text.value):
         filePath = self.path.writeFileDateNamePath(subDirName=subDirName, extension=extension)
 
         if data and subDirName:
@@ -209,7 +210,7 @@ class LimitFileWrite:
 # csv
 
     @decoInstance.fileRetryAction(maxRetry=2, delay=2)
-    def writeToCsv(self, data: Any, subDirName: str, extension: str=".csv"):
+    def writeToCsv(self, data: Any, subDirName: str, extension: str=Extension.csv.value):
         filePath = self.path.writeFileDateNamePath(subDirName=subDirName, extension=extension)
 
         if data and subDirName:
@@ -226,7 +227,7 @@ class LimitFileWrite:
 # json
 
     @decoInstance.fileRetryAction(maxRetry=2, delay=2)
-    def writeToJson(self, data: Any, subDirName: str, extension: str=".json"):
+    def writeToJson(self, data: Any, subDirName: str, extension: str=Extension.json.value):
         filePath = self.path.writeFileDateNamePath(subDirName=subDirName, extension=extension)
 
         if data and subDirName:
@@ -244,7 +245,7 @@ class LimitFileWrite:
 #? picklesのディレクトリに入れたい場合にはoverrideさせていれる
 
     @decoInstance.fileRetryAction(maxRetry=2, delay=2)
-    def writeToPickle(self, data: Any, subDirName: str, extension: str=".pkl"):
+    def writeToPickle(self, data: Any, subDirName: str, extension: str=Extension.pickle.value):
         filePath = self.path.writeFileDateNamePath(subDirName=subDirName, extension=extension)
 
         if data and subDirName:
@@ -259,7 +260,7 @@ class LimitFileWrite:
 # excel
 
     @decoInstance.fileRetryAction(maxRetry=2, delay=2)
-    def writeToExcel(self, data: pd.DataFrame, subDirName: str, extension: str=".xlsx"):
+    def writeToExcel(self, data: pd.DataFrame, subDirName: str, extension: str=Extension.excel.value):
         filePath = self.path.writeFileDateNamePath(subDirName=subDirName, extension=extension)
 
         if data and subDirName:
@@ -273,7 +274,7 @@ class LimitFileWrite:
 # YAML
 
     @decoInstance.fileRetryAction(maxRetry=2, delay=2)
-    def writeToYaml(self, data: pd.DataFrame, subDirName: str, extension: str=".yaml"):
+    def writeToYaml(self, data: pd.DataFrame, subDirName: str, extension: str=Extension.yaml.value):
         filePath = self.path.writeFileDateNamePath(subDirName=subDirName, extension=extension)
 
         if data and subDirName:
@@ -286,10 +287,24 @@ class LimitFileWrite:
 
 
 # ----------------------------------------------------------------------------------
+
+
+    def cookieToPickle(self, cookie: Dict[str, Any], extension: str=Extension.cookie.value):
+        filePath = self.path.writeCookiesFileDateNamePath(extension)
+
+        if cookie:
+            with open(filePath, 'wb') as file:
+                pickle.dump(cookie, file)
+
+            self._existsCheck(filePath=filePath)
+            self.cleanWriteFiles(filePath=filePath, extension=extension)
+
+
+# ----------------------------------------------------------------------------------
 # cookies→text
 
     @decoInstance.fileRetryAction(maxRetry=2, delay=2)
-    def cookiesWriteToText(self, cookies: List[Dict[str, Any]], extension: str="Cookie.txt"):
+    def cookiesWriteToText(self, cookies: List[Dict[str, Any]], extension: str=Extension.cookieText.value):
         filePath = self.path.writeCookiesFileDateNamePath(extension=extension)
 
         if cookies :

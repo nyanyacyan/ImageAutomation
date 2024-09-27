@@ -4,7 +4,7 @@
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
-import json, yaml, cv2, zipfile
+import os, json, yaml, cv2, zipfile, pickle
 import pandas as pd
 from PyPDF2 import PdfReader
 from PIL import Image
@@ -12,6 +12,7 @@ from PIL import Image
 
 # 自作モジュール
 from .utils import Logger
+from ..const import Encoding
 from .path import BaseToPath
 from .decorators import Decorators
 
@@ -38,9 +39,9 @@ class ResultFileRead:
 
     @decoInstance.fileRead
     def readTextResult(self, fileName: str):
-        getFullPath = self.path.getReadFilePath(fileName=fileName)
+        getFullPath = self.path.getResultFilePath(fileName=fileName)
 
-        with open(getFullPath, 'r', encoding='utf-8') as file:
+        with open(getFullPath, 'r', encoding=Encoding.utf8.value) as file:
             return file.read()
 
 
@@ -48,7 +49,7 @@ class ResultFileRead:
 
     @decoInstance.fileRead
     def readCsvResult(self, fileName: str):
-        getFullPath = self.path.getReadFilePath(fileName=fileName)
+        getFullPath = self.path.getResultFilePath(fileName=fileName)
         return pd.read_csv(getFullPath)
 
 
@@ -56,7 +57,7 @@ class ResultFileRead:
 
     @decoInstance.fileRead
     def readJsonResult(self, fileName: str):
-        getFullPath = self.path.getReadFilePath(fileName=fileName)
+        getFullPath = self.path.getResultFilePath(fileName=fileName)
         with open(getFullPath, 'r') as file:
             return json.load(file)
 
@@ -65,7 +66,7 @@ class ResultFileRead:
 
     @decoInstance.fileRead
     def readExcelResult(self, fileName: str):
-        getFullPath = self.path.getReadFilePath(fileName=fileName)
+        getFullPath = self.path.getResultFilePath(fileName=fileName)
         return pd.read_excel(getFullPath)
 
 
@@ -73,7 +74,7 @@ class ResultFileRead:
 
     @decoInstance.fileRead
     def readYamlResult(self, fileName: str):
-        getFullPath = self.path.getReadFilePath(fileName=fileName)
+        getFullPath = self.path.getResultFilePath(fileName=fileName)
         with open(getFullPath, 'r') as file:
             return yaml.safe_load_all(file)
 
@@ -82,7 +83,7 @@ class ResultFileRead:
 
     @decoInstance.fileRead
     def readPdfResult(self, fileName: str):
-        getFullPath = self.path.getReadFilePath(fileName=fileName)
+        getFullPath = self.path.getResultFilePath(fileName=fileName)
         reader = PdfReader(getFullPath)
         text = ""
         for page in reader.pages:
@@ -94,7 +95,7 @@ class ResultFileRead:
 
     @decoInstance.fileRead
     def readImageResult(self, fileName: str):
-        getFullPath = self.path.getReadFilePath(fileName=fileName)
+        getFullPath = self.path.getResultFilePath(fileName=fileName)
         return Image.open(getFullPath)
 
 
@@ -102,7 +103,7 @@ class ResultFileRead:
 
     @decoInstance.fileRead
     def readVideoResult(self, fileName: str):
-        getFullPath = self.path.getReadFilePath(fileName=fileName)
+        getFullPath = self.path.getResultFilePath(fileName=fileName)
         return cv2.VideoCapture(getFullPath)
 
 
@@ -110,10 +111,37 @@ class ResultFileRead:
 
     @decoInstance.fileRead
     def readZipResult(self, fileName: str):
-        getFullPath = self.path.getReadFilePath(fileName=fileName)
+        getFullPath = self.path.getResultFilePath(fileName=fileName)
         zipName = fileName.split('.')[0]
         with zipfile.ZipFile(getFullPath, 'r') as zip:
             zip.extractall(zipName)
+
+
+# ----------------------------------------------------------------------------------
+# 日付名の一番新しいフォルダ名のPathを取得
+
+    def getLatestFolderPath(self, path: str):
+        folders = [f for f in os.list(path) if f.isdigit()]
+        latestFolder = sorted(folders, reverse=True)[0]
+        return os.path.join(path, latestFolder)
+
+
+# ----------------------------------------------------------------------------------
+# pickleの読込
+
+    def readPickleLatestResult(self):
+        picklesPath = self.path.getPickleDirPath()
+        latestPickleFilePath = self.getLatestFolderPath(path=picklesPath)
+        return pickle.load(latestPickleFilePath)
+
+
+# ----------------------------------------------------------------------------------
+# cookieの読込
+
+    def readCookieLatestResult(self):
+        CookiesPath = self.path.getCookieDirPath()
+        latestCookieFilePath = self.getLatestFolderPath(path=CookiesPath)
+        return pickle.load(latestCookieFilePath)
 
 
 # ----------------------------------------------------------------------------------
@@ -137,7 +165,7 @@ class InputDataFileRead:
     def readTextToInput(self, fileName: str):
         getFullPath = self.path.getInputDataFilePath(fileName=fileName)
 
-        with open(getFullPath, 'r', encoding='utf-8') as file:
+        with open(getFullPath, 'r', encoding=Encoding.utf8.value) as file:
             return file.read()
 
 
