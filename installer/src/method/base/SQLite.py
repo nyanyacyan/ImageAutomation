@@ -88,6 +88,7 @@ class SQLite:
     def insertTable(self, conn: sqlite3.Connection, col: tuple, values: tuple):
         placeholders = ', '.join(['?' for _ in values]) # valuesの数の文？を追加して結合
         sql = f"INSERT INTO {self.fileName} {col} VALUES {placeholders}"
+
         c = conn.cursor()
         c.execute(sql(values))
 
@@ -98,20 +99,47 @@ class SQLite:
     @transactional
     def getRecordsAllData(self, conn: sqlite3.Connection):
         sql = f"SELECT * FROM {self.fileName}"
+
         c = conn.cursor()
         c.execute(sql)
         return c.fetchall()
 
 
 # ----------------------------------------------------------------------------------
-# idなどを指定して行を抽出
+# 指定したColumnの値を指定して行を抽出 > Column=name Value=5 > 指定の行を抜き出す > List
 
     @transactional
-    def getRecordsByCol(self, conn: sqlite3.Connection, col: str, value: Any):
-        sql = f"SELECT * FROM {self.fileName} WHERE {col} = ?"
+    def getAllRecordsByCol(self, conn: sqlite3.Connection, col: str, value: Any):
+        sql = f"SELECT FROM {self.fileName} WHERE {col} = ?"
+
         c = conn.cursor()
         c.execute(sql, (value,))
         return c.fetchall()
+
+
+# ----------------------------------------------------------------------------------
+# 指定したColumnの値を指定して行を抽出 > Column=name Value=5 > 指定の行を抜き出す > row
+
+    @transactional
+    def getRowRecordsByCol(self, conn: sqlite3.Connection, col: str, value: Any):
+        sql = f"SELECT FROM {self.fileName} WHERE {col} = ?"
+
+        c = conn.cursor()
+        c.execute(sql, (value,))
+        return c.fetchone()
+
+
+# ----------------------------------------------------------------------------------
+# 指定したColumnの値を指定して行を削除 > Column=name Value=5 > 指定の行を抜き出す
+
+    @transactional
+    def deleteRecordsByCol(self, conn: sqlite3.Connection, col: str, value: Any):
+        deleteRow = self.getRecordsByCol(conn=conn, col=col, value=value)
+        self.logger.warning(f"削除対象のデータです\n{deleteRow}")
+        sql = f"DELETE FROM {self.fileName} WHERE {col} = ?"
+
+        c = conn.cursor()
+        c.execute(sql, (value,))
 
 
 # ----------------------------------------------------------------------------------
