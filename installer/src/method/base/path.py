@@ -128,7 +128,7 @@ class BaseToPath:
 
 
 # ----------------------------------------------------------------------------------
-# InputFile
+# Input > File
 
     def getInputDataFilePath(self, fileName: str):
         inputDataPath = self.getInputDataPath()
@@ -171,7 +171,7 @@ class BaseToPath:
 
 
 # ----------------------------------------------------------------------------------
-# pickleFileのfullPath  resultOutput > 0101 > 0101.txt
+# resultOutput > 0101 > 0101.txt
 
     def writePicklesFileDateNamePath(self, extension: str=Extension.pickle.value, subDirName: str=SubDir.pickles.value):
         resultOutputPath = self.getResultOutputPath()
@@ -182,7 +182,7 @@ class BaseToPath:
 
 
 # ----------------------------------------------------------------------------------
-# cookieFileのfullPath  resultOutput > 0101 > 0101.txt
+# resultOutput > 0101 > 0101.txt
 
     def writeCookiesFileDateNamePath(self, extension: str=Extension.cookie.value, subDirName: str=SubDir.cookies.value):
         resultOutputPath = self.getResultOutputPath()

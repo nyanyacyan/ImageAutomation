@@ -5,6 +5,7 @@
 # import
 import sqlite3
 from functools import wraps
+from typing import Any
 
 
 # 自作モジュール
@@ -18,7 +19,7 @@ from .errorHandlers import NetworkHandler
 # **********************************************************************************
 # 一連の流れ
 
-class DecoSQLite:
+class SQLite:
     def __init__(self, fileName: str, debugMode=True):
 
         # logger
@@ -75,9 +76,42 @@ class DecoSQLite:
 
     @transactional
     def createTable(self, conn: sqlite3.Connection, sql: str):
-        c = conn.cursor  # DBとの接続オブジェクトを受け取って通信ができるようにする
+        c = conn.cursor()  # DBとの接続オブジェクトを受け取って通信ができるようにする
 
         c.execute(sql)  # 実行するSQL文にて定義して実行まで行う
+
+
+# ----------------------------------------------------------------------------------
+# SQLiteへ入れ込む
+
+    @transactional
+    def insertTable(self, conn: sqlite3.Connection, col: tuple, values: tuple):
+        placeholders = ', '.join(['?' for _ in values]) # valuesの数の文？を追加して結合
+        sql = f"INSERT INTO {self.fileName} {col} VALUES {placeholders}"
+        c = conn.cursor()
+        c.execute(sql(values))
+
+
+# ----------------------------------------------------------------------------------
+# テーブルデータを全て引っ張る
+
+    @transactional
+    def getRecordsAllData(self, conn: sqlite3.Connection):
+        sql = f"SELECT * FROM {self.fileName}"
+        c = conn.cursor()
+        c.execute(sql)
+        return c.fetchall()
+
+
+# ----------------------------------------------------------------------------------
+# idなどを指定して行を抽出
+
+    @transactional
+    def getRecordsByCol(self, conn: sqlite3.Connection, col: str, value: Any):
+        sql = f"SELECT * FROM {self.fileName} WHERE {col} = ?"
+        c = conn.cursor()
+        c.execute(sql, (value,))
+        return c.fetchall()
 
 
 # ----------------------------------------------------------------------------------

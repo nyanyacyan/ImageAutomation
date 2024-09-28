@@ -8,6 +8,8 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 
 # 自作モジュール
 from .utils import Logger
+from .SQLite import SQLite
+from ..const import Filename
 
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
@@ -22,6 +24,10 @@ class CookieManager:
 
         self.chrome = chrome
         self.homeUrl = homeUrl
+        self.fileName = Filename.Cookie.value
+
+        # インスタンス
+        self.sqlite = SQLite(fileName=self.fileName, debugMode=debugMode)
 
 # ----------------------------------------------------------------------------------
 
@@ -40,29 +46,41 @@ class CookieManager:
 
 
 # ----------------------------------------------------------------------------------
-# Cookieの内容から有効期限を確認する
+# SQLiteにCookieのデータを書き込む
 
-    def getCookieExpires(self):
+    def insertSqlite(self):
         cookie = self.getCookie
         cookieName = cookie['name']
-        cookieExpires = cookie.get['expires']
-        cookieMaxAge = cookie.get['max-age']  # expiresよりも優先される
+        cookieValue = cookie.get('value')
+        cookieDomain = cookie.get('domain')
+        cookiePath = cookie.get('path')
+        cookieExpires = cookie.get('expires')
+        cookieMaxAge = cookie.get('max-age')  # expiresよりも優先される
 
-        if cookieMaxAge:
-            self.logger.debug(f"Cookie {cookieName} の max-age を発見")
-            return cookieMaxAge
-        elif cookieExpires:
-            self.logger.debug(f"Cookie {cookieName} の expires を発見")
-            return cookieExpires
-        else:
-            self.logger.debug(f"Cookie {cookieName} には有効期限が設定されてません")
-            return None
+        col = ('name', 'value', 'domain', 'path', 'expires', 'max_age')
+        values = (cookieName, cookieValue, cookieDomain, cookiePath, cookieExpires, cookieMaxAge)
+
+        self.sqlite.insertTable(col=col, values=values)
 
 
 # ----------------------------------------------------------------------------------
-# Cookieの内容をtextに保存する
+# SQLiteにcookiesの情報を書き込めるようにするための初期設定
 
+    def createCookieDB(self):
+        sql = f'''
+            CREATE TABLE IF NOT EXISTS {self.fileName} (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                value TEXT NOT NULL,
+                domain TEXT,
+                path TEXT,
+                expires INTEGER,
+                max_age INTEGER
+            )
+        '''
+
+        self.sqlite.createTable(sql=sql)
 
 
 # ----------------------------------------------------------------------------------
-# Flow
+# SQLiteにCookieのデータを入れ込む
