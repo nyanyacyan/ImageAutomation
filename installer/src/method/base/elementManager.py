@@ -51,7 +51,7 @@ class ElementManager:
 # ----------------------------------------------------------------------------------
 # 複数
 
-    def getElements(self, by, value):
+    def getElements(self, by: str, value: str):
         if by == "id":
             return self.chrome.find_elements_by_id(value)
         elif by == "css":
@@ -81,8 +81,19 @@ class ElementManager:
 # ----------------------------------------------------------------------------------
 
 
-    def ClearInputField(self, element):
+    def ClearInputField(self, by: str, value: str):
+        element = self.getElement(by=by, value=value)
         element.clear()
+        return
+
+
+# ----------------------------------------------------------------------------------
+
+
+    def clickElement(self, by: str, value: str):
+        element = self.getElement(by=by, value=value)
+        element.click()
+        return
 
 
 # ----------------------------------------------------------------------------------

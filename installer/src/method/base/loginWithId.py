@@ -9,7 +9,7 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 
 # 自作モジュール
 from .utils import Logger
-from .driverWait import Wait
+from .elementManager import ElementManager
 from .fileRead import ResultFileRead
 
 
@@ -27,7 +27,7 @@ class IdLogin:
         self.loginUrl = loginUrl
         self.url = url
 
-        self.driverWait = Wait(chrome=self.chrome, debugMode=debugMode)
+        self.element = ElementManager(debugMode=debugMode)
         self.fileRead = ResultFileRead(debugMode=debugMode)
 
 
@@ -82,23 +82,22 @@ class IdLogin:
 # ----------------------------------------------------------------------------------
 # IDの取得
 
-    def getInputId(self, id: str):
-        return self.chrome.find_element_by_id(id)
+    def getInputId(self, by: str, value: str, inputText: str):
+        return self.element.inputText(by=by, value=value, inputText=inputText)
 
 
 # ----------------------------------------------------------------------------------
 # passの入力
 
-    def getInputPass(self, id: str):
-        return self.chrome.find_element_by_id(id)
+    def getInputPass(self, by: str, value: str, inputText: str):
+        return self.element.inputText(by=by, value=value, inputText=inputText)
 
 
 # ----------------------------------------------------------------------------------
 # ログインボタン押下
 
-    def getLoginBtn(self, xpath: str):
-        return
-
+    def getLoginBtn(self, by: str, value: str):
+        return self.element.clickElement(by=by, value=value)
 
 
 # ----------------------------------------------------------------------------------
