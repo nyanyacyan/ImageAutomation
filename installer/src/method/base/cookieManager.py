@@ -79,7 +79,7 @@ class CookieManager:
 
 
 # ----------------------------------------------------------------------------------
-
+# 指定するSQLiteからcookieのデータを取得
 
     def getCookieInSqlite(self, col: str='id', value: Any=1):
         return self.sqlite.getRowRecordsByCol(col=col, value=value)
@@ -162,7 +162,7 @@ class CookieManager:
 
 
 # ----------------------------------------------------------------------------------
-
+# SQLiteからcookieを復元
 
     def createCookieFile(self):
         cookieAllData = self.getCookieInSqlite()
