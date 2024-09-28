@@ -14,7 +14,7 @@ from .utils import Logger
 # **********************************************************************************
 
 
-class BrowserHandler:
+class CookieManager:
     def __init__(self, chrome: WebDriver, homeUrl: str, debugMode=True):
         # logger
         self.getLogger = Logger(__name__, debugMode=debugMode)
@@ -26,42 +26,25 @@ class BrowserHandler:
 # ----------------------------------------------------------------------------------
 
 
-    def openSite(self):
-        self.logger.debug(f"url: {self.url}")
-        return self.chrome.get(self.url)
+    def getCookies(self):
+        return self.chrome.get_cookies()
 
 
 # ----------------------------------------------------------------------------------
+# Cookieの内容を確認する
 
-
-    def currentUrl(self):
-        return self.chrome.current_url()
 
 
 # ----------------------------------------------------------------------------------
+# Cookieの内容から有効期限を確認する
 
 
-    def newOpenWindow(self):
-        return self.chrome.execute_script("window.open('');")
-
-
-# ----------------------------------------------------------------------------------
-
-
-    def switchWindow(self):
-        # 開いてるWindow数を確認
-        if len(self.chrome.window_handles) > 1:
-            self.chrome.switch_to.window(self.chrome.window_handles[1])
-            self.chrome.get(self.url)
-        else:
-            self.logger.error("既存のWindowがないため、新しいWindowに切替ができません")
 
 
 # ----------------------------------------------------------------------------------
+# Cookieの内容をtextに保存する
 
-
-    def addCookie(self, cookie):
-        return self.chrome.add_cookie(cookie_dict=cookie)
 
 
 # ----------------------------------------------------------------------------------
+# Flow
