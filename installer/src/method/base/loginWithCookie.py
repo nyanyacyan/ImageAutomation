@@ -21,6 +21,7 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 from .utils import Logger
 from .driverWait import Wait
 from .fileRead import ResultFileRead
+from .browserHandler import BrowserHandler
 
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
@@ -37,6 +38,7 @@ class CookieLogin:
         self.loginUrl = loginUrl
         self.url = url
 
+        self.browser = BrowserHandler(debugMode=debugMode)
         self.driverWait = Wait(chrome=self.chrome, debugMode=debugMode)
         self.fileRead = ResultFileRead(debugMode=debugMode)
 
@@ -56,7 +58,7 @@ class CookieLogin:
                 self.logger.info(f"Cookieログインに成功")
             else:
                 self.logger.error(f"セッションログインにも失敗: {cookies[30:]}")
-        return None
+        return
 
 
 # ----------------------------------------------------------------------------------
@@ -86,10 +88,11 @@ class CookieLogin:
 
 
 # ----------------------------------------------------------------------------------
+# TODO jsPageCheckerのデコ
 
 
     def openSite(self):
-        self.logger.debug(f"url: {self.url}")
+        self.browser.openSite()
         return self.chrome.get(self.url)
 
 
@@ -97,8 +100,7 @@ class CookieLogin:
 
     @property
     def currentUrl(self):
-        return self.chrome.current_url
-
+        return self.browser.currentUrl()
 
 # ----------------------------------------------------------------------------------
 
@@ -109,6 +111,7 @@ class CookieLogin:
 
 
 # ----------------------------------------------------------------------------------
+# TODO jsPageCheckerのデコ
 
 
     def sessionSetting(self, cookies):

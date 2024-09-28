@@ -10,6 +10,7 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 # 自作モジュール
 from .utils import Logger
 from .driverWait import Wait
+from .browserHandler import BrowserHandler
 from .elementManager import ElementManager
 from .fileRead import ResultFileRead
 
@@ -29,101 +30,18 @@ class IdLogin:
         self.url = url
 
         self.element = ElementManager(debugMode=debugMode)
+        self.browser = BrowserHandler(debugMode=debugMode)
         self.fileRead = ResultFileRead(debugMode=debugMode)
         self.wait = Wait(debugMode=debugMode)
-
-# ----------------------------------------------------------------------------------
-
-
-    def openSite(self):
-        self.logger.debug(f"url: {self.url}")
-        return self.chrome.get(self.url)
-
-
-# ----------------------------------------------------------------------------------
-
-    @property
-    def getCookies(self):
-        return self.chrome.get_cookies()
-
-
-# ----------------------------------------------------------------------------------
-
-    @property
-    def currentUrl(self):
-        return self.chrome.current_url
-
-
-# ----------------------------------------------------------------------------------
-
-
-    def newOpenWindow(self):
-        return self.chrome.execute_script("window.open('');")
-
-
-# ----------------------------------------------------------------------------------
-
-
-    def switchWindow(self):
-        # 開いてるWindow数を確認
-        if len(self.chrome.window_handles) > 1:
-            self.chrome.switch_to.window(self.chrome.window_handles[1])
-            self.chrome.get(self.url)
-        else:
-            self.logger.error("既存のWindowがないため、新しいWindowに切替ができません")
-
-
-# ----------------------------------------------------------------------------------
-
-
-    def addCookie(self, cookie):
-        return self.chrome.add_cookie(cookie_dict=cookie)
-
-
-# ----------------------------------------------------------------------------------
-# IDの取得
-
-    def inputId(self, by: str, value: str, inputText: str):
-        return self.element.inputText(by=by, value=value, inputText=inputText)
-
-
-# ----------------------------------------------------------------------------------
-# passの入力
-
-    def inputPass(self, by: str, value: str, inputText: str):
-        return self.element.inputText(by=by, value=value, inputText=inputText)
-
-
-# ----------------------------------------------------------------------------------
-# ログインボタン押下
-
-    def clickLoginBtn(self, by: str, value: str):
-        return self.element.clickElement(by=by, value=value)
-
-
-# ----------------------------------------------------------------------------------
-
-
-    def loginBtnCheck(self):
-        if self.wait.jsPageChecker():
-            self.logger.info(f"{__name__}: ログインに成功")
-            return True
-        else:
-            self.logger.error(f"{__name__}: ログインに失敗")
-            return False
-
 
 # ----------------------------------------------------------------------------------
 # IDログイン
 
     def IDLogin(
         self,
-        idBy: str,
-        idValue: str,
-        idText: str,
-        passBy: str,
-        passValue: str,
-        passText: str,
+        idBy: str, idValue: str, idText: str,
+        passBy: str, passValue: str, passText: str,
+        btnBy: str, btnValue: str, btnText: str,
         delay: int=2,
     ):
 
@@ -137,14 +55,61 @@ class IdLogin:
         self.inputPass(by=passBy, value=passValue, inputText=passText)
         time.sleep(delay)
 
-        return self.clickLoginBtn()
+        self.clickLoginBtn(by=btnBy, value=btnValue, inputText=btnText)
+        time.sleep(delay)
+
+        return self.loginCheck()
 
 
 # ----------------------------------------------------------------------------------
-# 2段階ログイン
+# TODO jsPageCheckerのデコ
 
-    def (self):
+    def openSite(self):
+        self.browser.openSite()
+        return self.chrome.get(self.url)
 
+
+# ----------------------------------------------------------------------------------
+
+    @property
+    def currentUrl(self):
+        return self.browser.currentUrl()
+
+
+# ----------------------------------------------------------------------------------
+# TODO jsPageCheckerのデコ
+# IDの取得
+
+    def inputId(self, by: str, value: str, inputText: str):
+        return self.element.inputText(by=by, value=value, inputText=inputText)
+
+
+# ----------------------------------------------------------------------------------
+# TODO jsPageCheckerのデコ
+# passの入力
+
+    def inputPass(self, by: str, value: str, inputText: str):
+        return self.element.inputText(by=by, value=value, inputText=inputText)
+
+
+# ----------------------------------------------------------------------------------
+# TODO jsPageCheckerのデコ
+# ログインボタン押下
+
+    def clickLoginBtn(self, by: str, value: str):
+        return self.element.clickElement(by=by, value=value)
+
+
+# ----------------------------------------------------------------------------------
+
+
+    def loginCheck(self):
+        if self.url == self.currentUrl:
+            self.logger.info(f"{__name__}: ログインに成功")
+            return True
+        else:
+            self.logger.error(f"{__name__}: ログインに失敗")
+            return False
 
 
 # ----------------------------------------------------------------------------------
