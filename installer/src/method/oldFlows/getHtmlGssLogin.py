@@ -8,7 +8,7 @@ from ..const import GssSheetId, KeyFile, GssSheetName
 
 # 自作モジュール
 from ..base.spreadsheetRead import SpreadsheetRead
-from ..base.driverLogin import AutoLogin
+from ..base.LoginWithCookie import AutoLogin
 from ..base.getHtml import GetHtml
 from ..base.utils import Logger
 from ..base.spreadsheetRead import GSSAPILogin

@@ -9,7 +9,7 @@ import time
 
 # 自作モジュール
 from ..base.spreadsheetRead import SpreadsheetRead
-from ..base.driverLogin import AutoLogin
+from ..base.LoginWithCookie import AutoLogin
 from .base.driver_control import Operation
 from .base.df_Create import DFCreate
 from ..base.utils import Logger
