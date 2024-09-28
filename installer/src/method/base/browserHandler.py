@@ -18,13 +18,13 @@ from .fileRead import ResultFileRead
 
 
 class BrowserHandler:
-    def __init__(self, chrome: WebDriver, loginUrl: str, url: str, debugMode=True):
+    def __init__(self, chrome: WebDriver, loginUrl: str, homeUrl: str, debugMode=True):
         # logger
         self.getLogger = Logger(__name__, debugMode=debugMode)
         self.logger = self.getLogger.getLogger()
 
         self.chrome = chrome
-
+        self.homeUrl = homeUrl
 
 # ----------------------------------------------------------------------------------
 
@@ -38,7 +38,7 @@ class BrowserHandler:
 
 
     def currentUrl(self):
-        return self.chrome.current_url
+        return self.chrome.current_url()
 
 
 # ----------------------------------------------------------------------------------

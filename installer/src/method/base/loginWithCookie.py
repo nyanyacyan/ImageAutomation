@@ -20,7 +20,6 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 # 自作モジュール
 from .utils import Logger
 from .driverWait import Wait
-from .fileRead import ResultFileRead
 from .browserHandler import BrowserHandler
 
 
@@ -29,18 +28,17 @@ from .browserHandler import BrowserHandler
 
 
 class CookieLogin:
-    def __init__(self, chrome: WebDriver, loginUrl: str, url: str, debugMode=True):
+    def __init__(self, chrome: WebDriver, loginUrl: str, homeUrl: str, debugMode=True):
         # logger
         self.getLogger = Logger(__name__, debugMode=debugMode)
         self.logger = self.getLogger.getLogger()
 
         self.chrome = chrome
-        self.loginUrl = loginUrl
-        self.url = url
+        self.url = homeUrl
 
+        # インスタンス
         self.browser = BrowserHandler(debugMode=debugMode)
         self.driverWait = Wait(chrome=self.chrome, debugMode=debugMode)
-        self.fileRead = ResultFileRead(debugMode=debugMode)
 
 
 # ----------------------------------------------------------------------------------
@@ -67,7 +65,6 @@ class CookieLogin:
     def sessionLogin(self, cookies):
         session = self.sessionSetting(cookies=cookies)
         session.get(self.url)
-
         return self.loginCheck()
 
 

@@ -20,19 +20,20 @@ from .fileRead import ResultFileRead
 
 
 class IdLogin:
-    def __init__(self, chrome: WebDriver, loginUrl: str, url: str, debugMode=True):
+    def __init__(self, chrome: WebDriver, loginUrl: str, homeUrl: str, debugMode=True):
         # logger
         self.getLogger = Logger(__name__, debugMode=debugMode)
         self.logger = self.getLogger.getLogger()
 
         self.chrome = chrome
         self.loginUrl = loginUrl
-        self.url = url
+        self.homeUrl = homeUrl
 
+        # インスタンス
         self.element = ElementManager(debugMode=debugMode)
         self.browser = BrowserHandler(debugMode=debugMode)
-        self.fileRead = ResultFileRead(debugMode=debugMode)
         self.wait = Wait(debugMode=debugMode)
+
 
 # ----------------------------------------------------------------------------------
 # IDログイン
@@ -66,7 +67,7 @@ class IdLogin:
 
     def openSite(self):
         self.browser.openSite()
-        return self.chrome.get(self.url)
+        return self.chrome.get(self.loginUrl)
 
 
 # ----------------------------------------------------------------------------------
@@ -104,7 +105,7 @@ class IdLogin:
 
 
     def loginCheck(self):
-        if self.url == self.currentUrl:
+        if self.homeUrl == self.currentUrl:
             self.logger.info(f"{__name__}: ログインに成功")
             return True
         else:
