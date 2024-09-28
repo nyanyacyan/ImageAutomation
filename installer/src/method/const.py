@@ -29,6 +29,7 @@ class Dir(Enum):
 class SubDir(Enum):
     pickles='pickles'
     cookies='cookies'
+    DBSubDir='DB'
 
 
 # ----------------------------------------------------------------------------------

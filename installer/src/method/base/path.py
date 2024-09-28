@@ -138,11 +138,23 @@ class BaseToPath:
 
 
 # ----------------------------------------------------------------------------------
-# ResultFile
+# Result > File
 
     def getResultFilePath(self, fileName: str):
         resultOutputPath = self.getResultOutputPath()
         FilePath = os.path.join(resultOutputPath, fileName)
+        self.isDirExists(path=FilePath)
+        self.logger.debug(f"FilePath: {FilePath}")
+        return FilePath
+
+
+# ----------------------------------------------------------------------------------
+# Result > SubDir > File
+
+    def getResultSubDirFilePath(self, subDirName: str, fileName: str):
+        resultOutputPath = self.getResultOutputPath()
+        FilePath = os.path.join(resultOutputPath, subDirName, fileName)
+        self.isDirExists(path=FilePath)
         self.logger.debug(f"FilePath: {FilePath}")
         return FilePath
 
