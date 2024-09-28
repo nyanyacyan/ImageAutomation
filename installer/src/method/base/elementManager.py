@@ -3,14 +3,11 @@
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
-import requests
 from selenium.webdriver.chrome.webdriver import WebDriver
 
 
 # 自作モジュール
 from .utils import Logger
-from .driverWait import Wait
-from .fileRead import ResultFileRead
 
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
@@ -18,7 +15,7 @@ from .fileRead import ResultFileRead
 
 
 class ElementManager:
-    def __init__(self, chrome: WebDriver, loginUrl: str, url: str, debugMode=True):
+    def __init__(self, chrome: WebDriver, debugMode=True):
         # logger
         self.getLogger = Logger(__name__, debugMode=debugMode)
         self.logger = self.getLogger.getLogger()

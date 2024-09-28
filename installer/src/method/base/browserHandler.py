@@ -3,14 +3,11 @@
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
-import requests
 from selenium.webdriver.chrome.webdriver import WebDriver
 
 
 # 自作モジュール
 from .utils import Logger
-from .driverWait import Wait
-from .fileRead import ResultFileRead
 
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
