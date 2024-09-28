@@ -12,7 +12,6 @@ from .utils import Logger
 from .driverWait import Wait
 from .browserHandler import BrowserHandler
 from .elementManager import ElementManager
-from .fileRead import ResultFileRead
 
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$

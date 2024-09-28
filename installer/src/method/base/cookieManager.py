@@ -25,20 +25,37 @@ class CookieManager:
 
 # ----------------------------------------------------------------------------------
 
-
+    @property
     def getCookies(self):
         return self.chrome.get_cookies()
 
 
 # ----------------------------------------------------------------------------------
-# Cookieの内容を確認する
 
+
+    @property
+    def getCookie(self):
+        cookies = self.getCookies
+        return cookies[0]
 
 
 # ----------------------------------------------------------------------------------
 # Cookieの内容から有効期限を確認する
 
+    def getCookieExpires(self):
+        cookieName = self.getCookie['name']
+        cookieExpires = self.getCookie['expires']
+        cookieMaxAge = self.getCookie['max-age']  # expiresよりも優先
 
+        if cookieMaxAge:
+            self.logger.debug(f"Cookie {cookieName} の max-age を発見")
+            return cookieMaxAge
+        elif cookieExpires:
+            self.logger.debug(f"Cookie {cookieName} の expires を発見")
+            return cookieExpires
+        else:
+            self.logger.debug(f"Cookie {cookieName} には有効期限が設定されてません")
+            return None
 
 
 # ----------------------------------------------------------------------------------
