@@ -131,8 +131,11 @@ class Wait:
 # 次のページに移動後にページがちゃんと開いてる状態か全体を確認してチェックする
 
     def jsPageChecker(self, timeout=10):
-            WebDriverWait(self.chrome, timeout).until(lambda driver: driver.execute_script('return document.readyState')=='complete')
-            self.logger.debug(f"{__name__} ページが更新されてます。")
+            if WebDriverWait(self.chrome, timeout).until(lambda driver: driver.execute_script('return document.readyState')=='complete'):
+                self.logger.debug(f"{__name__} ページが更新OK")
+            else:
+                raise TimeoutError("ページが更新されません")
+                self.chrome.refresh()
 
         # except TimeoutException as e:
         #     self.logger.error(f"{field_name} ページが更新されるまで、{timeout}秒以上経過したためタイムアウト: {e}")

@@ -3,12 +3,13 @@
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
-import requests
+import time
 from selenium.webdriver.chrome.webdriver import WebDriver
 
 
 # 自作モジュール
 from .utils import Logger
+from .driverWait import Wait
 from .elementManager import ElementManager
 from .fileRead import ResultFileRead
 
@@ -29,7 +30,7 @@ class IdLogin:
 
         self.element = ElementManager(debugMode=debugMode)
         self.fileRead = ResultFileRead(debugMode=debugMode)
-
+        self.wait = Wait(debugMode=debugMode)
 
 # ----------------------------------------------------------------------------------
 
@@ -82,29 +83,29 @@ class IdLogin:
 # ----------------------------------------------------------------------------------
 # IDの取得
 
-    def getInputId(self, by: str, value: str, inputText: str):
+    def inputId(self, by: str, value: str, inputText: str):
         return self.element.inputText(by=by, value=value, inputText=inputText)
 
 
 # ----------------------------------------------------------------------------------
 # passの入力
 
-    def getInputPass(self, by: str, value: str, inputText: str):
+    def inputPass(self, by: str, value: str, inputText: str):
         return self.element.inputText(by=by, value=value, inputText=inputText)
 
 
 # ----------------------------------------------------------------------------------
 # ログインボタン押下
 
-    def getLoginBtn(self, by: str, value: str):
+    def clickLoginBtn(self, by: str, value: str):
         return self.element.clickElement(by=by, value=value)
 
 
 # ----------------------------------------------------------------------------------
 
 
-    def loginCheck(self):
-        if self.url == self.currentUrl:
+    def loginBtnCheck(self):
+        if self.wait.jsPageChecker():
             self.logger.info(f"{__name__}: ログインに成功")
             return True
         else:
@@ -113,43 +114,37 @@ class IdLogin:
 
 
 # ----------------------------------------------------------------------------------
-# sessionログイン
+# IDログイン
 
-    def sessionLogin(self, cookies):
-        session = self.sessionSetting(cookies=cookies)
-        session.get(self.url)
-
-        return self.loginCheck()
-
-
-# ----------------------------------------------------------------------------------
-# Cookieログイン
-
-    def cookieLogin(self):
+    def IDLogin(
+        self,
+        idBy: str,
+        idValue: str,
+        idText: str,
+        passBy: str,
+        passValue: str,
+        passText: str,
+        delay: int=2,
+    ):
 
         # サイトを開いてCookieを追加
         self.openSite()
+        time.sleep(delay)
 
+        self.inputId(by=idBy, value=idValue, inputText=idText)
+        time.sleep(delay)
 
-        return self.loginCheck()
+        self.inputPass(by=passBy, value=passValue, inputText=passText)
+        time.sleep(delay)
+
+        return self.clickLoginBtn()
 
 
 # ----------------------------------------------------------------------------------
 # 2段階ログイン
 
-    def switchLogin(self):
-        # pickleファイルの読込
-        cookies = self.fileRead.readCookieLatestResult()
+    def (self):
 
-        if self.cookieLogin(cookies=cookies):
-            self.logger.info(f"Cookieログインに成功")
-        else:
-            self.logger.error("Cookieログインに失敗したためセッションログインに切り替えます")
-            if self.sessionLogin(cookies=cookies):
-                self.logger.info(f"Cookieログインに成功")
-            else:
-                self.logger.error(f"セッションログインにも失敗: {cookies[30:]}")
-        return None
 
 
 # ----------------------------------------------------------------------------------
