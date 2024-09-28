@@ -43,9 +43,10 @@ class CookieManager:
 # Cookieの内容から有効期限を確認する
 
     def getCookieExpires(self):
-        cookieName = self.getCookie['name']
-        cookieExpires = self.getCookie['expires']
-        cookieMaxAge = self.getCookie['max-age']  # expiresよりも優先
+        cookie = self.getCookie
+        cookieName = cookie['name']
+        cookieExpires = cookie.get['expires']
+        cookieMaxAge = cookie.get['max-age']  # expiresよりも優先される
 
         if cookieMaxAge:
             self.logger.debug(f"Cookie {cookieName} の max-age を発見")
