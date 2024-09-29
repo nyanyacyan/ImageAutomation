@@ -42,11 +42,14 @@ class SQLite:
             try:
                 conn = sqlite3.connect(dbFilePath)
                 conn.close()
+                return dbFilePath
 
             except sqlite3.OperationalError as e:
                 self.logger.error(f"dbFullPath: {dbFilePath}")
                 self.logger.error(f"データベース接続エラー: {e}")
                 raise
+
+        return dbFilePath
 
 
 # ----------------------------------------------------------------------------------
