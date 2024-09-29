@@ -144,7 +144,7 @@ class CookieManager:
 # expiresの時間の有効性を確認する
 
     def getExpiresLimit(self, expiresValue: int):
-        if self.currentTime > expiresValue:
+        if self.currentTime < expiresValue:
             self.logger.info("cookieが有効: 既存のCookieを使ってログイン")
             return self.createCookieFile()
 
@@ -179,6 +179,7 @@ class CookieManager:
                 cookie['expiry'] = self.currentTime + cookieAllData[5]
             elif cookieAllData[4]:
                 cookie['expiry'] = cookieAllData[4]
+            self.logger.warning(f"cookie:\n{cookie}")
 
             return cookie
 
