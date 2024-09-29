@@ -5,7 +5,7 @@
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
 
-import pytest
+import pytest, time
 from unittest.mock import patch, AsyncMock
 
 # 自作モジュール
@@ -22,8 +22,23 @@ class TestChrome:
 
 
     def testCookie(self):
-        cookie = CookieManager(debugMode=True)
+        instance = CookieManager(debugMode=True)
 
-        cookie.checkCookieLimit()
+        with patch.object(instance, 'getCookies') as mock_getCookie:
+            mock_getCookie.return_value = [{
+                'Name': "sessionId",
+                'Value': "dummySession",
+                'domain': "example.com",
+                'path': "/",
+                'expires': int(time.time()) + 3600,
+                'max-age': 3600
+            }]
+
+
+            instance.createCookieDB()
+
+            instance.createCookieFile()
+
+            instance.checkCookieLimit()
 
 # ----------------------------------------------------------------------------------
