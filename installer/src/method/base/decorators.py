@@ -3,7 +3,7 @@
 # テストOK
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
-import time
+import time, sqlite3
 from functools import wraps
 from typing import Callable, Optional
 import aiohttp
@@ -40,6 +40,7 @@ class Decorators:
         self.generatePromptHandler = GeneratePromptHandler(debugMode=debugMode)
         self.chromeHandler = ChromeHandler(debugMode=debugMode)
         self.sysCommand = SysCommand(debugMode=debugMode)
+
 
 
 # ----------------------------------------------------------------------------------
@@ -329,4 +330,3 @@ class Decorators:
 
 
 # ----------------------------------------------------------------------------------
-

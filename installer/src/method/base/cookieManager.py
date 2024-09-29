@@ -3,7 +3,7 @@
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
-import time
+import time, sqlite3
 from typing import Any
 from selenium.webdriver.chrome.webdriver import WebDriver
 
@@ -12,7 +12,6 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 from .utils import Logger
 from .SQLite import SQLite
 from ..const import Filename
-from .loginWithId import IdLogin
 
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
@@ -32,7 +31,6 @@ class CookieManager:
 
         # インスタンス
         self.sqlite = SQLite(fileName=self.fileName, debugMode=debugMode)
-        self.idLogin = IdLogin(debugMode=debugMode)
 
 # ----------------------------------------------------------------------------------
 # Flow
@@ -111,20 +109,7 @@ class CookieManager:
 # SQLiteにcookiesの情報を書き込めるようにするための初期設定
 
     def createCookieDB(self):
-        sql = f'''
-            CREATE TABLE IF NOT EXISTS {self.fileName} (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,   # 一意の認識キーに設定、１〜順番に連番発行される
-                name TEXT NOT NULL,
-                value TEXT NOT NULL,
-                domain TEXT,
-                path TEXT,
-                expires INTEGER,
-                maxAge INTEGER,
-                createTime INTEGER
-            )
-        '''
-
-        self.sqlite.createTable(sql=sql)
+        return self.sqlite.createCookieDB()
 
 
 # ----------------------------------------------------------------------------------

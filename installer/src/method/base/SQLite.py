@@ -37,109 +37,165 @@ class SQLite:
 
 
     def getDBFullPath(self):
-        return self.path.getResultSubDirFilePath(subDirName=SubDir.DBSubDir.value, fileName=self.fileName)
+        dbFilePath = self.path.getResultSubDirDBFilePath()
+        if not dbFilePath.exists():
+            try:
+                conn = sqlite3.connect(dbFilePath)
+                conn.close()
+
+            except sqlite3.OperationalError as e:
+                self.logger.error(f"dbFullPath: {dbFilePath}")
+                self.logger.error(f"データベース接続エラー: {e}")
+                raise
 
 
 # ----------------------------------------------------------------------------------
 
 
-    def getDBConnection(self, dbFullPath: str):
+    def getDBconnect(self) -> sqlite3.Connection:
         dbFullPath = self.getDBFullPath()
-        return sqlite3.Connection(dbFullPath)
+        try:
+            conn = sqlite3.connect(dbFullPath)
+            return conn
+        except sqlite3.OperationalError as e:
+            self.logger.error(f"dbFullPath: {dbFullPath}")
+            self.logger.error(f"データベース接続エラー: {e}")
+            raise
 
-
-# ----------------------------------------------------------------------------------
-
-
-    def transactional(self):
-        def decorator(func):
-            @wraps(func)
-            def wrapper(*args, **kwargs):
-                conn = self.getDBConnection()
-                try:
-                    result = func(conn, *args, **kwargs)
-                    conn.commit()
-                    self.logger.info("トランザクションに成功しました。変更が確定されました。")
-                    return result
-                except Exception as e:
-                    conn.rollback()
-                    self.logger.error(f"エラーが発生しました。トランザクションをロールバックしました:{e}")  # ロールバックは変更する前の状態に戻すこと
-                    raise e
-                finally:
-                    conn.close()
-            return wrapper
-        return decorator
 
 
 # ----------------------------------------------------------------------------------
-# SQL文を挿入してDBを定義する
 
-    @transactional
-    def createTable(self, conn: sqlite3.Connection, sql: str):
-        c = conn.cursor()  # DBとの接続オブジェクトを受け取って通信ができるようにする
+# SQLiteにcookiesの情報を書き込めるようにするための初期設定
 
-        c.execute(sql)  # 実行するSQL文にて定義して実行まで行う
+    def createCookieDB(self):
+        conn = self.getDBconnect()
+        try:
+            sql = f'''
+                CREATE TABLE IF NOT EXISTS {self.fileName} (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,   # 一意の認識キーに設定、１〜順番に連番発行される
+                    name TEXT NOT NULL,
+                    value TEXT NOT NULL,
+                    domain TEXT,
+                    path TEXT,
+                    expires INTEGER,
+                    maxAge INTEGER,
+                    createTime INTEGER
+                )
+            '''
+
+            c = conn.cursor()  # DBとの接続オブジェクトを受け取って通信ができるようにする
+
+            c.execute(sql)  # 実行するSQL文にて定義して実行まで行う
+
+        except Exception as e:
+            conn.rollback()
+            self.logger.error(f"エラーが発生しました。トランザクションをロールバックしました:{e}")  # ロールバックは変更する前の状態に戻すこと
+            raise e
+        finally:
+            conn.close()
+
 
 
 # ----------------------------------------------------------------------------------
 # SQLiteへ入れ込む
 
-    @transactional
-    def insertTable(self, conn: sqlite3.Connection, col: tuple, values: tuple):
-        placeholders = ', '.join(['?' for _ in values]) # valuesの数の文？を追加して結合
-        sql = f"INSERT INTO {self.fileName} {col} VALUES {placeholders}"
+    def insertTable(self, col: tuple, values: tuple):
+        conn = self.getDBconnect()
+        try:
+            placeholders = ', '.join(['?' for _ in values]) # valuesの数の文？を追加して結合
+            sql = f"INSERT INTO {self.fileName} {col} VALUES {placeholders}"
 
-        c = conn.cursor()
-        c.execute(sql(values))
+            c = conn.cursor()
+            c.execute(sql, values)
+
+        except Exception as e:
+            conn.rollback()
+            self.logger.error(f"エラーが発生しました。トランザクションをロールバックしました:{e}")  # ロールバックは変更する前の状態に戻すこと
+            raise e
+        finally:
+            conn.close()
 
 
 # ----------------------------------------------------------------------------------
 # テーブルデータを全て引っ張る
 
-    @transactional
-    def getRecordsAllData(self, conn: sqlite3.Connection):
-        sql = f"SELECT * FROM {self.fileName}"
+    def getRecordsAllData(self):
+        conn = self.getDBconnect()
+        try:
+            sql = f"SELECT * FROM {self.fileName}"
 
-        c = conn.cursor()
-        c.execute(sql)
-        return c.fetchall()
+            c = conn.cursor()
+            c.execute(sql)
+            return c.fetchall()
+
+        except Exception as e:
+            conn.rollback()
+            self.logger.error(f"エラーが発生しました。トランザクションをロールバックしました:{e}")  # ロールバックは変更する前の状態に戻すこと
+            raise e
+        finally:
+            conn.close()
 
 
 # ----------------------------------------------------------------------------------
 # 指定したColumnの値を指定して行を抽出 > Column=name Value=5 > 指定の行を抜き出す > List
 
-    @transactional
-    def getAllRecordsByCol(self, conn: sqlite3.Connection, col: str, value: Any):
-        sql = f"SELECT FROM {self.fileName} WHERE {col} = ?"
+    def getAllRecordsByCol(self, col: str, value: Any):
+        conn = self.getDBconnect()
+        try:
+            sql = f"SELECT * FROM {self.fileName} WHERE {col} = ?"
 
-        c = conn.cursor()
-        c.execute(sql, (value,))
-        return c.fetchall()
+            c = conn.cursor()
+            c.execute(sql, (value,))
+            return c.fetchall()
+
+        except Exception as e:
+            conn.rollback()
+            self.logger.error(f"エラーが発生しました。トランザクションをロールバックしました:{e}")  # ロールバックは変更する前の状態に戻すこと
+            raise e
+        finally:
+            conn.close()
 
 
 # ----------------------------------------------------------------------------------
 # 指定したColumnの値を指定して行を抽出 > Column=name Value=5 > 指定の行を抜き出す > row
 
-    @transactional
-    def getRowRecordsByCol(self, conn: sqlite3.Connection, col: str, value: Any):
-        sql = f"SELECT FROM {self.fileName} WHERE {col} = ?"
+    def getRowRecordsByCol(self, col: str, value: Any):
+        conn = self.getDBconnect()
+        try:
+            sql = f"SELECT * FROM {self.fileName} WHERE {col} = ?"
 
-        c = conn.cursor()
-        c.execute(sql, (value,))
-        return c.fetchone()
+            c = conn.cursor()
+            c.execute(sql, (value,))
+            return c.fetchone()
+
+        except Exception as e:
+            conn.rollback()
+            self.logger.error(f"エラーが発生しました。トランザクションをロールバックしました:{e}")  # ロールバックは変更する前の状態に戻すこと
+            raise e
+        finally:
+            conn.close()
 
 
 # ----------------------------------------------------------------------------------
 # 指定したColumnの値を指定して行を削除 > Column=name Value=5 > 指定の行を抜き出す
 
-    @transactional
-    def deleteRecordsByCol(self, conn: sqlite3.Connection, col: str, value: Any):
-        deleteRow = self.getRecordsByCol(conn=conn, col=col, value=value)
-        self.logger.warning(f"削除対象のデータです\n{deleteRow}")
-        sql = f"DELETE FROM {self.fileName} WHERE {col} = ?"
+    def deleteRecordsByCol(self, col: str, value: Any):
+        try:
+            conn = self.getDBconnect()
+            deleteRow = self.getRecordsByCol(conn=conn, col=col, value=value)
+            self.logger.warning(f"削除対象のデータです\n{deleteRow}")
+            sql = f"DELETE FROM {self.fileName} WHERE {col} = ?"
 
-        c = conn.cursor()
-        c.execute(sql, (value,))
+            c = conn.cursor()
+            c.execute(sql, (value,))
+
+        except Exception as e:
+            conn.rollback()
+            self.logger.error(f"エラーが発生しました。トランザクションをロールバックしました:{e}")  # ロールバックは変更する前の状態に戻すこと
+            raise e
+        finally:
+            conn.close()
 
 
 # ----------------------------------------------------------------------------------

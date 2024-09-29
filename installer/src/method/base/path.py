@@ -38,7 +38,7 @@ class BaseToPath:
 
     def toLogsPath(self, levelsUp: int = 4, subDirName: str = 'logs'):
         resultOutputPath = self.getResultOutputPath(levelsUp=levelsUp, dirName=self.resultBox)
-        logsPath = os.path.join(resultOutputPath, subDirName, self.currentDate)
+        logsPath = resultOutputPath / subDirName / self.currentDate
         self.isDirExists(path=logsPath)
         self.logger.debug(f"logsPath: {logsPath}")
 
@@ -128,11 +128,23 @@ class BaseToPath:
 
 
 # ----------------------------------------------------------------------------------
+# ディレクトリがない可能性の箇所に貼る関数
+
+    def isFileExists(self, path: Path):
+        if not path.exists():
+            path.touch()
+            self.logger.info(f"{path.name} がないため作成")
+        else:
+            self.logger.debug(f"{path.name} 発見")
+        return path
+
+
+# ---------------------------------------------------------------------------------
 # Input > File
 
     def getInputDataFilePath(self, fileName: str):
         inputDataPath = self.getInputDataPath()
-        FilePath = os.path.join(inputDataPath, fileName)
+        FilePath = inputDataPath / fileName
         self.logger.debug(f"FilePath: {FilePath}")
         return FilePath
 
@@ -142,7 +154,7 @@ class BaseToPath:
 
     def getResultFilePath(self, fileName: str):
         resultOutputPath = self.getResultOutputPath()
-        FilePath = os.path.join(resultOutputPath, fileName)
+        FilePath = resultOutputPath / fileName
         self.isDirExists(path=FilePath)
         self.logger.debug(f"FilePath: {FilePath}")
         return FilePath
@@ -153,10 +165,26 @@ class BaseToPath:
 
     def getResultSubDirFilePath(self, subDirName: str, fileName: str):
         resultOutputPath = self.getResultOutputPath()
-        FilePath = os.path.join(resultOutputPath, subDirName, fileName)
+        FilePath = resultOutputPath / subDirName / fileName
+        self.logger.warning(f"FilePath: {FilePath}")
+        self.logger.debug(f"FilePathの型: {type(FilePath)}")
         self.isDirExists(path=FilePath)
         self.logger.debug(f"FilePath: {FilePath}")
         return FilePath
+
+
+# ----------------------------------------------------------------------------------
+# Result > SubDir > File
+
+    def getResultSubDirDBFilePath(self, subDirName: str=SubDir.DBSubDir.value, extension: str=Extension.cookieDB.value):
+        resultOutputPath = self.getResultOutputPath()
+        dirPath = resultOutputPath / subDirName
+        self.isDirExists(path=dirPath)
+        self.logger.debug(f"dirPath: {dirPath}")
+        filePath = dirPath / f"{self.currentDate}{extension}"
+        self.isFileExists(path=filePath)
+        self.logger.debug(f"FilePath: {filePath}")
+        return filePath
 
 
 # ----------------------------------------------------------------------------------
@@ -164,7 +192,7 @@ class BaseToPath:
 
     def writeFileDateNamePath(self, extension: str, subDirName: str):
         resultOutputPath = self.getResultOutputPath()
-        fileFullPath = os.path.join(resultOutputPath, subDirName, self.currentDate, f'{self.currentDate}{extension}')
+        fileFullPath = resultOutputPath / subDirName / self.currentDate / f'{self.currentDate}{extension}'
         self.isDirExists(path=fileFullPath)
         self.logger.debug(f"fileFullPath: {fileFullPath}")
         return fileFullPath
@@ -175,7 +203,7 @@ class BaseToPath:
 
     def writePicklesFileDateNamePath(self, extension: str=Extension.pickle.value, subDirName: str=SubDir.pickles.value):
         resultOutputPath = self.getResultOutputPath()
-        pickleFullPath = os.path.join(resultOutputPath, subDirName, self.currentDate, f'{self.currentDate}{extension}')
+        pickleFullPath = resultOutputPath / subDirName / self.currentDate / f'{self.currentDate}{extension}'
         self.isDirExists(path=pickleFullPath)
         self.logger.debug(f"pickleFullPath: {pickleFullPath}")
         return pickleFullPath
@@ -186,7 +214,7 @@ class BaseToPath:
 
     def writeCookiesFileDateNamePath(self, extension: str=Extension.cookie.value, subDirName: str=SubDir.cookies.value):
         resultOutputPath = self.getResultOutputPath()
-        cookieFullPath = os.path.join(resultOutputPath, subDirName, self.currentDate, f'{self.currentDate}{extension}')
+        cookieFullPath = resultOutputPath / subDirName / self.currentDate / f'{self.currentDate}{extension}'
         self.isDirExists(path=cookieFullPath)
         self.logger.debug(f"cookieFullPath: {cookieFullPath}")
         return cookieFullPath
