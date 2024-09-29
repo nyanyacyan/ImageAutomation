@@ -35,7 +35,28 @@ class CookieManager:
         self.idLogin = IdLogin(debugMode=debugMode)
 
 # ----------------------------------------------------------------------------------
-# Flow > 真偽値を返す > True=cookieLogin > False=IDLogin
+# Flow
+
+    def checkCookieInDB(self):
+        cookieAllData = self.getCookieInSqlite()
+        if cookieAllData:
+            self.logger.info("DBにCookieデータの存在を確認できました")
+            return self.checkCookieLimit()
+        else:
+            self.logger.debug("DBがまだ作成されてません。")
+            return self.processValidCookie()
+
+
+# ----------------------------------------------------------------------------------
+
+
+    def processValidCookie(self):
+        self.createCookieDB()
+        self.insertSqlite()
+        return self.checkCookieLimit()
+
+
+# ----------------------------------------------------------------------------------
 # SQLiteにCookieのデータから有効期限を確認する
 
     def checkCookieLimit(self, col: str='id', value: Any=1):
@@ -185,3 +206,4 @@ class CookieManager:
 
 
 # ----------------------------------------------------------------------------------
+
