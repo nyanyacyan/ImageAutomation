@@ -54,7 +54,8 @@ class SQLite:
 
 
 # ----------------------------------------------------------------------------------
-# params: tuple = ()　> パラメータが何もなかったら空にするという意味
+# params: tuple = () > パラメータが何もなかったら空にするという意味
+
     @decoInstance.funcBase
     def startSQLPromptBase(self, sql: str, params: tuple = (), fetch: str = None):
         conn = self.getDBconnect()
@@ -95,7 +96,8 @@ class SQLite:
 
 
 # ----------------------------------------------------------------------------------
-# # params: tuple = ()　> パラメータが何もなかったら空にするという意味
+# # params: tuple = () > パラメータが何もなかったら空にするという意味
+
     @decoInstance.funcBase
     def SQLPromptBase(self, sql: str, params: tuple = (), fetch: str = None):
         conn = self.getDBconnect()
@@ -131,6 +133,7 @@ class SQLite:
 
 # ----------------------------------------------------------------------------------
 
+
     def getDBconnect(self) -> sqlite3.Connection:
         dbFullPath = self.getDBFullPath()
         try:
@@ -142,9 +145,7 @@ class SQLite:
             raise
 
 
-
 # ----------------------------------------------------------------------------------
-
 # SQLiteにcookiesの情報を書き込めるようにするための初期設定
 
     @decoInstance.funcBase
@@ -168,6 +169,7 @@ class SQLite:
 
 # ----------------------------------------------------------------------------------
 
+
     @decoInstance.funcBase
     def resetTable(self):
         self.logger.warning("既存のテーブルを破棄して、再度構築")
@@ -177,6 +179,8 @@ class SQLite:
 
 
 # ----------------------------------------------------------------------------------
+
+
     @decoInstance.funcBase
     def checkTableExists(self):
         sql = f"SELECT name FROM sqlite_master WHERE type='table';"
@@ -187,7 +191,6 @@ class SQLite:
         else:
             self.logger.error(f"{self.fileName} テーブルの作成に失敗してます")
         return result
-
 
 
 # ----------------------------------------------------------------------------------

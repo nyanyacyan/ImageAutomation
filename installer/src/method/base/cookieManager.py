@@ -35,6 +35,7 @@ class CookieManager:
         # インスタンス
         self.sqlite = SQLite(fileName=self.fileName, debugMode=debugMode)
 
+
 # ----------------------------------------------------------------------------------
 # Flow
 
@@ -210,6 +211,7 @@ class CookieManager:
         self.sqlite.deleteRecordsByCol(col=col, value=value)
         self.insertSqlite()
         return self.createCookieFile()
+
 
 # ----------------------------------------------------------------------------------
 # SQLiteからcookieを復元
