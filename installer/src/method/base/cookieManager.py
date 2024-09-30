@@ -40,16 +40,21 @@ class CookieManager:
 
     @decoInstance.funcBase
     def checkCookieInDB(self):
-        cookieAllData = self.getCookieInSqlite()
+        cookieAllData = self.startDBCheck()
         if cookieAllData:
-            self.logger.info("DBにCookieデータの存在を確認できました")
-            return self.checkCookieLimit()
+            if len(cookieAllData) > 1:
+                return self.deleteAllCookies()
+            else:
+                self.logger.info("DBにCookieデータの存在を確認。既存のCookieを使ってログイン")
+                return self.checkCookieLimit()
         else:
-            self.logger.warning("DBの初期設定、完了")
+            self.logger.warning("テーブルは存在するが、値が入っていません")
+            self.sqlite.resetTable()
             return self.insertData()
 
 
 # ----------------------------------------------------------------------------------
+
 
     @decoInstance.funcBase
     def insertData(self):
@@ -58,22 +63,44 @@ class CookieManager:
 
 
 # ----------------------------------------------------------------------------------
-# SQLiteにCookieのデータから有効期限を確認する
+
+
+    @decoInstance.funcBase
+    def deleteAllCookies(self):
+        self.logger.warning(f"既存データが1つ以上あるため全てクリアします")
+        self.sqlite.resetTable()
+        self.insertSqlite()
+        return self.checkCookieLimit()
+
+
+# ----------------------------------------------------------------------------------
+# # SQLiteにCookieのデータから有効期限を確認する
 
     @decoInstance.funcBase
     def checkCookieLimit(self, col: str='id', value: Any=1):
         cookieAllData = self.getCookieInSqlite(col=col, value=value)
+        self.logger.warning(f"cookieAllData: {cookieAllData}")
 
         if cookieAllData:
+            nameValue = cookieAllData[1]
             expiresValue = cookieAllData[5]   # タプルの場合には数値で拾う
             maxAgeValue = cookieAllData[6]
             createTimeValue = cookieAllData[7]
+
+            self.logger.warning(f"nameValue: {nameValue}")
+            self.logger.warning(f"expiresValue: {expiresValue}")
+            self.logger.warning(f"maxAgeValue: {maxAgeValue}")
+
 
             if maxAgeValue:
                 return self.getMaxAgeLimit(maxAgeValue=maxAgeValue, createTimeValue=createTimeValue)
 
             elif expiresValue:
                 return self.getExpiresLimit(expiresValue=expiresValue)
+
+            elif nameValue:
+                self.logger.warning(f"有効期限のないCookieを取得。CookieのSave開始")
+                return self.createCookieFile()
 
             else:
                 self.logger.warning("Cookieの有効期限が設定されてません")
@@ -109,7 +136,13 @@ class CookieManager:
 
 
 # ----------------------------------------------------------------------------------
+# 指定するSQLiteからcookieのデータを取得
 
+    def startDBCheck(self):
+        return self.sqlite.startGetAllRecordsByCol()
+
+
+# ----------------------------------------------------------------------------------
 # SQLiteにcookiesの情報を書き込めるようにするための初期設定
 
     def createCookieDB(self):
@@ -118,6 +151,7 @@ class CookieManager:
 
 # ----------------------------------------------------------------------------------
 # SQLiteにCookieのデータを書き込む
+# expiresよりもMaxAgeが優先される、〇〇秒間、持たせる権限
 
     @decoInstance.funcBase
     def insertSqlite(self):
@@ -127,12 +161,13 @@ class CookieManager:
         cookieValue = cookie.get('value')
         cookieDomain = cookie.get('domain')
         cookiePath = cookie.get('path')
-        cookieExpires = cookie.get('expires')
-        cookieMaxAge = cookie.get('max-age')  # expiresよりも優先される、〇〇秒間、持たせる権限
+        cookieExpires = cookie.get('expires') if 'expires' in cookie else None
+        cookieMaxAge = cookie.get('max-age') if 'max-age' in cookie else None
         cookieCreateTime = int(time.time())
 
         col = ('name', 'value', 'domain', 'path', 'expires', 'maxAge', 'createTime')
         values = (cookieName, cookieValue, cookieDomain, cookiePath, cookieExpires, cookieMaxAge, cookieCreateTime)
+        self.logger.warning(f"values: {values}")
 
         self.sqlite.insertData(col=col, values=values)
 
@@ -145,7 +180,7 @@ class CookieManager:
         limitTime = maxAgeValue + createTimeValue
 
         if self.currentTime < limitTime:
-            self.logger.info("cookieが有効: 既存のCookieを使ってログイン")
+            self.logger.info("[MaxAge]cookieが有効: Cookieを使ってログイン")
             return self.createCookieFile()
         else:
             self.logger.error("有効期限切れのcookie: 既存のCookieを消去して再度IDログイン実施")
@@ -159,7 +194,7 @@ class CookieManager:
     @decoInstance.funcBase
     def getExpiresLimit(self, expiresValue: int):
         if self.currentTime < expiresValue:
-            self.logger.info("cookieが有効: 既存のCookieを使ってログイン")
+            self.logger.info("[expires]cookieが有効: Cookieを使ってログイン")
             return self.createCookieFile()
 
         else:
@@ -172,8 +207,9 @@ class CookieManager:
 # 削除が完了したあとにIDを取得する
 
     def deleteRecordsProcess(self, col: str='id', value: Any=1):
-        return self.sqlite.deleteRecordsByCol(col=col, value=value)
-
+        self.sqlite.deleteRecordsByCol(col=col, value=value)
+        self.insertSqlite()
+        return self.createCookieFile()
 
 # ----------------------------------------------------------------------------------
 # SQLiteからcookieを復元
@@ -184,16 +220,16 @@ class CookieManager:
 
         if cookieAllData:
             cookie = {
-                'name': cookieAllData[0],
-                'value': cookieAllData[1],
-                'domain': cookieAllData[2],
-                'path': cookieAllData[3],
+                'name': cookieAllData[1],
+                'value': cookieAllData[2],
+                'domain': cookieAllData[3],
+                'path': cookieAllData[4],
             }
 
-            if cookieAllData[5]:
-                cookie['expiry'] = self.currentTime + cookieAllData[5]
-            elif cookieAllData[4]:
-                cookie['expiry'] = cookieAllData[4]
+            if cookieAllData[6]:
+                cookie['expires'] = self.currentTime + cookieAllData[6]
+            elif cookieAllData[5]:
+                cookie['expires'] = cookieAllData[5]
             self.logger.warning(f"cookie:\n{cookie}")
 
             return cookie
