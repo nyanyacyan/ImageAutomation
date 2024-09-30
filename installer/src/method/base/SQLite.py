@@ -11,6 +11,9 @@ from typing import Any
 from .utils import Logger
 from .path import BaseToPath
 from .errorHandlers import NetworkHandler
+from .decorators import Decorators
+
+decoInstance = Decorators(debugMode=True)
 
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
@@ -82,6 +85,7 @@ class SQLite:
 # ----------------------------------------------------------------------------------
 
 
+    @decoInstance.funcBase
     def getDBconnect(self) -> sqlite3.Connection:
         dbFullPath = self.getDBFullPath()
         try:
@@ -98,6 +102,7 @@ class SQLite:
 
 # SQLiteにcookiesの情報を書き込めるようにするための初期設定
 
+    @decoInstance.funcBase
     def createTable(self):
         sql = f'''
             CREATE TABLE IF NOT EXISTS {self.fileName} (
@@ -112,13 +117,14 @@ class SQLite:
             )
         '''
         self.SQLPromptBase(sql=sql, fetch=None)
-        return self.logger.info(f"{self.fileName} テーブルを作成")
+        return self.logger.info(f"【success】{self.fileName} テーブルを作成")
 
 
 # ----------------------------------------------------------------------------------
 # SQLiteへ入れ込む
 
-    def insertTable(self, col: tuple, values: tuple):
+    @decoInstance.funcBase
+    def insertData(self, col: tuple, values: tuple):
         placeholders = ', '.join(['?' for _ in values]) # valuesの数の文？を追加して結合
         sql = f"INSERT INTO {self.fileName} {col} VALUES {placeholders}"
         self.SQLPromptBase(sql=sql, fetch=None)
@@ -127,6 +133,7 @@ class SQLite:
 # ----------------------------------------------------------------------------------
 # テーブルデータを全て引っ張る
 
+    @decoInstance.funcBase
     def getRecordsAllData(self):
             sql = f"SELECT * FROM {self.fileName}"
             self.SQLPromptBase(sql=sql, fetch='all')
@@ -136,6 +143,7 @@ class SQLite:
 # ----------------------------------------------------------------------------------
 # 指定したColumnの値を指定して行を抽出 > Column=name Value=5 > 指定の行を抜き出す > List
 
+    @decoInstance.funcBase
     def getAllRecordsByCol(self, col: str, value: Any):
         sql = f"SELECT * FROM {self.fileName} WHERE {col} = ?"
         self.SQLPromptBase(sql=sql, params=(value, ), fetch='all')
@@ -146,6 +154,7 @@ class SQLite:
 # ----------------------------------------------------------------------------------
 # 指定したColumnの値を指定して行を抽出 > Column=name Value=5 > 指定の行を抜き出す > row
 
+    @decoInstance.funcBase
     def getRowRecordsByCol(self, col: str, value: Any):
         sql = f"SELECT * FROM {self.fileName} WHERE {col} = ?"
         self.SQLPromptBase(sql=sql, params=(value, ), fetch=None)
@@ -156,6 +165,7 @@ class SQLite:
 # ----------------------------------------------------------------------------------
 # 指定したColumnの値を指定して行を削除 > Column=name Value=5 > 指定の行を抜き出す
 
+    @decoInstance.funcBase
     def deleteRecordsByCol(self, col: str, value: Any):
         deleteRow = self.getRowRecordsByCol(col=col, value=value)
         self.logger.warning(f"削除対象のデータです\n{deleteRow}")
