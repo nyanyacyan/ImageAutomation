@@ -4,14 +4,12 @@
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
 import sqlite3
-from functools import wraps
 from typing import Any
 
 
 # 自作モジュール
 from .utils import Logger
 from .path import BaseToPath
-from ..const import SubDir
 from .errorHandlers import NetworkHandler
 
 
@@ -113,7 +111,8 @@ class SQLite:
                 createTime INTEGER
             )
         '''
-        return self.SQLPromptBase(sql=sql, fetch=None)
+        self.SQLPromptBase(sql=sql, fetch=None)
+        return self.logger.info(f"{self.fileName} テーブルを作成")
 
 
 # ----------------------------------------------------------------------------------
@@ -122,15 +121,16 @@ class SQLite:
     def insertTable(self, col: tuple, values: tuple):
         placeholders = ', '.join(['?' for _ in values]) # valuesの数の文？を追加して結合
         sql = f"INSERT INTO {self.fileName} {col} VALUES {placeholders}"
-        return self.SQLPromptBase(sql=sql, fetch=None)
-
+        self.SQLPromptBase(sql=sql, fetch=None)
+        return self.logger.info(f"【success】{self.fileName} テーブルにデータを追加")
 
 # ----------------------------------------------------------------------------------
 # テーブルデータを全て引っ張る
 
     def getRecordsAllData(self):
             sql = f"SELECT * FROM {self.fileName}"
-            return self.SQLPromptBase(sql=sql, fetch='all')
+            self.SQLPromptBase(sql=sql, fetch='all')
+            return self.logger.info(f"【success】{self.fileName} すべてのデータを抽出")
 
 
 # ----------------------------------------------------------------------------------
@@ -138,7 +138,9 @@ class SQLite:
 
     def getAllRecordsByCol(self, col: str, value: Any):
         sql = f"SELECT * FROM {self.fileName} WHERE {col} = ?"
-        return self.SQLPromptBase(sql=sql, params=(value, ), fetch='all')
+        self.SQLPromptBase(sql=sql, params=(value, ), fetch='all')
+        return self.logger.info(f"【success】{self.fileName} 指定のカラムデータをすべて抽出")
+
 
 
 # ----------------------------------------------------------------------------------
@@ -146,7 +148,9 @@ class SQLite:
 
     def getRowRecordsByCol(self, col: str, value: Any):
         sql = f"SELECT * FROM {self.fileName} WHERE {col} = ?"
-        return self.SQLPromptBase(sql=sql, params=(value, ), fetch=None)
+        self.SQLPromptBase(sql=sql, params=(value, ), fetch=None)
+        return self.logger.info(f"【success】{self.fileName} 指定の行のデータを抽出")
+
 
 
 # ----------------------------------------------------------------------------------
@@ -156,8 +160,9 @@ class SQLite:
         deleteRow = self.getRowRecordsByCol(col=col, value=value)
         self.logger.warning(f"削除対象のデータです\n{deleteRow}")
         sql = f"DELETE FROM {self.fileName} WHERE {col} = ?"
+        self.SQLPromptBase(sql=sql, params=(value, ), fetch=None)
+        return self.logger.info(f"【success】{self.fileName} 指定のデータを削除")
 
-        return self.SQLPromptBase(sql=sql, params=(value, ), fetch=None)
 
 
 # ----------------------------------------------------------------------------------
