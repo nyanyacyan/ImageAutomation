@@ -109,3 +109,34 @@ class TestCookie:
 
 
 # ----------------------------------------------------------------------------------
+# Cookie情報が、なにもない場合の挙動
+
+    def testCookieNoData(self):
+        chrome = MagicMock()
+        homeUrl = 'http://example.com'
+
+        instance = CookieManager(chrome=chrome, homeUrl=homeUrl, debugMode=True)
+
+        with patch.object(instance.__class__, 'getCookies', new_callable=PropertyMock) as mock_getCookie:
+            mock_getCookie.return_value = [{
+                'name': "",
+                'value': "",
+                'domain': "",
+                'path': "",
+                'expires': '',
+                'max-age': ''
+            }]
+
+
+            result = instance.checkCookieInDB()
+            resultWithoutId = {key: value for key, value in result.items() if key != 'id'}
+
+            mock_getCookie_value = mock_getCookie.return_value[0]
+            mockWithoutMaxAge = {key: value for key, value in mock_getCookie_value.items() if key != 'max-age' and key != 'expires'}
+
+            print(resultWithoutId)
+            print(mockWithoutMaxAge)
+            assert resultWithoutId == mockWithoutMaxAge
+
+
+# ----------------------------------------------------------------------------------
