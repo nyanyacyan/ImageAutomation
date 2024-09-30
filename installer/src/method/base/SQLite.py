@@ -72,7 +72,7 @@ class SQLite:
         except sqlite3.OperationalError as e:
             if 'no such table' in str(e):
                 self.logger.warning(f"テーブルが存在しません: {e}")
-                self.createCookieDB()
+                self.createTable()
 
         except Exception as e:
             conn.rollback()
@@ -100,7 +100,7 @@ class SQLite:
 
 # SQLiteにcookiesの情報を書き込めるようにするための初期設定
 
-    def createCookieDB(self):
+    def createTable(self):
         sql = f'''
             CREATE TABLE IF NOT EXISTS {self.fileName} (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,   # 一意の認識キーに設定、１〜順番に連番発行される
