@@ -53,6 +53,30 @@ class SQLite:
 
 
 # ----------------------------------------------------------------------------------
+# params: tuple = ()　> パラメータが何もなかったら空にするという意味
+
+
+    def SQLPromptBase(self, sql: str, params: tuple = (), fetch: str = None):
+        conn = self.getDBconnect()
+        try:
+            c = conn.cursor()  # DBとの接続オブジェクトを受け取って通信ができるようにする
+            c.execute(sql, params)  # 実行するSQL文にて定義して実行まで行う
+
+            if fetch == 'one':
+                return c.fetchone()
+            elif fetch == 'all':
+                return c.fetchall()
+            else:
+                return None
+
+        except Exception as e:
+            conn.rollback()
+            self.logger.error(f"エラーが発生しました。トランザクションをロールバックしました:{e}")  # ロールバックは変更する前の状態に戻すこと
+            raise e
+        finally:
+            conn.close()
+
+# ----------------------------------------------------------------------------------
 
 
     def getDBconnect(self) -> sqlite3.Connection:
@@ -72,133 +96,63 @@ class SQLite:
 # SQLiteにcookiesの情報を書き込めるようにするための初期設定
 
     def createCookieDB(self):
-        conn = self.getDBconnect()
-        try:
-            sql = f'''
-                CREATE TABLE IF NOT EXISTS {self.fileName} (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,   # 一意の認識キーに設定、１〜順番に連番発行される
-                    name TEXT NOT NULL,
-                    value TEXT NOT NULL,
-                    domain TEXT,
-                    path TEXT,
-                    expires INTEGER,
-                    maxAge INTEGER,
-                    createTime INTEGER
-                )
-            '''
-
-            c = conn.cursor()  # DBとの接続オブジェクトを受け取って通信ができるようにする
-
-            c.execute(sql)  # 実行するSQL文にて定義して実行まで行う
-
-        except Exception as e:
-            conn.rollback()
-            self.logger.error(f"エラーが発生しました。トランザクションをロールバックしました:{e}")  # ロールバックは変更する前の状態に戻すこと
-            raise e
-        finally:
-            conn.close()
-
+        sql = f'''
+            CREATE TABLE IF NOT EXISTS {self.fileName} (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,   # 一意の認識キーに設定、１〜順番に連番発行される
+                name TEXT NOT NULL,
+                value TEXT NOT NULL,
+                domain TEXT,
+                path TEXT,
+                expires INTEGER,
+                maxAge INTEGER,
+                createTime INTEGER
+            )
+        '''
+        return self.SQLPromptBase(sql=sql, fetch=None)
 
 
 # ----------------------------------------------------------------------------------
 # SQLiteへ入れ込む
 
     def insertTable(self, col: tuple, values: tuple):
-        conn = self.getDBconnect()
-        try:
-            placeholders = ', '.join(['?' for _ in values]) # valuesの数の文？を追加して結合
-            sql = f"INSERT INTO {self.fileName} {col} VALUES {placeholders}"
-
-            c = conn.cursor()
-            c.execute(sql, values)
-
-        except Exception as e:
-            conn.rollback()
-            self.logger.error(f"エラーが発生しました。トランザクションをロールバックしました:{e}")  # ロールバックは変更する前の状態に戻すこと
-            raise e
-        finally:
-            conn.close()
+        placeholders = ', '.join(['?' for _ in values]) # valuesの数の文？を追加して結合
+        sql = f"INSERT INTO {self.fileName} {col} VALUES {placeholders}"
+        return self.SQLPromptBase(sql=sql, fetch=None)
 
 
 # ----------------------------------------------------------------------------------
 # テーブルデータを全て引っ張る
 
     def getRecordsAllData(self):
-        conn = self.getDBconnect()
-        try:
             sql = f"SELECT * FROM {self.fileName}"
-
-            c = conn.cursor()
-            c.execute(sql)
-            return c.fetchall()
-
-        except Exception as e:
-            conn.rollback()
-            self.logger.error(f"エラーが発生しました。トランザクションをロールバックしました:{e}")  # ロールバックは変更する前の状態に戻すこと
-            raise e
-        finally:
-            conn.close()
+            return self.SQLPromptBase(sql=sql, fetch='all')
 
 
 # ----------------------------------------------------------------------------------
 # 指定したColumnの値を指定して行を抽出 > Column=name Value=5 > 指定の行を抜き出す > List
 
     def getAllRecordsByCol(self, col: str, value: Any):
-        conn = self.getDBconnect()
-        try:
-            sql = f"SELECT * FROM {self.fileName} WHERE {col} = ?"
-
-            c = conn.cursor()
-            c.execute(sql, (value,))
-            return c.fetchall()
-
-        except Exception as e:
-            conn.rollback()
-            self.logger.error(f"エラーが発生しました。トランザクションをロールバックしました:{e}")  # ロールバックは変更する前の状態に戻すこと
-            raise e
-        finally:
-            conn.close()
+        sql = f"SELECT * FROM {self.fileName} WHERE {col} = ?"
+        return self.SQLPromptBase(sql=sql, params=(value, ), fetch='all')
 
 
 # ----------------------------------------------------------------------------------
 # 指定したColumnの値を指定して行を抽出 > Column=name Value=5 > 指定の行を抜き出す > row
 
     def getRowRecordsByCol(self, col: str, value: Any):
-        conn = self.getDBconnect()
-        try:
-            sql = f"SELECT * FROM {self.fileName} WHERE {col} = ?"
-
-            c = conn.cursor()
-            c.execute(sql, (value,))
-            return c.fetchone()
-
-        except Exception as e:
-            conn.rollback()
-            self.logger.error(f"エラーが発生しました。トランザクションをロールバックしました:{e}")  # ロールバックは変更する前の状態に戻すこと
-            raise e
-        finally:
-            conn.close()
+        sql = f"SELECT * FROM {self.fileName} WHERE {col} = ?"
+        return self.SQLPromptBase(sql=sql, params=(value, ), fetch=None)
 
 
 # ----------------------------------------------------------------------------------
 # 指定したColumnの値を指定して行を削除 > Column=name Value=5 > 指定の行を抜き出す
 
     def deleteRecordsByCol(self, col: str, value: Any):
-        try:
-            conn = self.getDBconnect()
-            deleteRow = self.getRecordsByCol(conn=conn, col=col, value=value)
-            self.logger.warning(f"削除対象のデータです\n{deleteRow}")
-            sql = f"DELETE FROM {self.fileName} WHERE {col} = ?"
+        deleteRow = self.getRowRecordsByCol(col=col, value=value)
+        self.logger.warning(f"削除対象のデータです\n{deleteRow}")
+        sql = f"DELETE FROM {self.fileName} WHERE {col} = ?"
 
-            c = conn.cursor()
-            c.execute(sql, (value,))
-
-        except Exception as e:
-            conn.rollback()
-            self.logger.error(f"エラーが発生しました。トランザクションをロールバックしました:{e}")  # ロールバックは変更する前の状態に戻すこと
-            raise e
-        finally:
-            conn.close()
+        return self.SQLPromptBase(sql=sql, params=(value, ), fetch=None)
 
 
 # ----------------------------------------------------------------------------------
