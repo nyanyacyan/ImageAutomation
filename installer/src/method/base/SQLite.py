@@ -55,12 +55,12 @@ class SQLite:
 
 # ----------------------------------------------------------------------------------
 # params: tuple = ()　> パラメータが何もなかったら空にするという意味
-
-
+    @decoInstance.funcBase
     def SQLPromptBase(self, sql: str, params: tuple = (), fetch: str = None):
         conn = self.getDBconnect()
         try:
             c = conn.cursor()  # DBとの接続オブジェクトを受け取って通信ができるようにする
+            self.logger.debug(f"SQL実行: {sql}, パラメータ: {params}")
             c.execute(sql, params)  # 実行するSQL文にて定義して実行まで行う
 
             if fetch == 'one':
@@ -68,12 +68,14 @@ class SQLite:
             elif fetch == 'all':
                 return c.fetchall()
             else:
+                conn.commit()
+                self.logger.warning("コミットの実施を行いました")
                 return None
 
         except sqlite3.OperationalError as e:
             if 'no such table' in str(e):
                 self.logger.warning(f"テーブルが存在しません: {e}")
-                self.createTable()
+                return self.createTable()
 
         except Exception as e:
             conn.rollback()
@@ -85,7 +87,6 @@ class SQLite:
 # ----------------------------------------------------------------------------------
 
 
-    @decoInstance.funcBase
     def getDBconnect(self) -> sqlite3.Connection:
         dbFullPath = self.getDBFullPath()
         try:
@@ -104,9 +105,10 @@ class SQLite:
 
     @decoInstance.funcBase
     def createTable(self):
+        self.logger.warning(f"self.fileName: {self.fileName}")
         sql = f'''
             CREATE TABLE IF NOT EXISTS {self.fileName} (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,   # 一意の認識キーに設定、１〜順番に連番発行される
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL,
                 value TEXT NOT NULL,
                 domain TEXT,
@@ -117,7 +119,22 @@ class SQLite:
             )
         '''
         self.SQLPromptBase(sql=sql, fetch=None)
-        return self.logger.info(f"【success】{self.fileName} テーブルを作成")
+        self.checkTableExists()
+
+
+# ----------------------------------------------------------------------------------
+
+
+    def checkTableExists(self):
+        sql = f"SELECT name FROM sqlite_master WHERE type='table';"
+        result = self.SQLPromptBase(sql=sql, fetch='all')
+        self.logger.warning(f"result: {result}")
+        if result:
+            self.logger.info(f"{self.fileName} テーブルの作成に成功しています。")
+        else:
+            self.logger.error(f"{self.fileName} テーブルの作成に失敗してます")
+        return result
+
 
 
 # ----------------------------------------------------------------------------------
@@ -130,14 +147,17 @@ class SQLite:
         self.SQLPromptBase(sql=sql, fetch=None)
         return self.logger.info(f"【success】{self.fileName} テーブルにデータを追加")
 
+
 # ----------------------------------------------------------------------------------
 # テーブルデータを全て引っ張る
 
     @decoInstance.funcBase
     def getRecordsAllData(self):
-            sql = f"SELECT * FROM {self.fileName}"
-            self.SQLPromptBase(sql=sql, fetch='all')
-            return self.logger.info(f"【success】{self.fileName} すべてのデータを抽出")
+        sql = f"SELECT * FROM {self.fileName}"
+        result = self.SQLPromptBase(sql=sql, fetch='all')
+        self.logger.info(f"【success】{self.fileName} すべてのデータを抽出")
+        self.logger.info(f"result: {result}")
+        return result
 
 
 # ----------------------------------------------------------------------------------
@@ -146,9 +166,10 @@ class SQLite:
     @decoInstance.funcBase
     def getAllRecordsByCol(self, col: str, value: Any):
         sql = f"SELECT * FROM {self.fileName} WHERE {col} = ?"
-        self.SQLPromptBase(sql=sql, params=(value, ), fetch='all')
-        return self.logger.info(f"【success】{self.fileName} 指定のカラムデータをすべて抽出")
-
+        result = self.SQLPromptBase(sql=sql, params=(value, ), fetch='all')
+        self.logger.info(f"【success】{self.fileName} 指定のカラムデータをすべて抽出")
+        self.logger.info(f"result: {result}")
+        return result
 
 
 # ----------------------------------------------------------------------------------
@@ -157,9 +178,10 @@ class SQLite:
     @decoInstance.funcBase
     def getRowRecordsByCol(self, col: str, value: Any):
         sql = f"SELECT * FROM {self.fileName} WHERE {col} = ?"
-        self.SQLPromptBase(sql=sql, params=(value, ), fetch=None)
-        return self.logger.info(f"【success】{self.fileName} 指定の行のデータを抽出")
-
+        result = self.SQLPromptBase(sql=sql, params=(value, ), fetch=None)
+        self.logger.info(f"【success】{self.fileName} 指定の行のデータを抽出")
+        self.logger.info(f"result: {result}")
+        return result
 
 
 # ----------------------------------------------------------------------------------
@@ -170,9 +192,10 @@ class SQLite:
         deleteRow = self.getRowRecordsByCol(col=col, value=value)
         self.logger.warning(f"削除対象のデータです\n{deleteRow}")
         sql = f"DELETE FROM {self.fileName} WHERE {col} = ?"
-        self.SQLPromptBase(sql=sql, params=(value, ), fetch=None)
-        return self.logger.info(f"【success】{self.fileName} 指定のデータを削除")
-
+        result = self.SQLPromptBase(sql=sql, params=(value, ), fetch=None)
+        self.logger.info(f"【success】{self.fileName} 指定のデータを削除")
+        self.logger.info(f"result: {result}")
+        return result
 
 
 # ----------------------------------------------------------------------------------

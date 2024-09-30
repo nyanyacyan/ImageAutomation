@@ -50,13 +50,13 @@ class Decorators:
         @wraps(func)
         def wrapper(*args, **kwargs):
             self.logger.info(f"********** {func.__name__} start **********")
-            self.logger.debug(f"引数:\nargs={args}, kwargs={kwargs}")
+            # self.logger.debug(f"引数:\nargs={args}, kwargs={kwargs}")
 
             # 実行する関数を定義
             result = func(*args, **kwargs)
 
             # ローカル変数をすべて出力
-            self.logger.debug(f"利用した変数一覧:\n{locals()}")
+            # self.logger.debug(f"利用した変数一覧:\n{locals()}")
 
             return result
         return wrapper

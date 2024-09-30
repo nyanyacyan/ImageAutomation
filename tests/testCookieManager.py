@@ -29,8 +29,8 @@ class TestCookie:
 
         with patch.object(instance.__class__, 'getCookies', new_callable=PropertyMock) as mock_getCookie:
             mock_getCookie.return_value = [{
-                'Name': "sessionId",
-                'Value': "dummySession",
+                'name': "sessionId",
+                'value': "dummySession",
                 'domain': "example.com",
                 'path': "/",
                 'expires': int(time.time()) + 3600,

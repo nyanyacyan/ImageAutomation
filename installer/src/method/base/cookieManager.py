@@ -45,15 +45,14 @@ class CookieManager:
             self.logger.info("DBにCookieデータの存在を確認できました")
             return self.checkCookieLimit()
         else:
-            self.logger.debug("DBがまだ作成されてません。")
-            return self.processValidCookie()
+            self.logger.warning("DBの初期設定、完了")
+            return self.insertData()
 
 
 # ----------------------------------------------------------------------------------
 
     @decoInstance.funcBase
-    def processValidCookie(self):
-        self.createCookieDB()
+    def insertData(self):
         self.insertSqlite()
         return self.checkCookieLimit()
 
@@ -123,6 +122,7 @@ class CookieManager:
     @decoInstance.funcBase
     def insertSqlite(self):
         cookie = self.getCookie
+        self.logger.debug(f"cookie: {cookie}")
         cookieName = cookie['name']
         cookieValue = cookie.get('value')
         cookieDomain = cookie.get('domain')
@@ -134,7 +134,7 @@ class CookieManager:
         col = ('name', 'value', 'domain', 'path', 'expires', 'maxAge', 'createTime')
         values = (cookieName, cookieValue, cookieDomain, cookiePath, cookieExpires, cookieMaxAge, cookieCreateTime)
 
-        self.sqlite.insertTable(col=col, values=values)
+        self.sqlite.insertData(col=col, values=values)
 
 
 # ----------------------------------------------------------------------------------
