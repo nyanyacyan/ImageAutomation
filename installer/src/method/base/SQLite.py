@@ -69,10 +69,15 @@ class SQLite:
             else:
                 return None
 
+        except sqlite3.OperationalError as e:
+            if 'no such table' in str(e):
+                self.logger.warning(f"テーブルが存在しません: {e}")
+                self.createCookieDB()
+
         except Exception as e:
             conn.rollback()
             self.logger.error(f"エラーが発生しました。トランザクションをロールバックしました:{e}")  # ロールバックは変更する前の状態に戻すこと
-            raise e
+
         finally:
             conn.close()
 

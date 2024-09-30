@@ -12,6 +12,9 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 from .utils import Logger
 from .SQLite import SQLite
 from ..const import Filename
+from .decorators import Decorators
+
+decoInstance = Decorators(debugMode=True)
 
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
@@ -35,6 +38,7 @@ class CookieManager:
 # ----------------------------------------------------------------------------------
 # Flow
 
+    @decoInstance.funcBase
     def checkCookieInDB(self):
         cookieAllData = self.getCookieInSqlite()
         if cookieAllData:
@@ -47,7 +51,7 @@ class CookieManager:
 
 # ----------------------------------------------------------------------------------
 
-
+    @decoInstance.funcBase
     def processValidCookie(self):
         self.createCookieDB()
         self.insertSqlite()
@@ -57,6 +61,7 @@ class CookieManager:
 # ----------------------------------------------------------------------------------
 # SQLiteにCookieのデータから有効期限を確認する
 
+    @decoInstance.funcBase
     def checkCookieLimit(self, col: str='id', value: Any=1):
         cookieAllData = self.getCookieInSqlite(col=col, value=value)
 
@@ -115,6 +120,7 @@ class CookieManager:
 # ----------------------------------------------------------------------------------
 # SQLiteにCookieのデータを書き込む
 
+    @decoInstance.funcBase
     def insertSqlite(self):
         cookie = self.getCookie
         cookieName = cookie['name']
@@ -134,6 +140,7 @@ class CookieManager:
 # ----------------------------------------------------------------------------------
 # max-ageの時間の有効性を確認する
 
+    @decoInstance.funcBase
     def getMaxAgeLimit(self, maxAgeValue: int, createTimeValue: int):
         limitTime = maxAgeValue + createTimeValue
 
@@ -149,6 +156,7 @@ class CookieManager:
 # ----------------------------------------------------------------------------------
 # expiresの時間の有効性を確認する
 
+    @decoInstance.funcBase
     def getExpiresLimit(self, expiresValue: int):
         if self.currentTime < expiresValue:
             self.logger.info("cookieが有効: 既存のCookieを使ってログイン")
@@ -170,6 +178,7 @@ class CookieManager:
 # ----------------------------------------------------------------------------------
 # SQLiteからcookieを復元
 
+    @decoInstance.funcBase
     def createCookieFile(self):
         cookieAllData = self.getCookieInSqlite()
 
