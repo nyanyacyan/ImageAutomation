@@ -5,8 +5,8 @@
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
 
-import pytest, time
-from unittest.mock import patch, AsyncMock, MagicMock, PropertyMock
+import time
+from unittest.mock import patch, MagicMock, PropertyMock
 
 # 自作モジュール
 from installer.src.method.base.cookieManager import CookieManager

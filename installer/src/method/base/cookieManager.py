@@ -3,7 +3,7 @@
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
-import time, sqlite3
+import time
 from typing import Any
 from selenium.webdriver.chrome.webdriver import WebDriver
 
@@ -59,6 +59,37 @@ class CookieManager:
 
 
 # ----------------------------------------------------------------------------------
+# SQLiteからcookieを復元
+
+    @decoInstance.funcBase
+    def cookieMakeAgain(self):
+        cookieAllData = self.getCookieInSqlite()
+
+        if cookieAllData:
+            cookie = {
+                'name': cookieAllData[0],
+                'value': cookieAllData[1],
+                'domain': cookieAllData[2],
+                'path': cookieAllData[3],
+            }
+
+            if cookieAllData[5]:
+                cookie['expiry'] = self.currentTime + cookieAllData[5]
+            elif cookieAllData[4]:
+                cookie['expiry'] = cookieAllData[4]
+            self.logger.warning(f"cookie:\n{cookie}")
+
+            return cookie
+
+
+# ----------------------------------------------------------------------------------
+# 指定するSQLiteからcookieのデータを取得
+
+    def getCookieInSqlite(self, col: str='id', value: Any=1):
+        return self.sqlite.getRowRecordsByCol(col=col, value=value)
+
+
+# ----------------------------------------------------------------------------------
 # SQLiteにCookieのデータから有効期限を確認する
 
     @decoInstance.funcBase
@@ -86,30 +117,6 @@ class CookieManager:
 
 
 # ----------------------------------------------------------------------------------
-
-
-    @property
-    def getCookies(self):
-        return self.chrome.get_cookies()
-
-
-# ----------------------------------------------------------------------------------
-
-
-    @property
-    def getCookie(self):
-        cookies = self.getCookies
-        return cookies[0]
-
-
-# ----------------------------------------------------------------------------------
-# 指定するSQLiteからcookieのデータを取得
-
-    def getCookieInSqlite(self, col: str='id', value: Any=1):
-        return self.sqlite.getRowRecordsByCol(col=col, value=value)
-
-
-# ----------------------------------------------------------------------------------
 # SQLiteにCookieのデータを書き込む
 
     @decoInstance.funcBase
@@ -130,6 +137,24 @@ class CookieManager:
 
 
 # ----------------------------------------------------------------------------------
+
+
+    @property
+    def getCookies(self):
+        return self.chrome.get_cookies()
+
+
+# ----------------------------------------------------------------------------------
+
+
+    @property
+    def getCookie(self):
+        cookies = self.getCookies
+        return cookies[0]
+
+
+# ----------------------------------------------------------------------------------
+
 # max-ageの時間の有効性を確認する
 
     @decoInstance.funcBase
@@ -165,30 +190,6 @@ class CookieManager:
 
     def deleteRecordsProcess(self, col: str='id', value: Any=1):
         return self.sqlite.deleteRecordsByCol(col=col, value=value)
-
-
-# ----------------------------------------------------------------------------------
-# SQLiteからcookieを復元
-
-    @decoInstance.funcBase
-    def cookieMakeAgain(self):
-        cookieAllData = self.getCookieInSqlite()
-
-        if cookieAllData:
-            cookie = {
-                'name': cookieAllData[0],
-                'value': cookieAllData[1],
-                'domain': cookieAllData[2],
-                'path': cookieAllData[3],
-            }
-
-            if cookieAllData[5]:
-                cookie['expiry'] = self.currentTime + cookieAllData[5]
-            elif cookieAllData[4]:
-                cookie['expiry'] = cookieAllData[4]
-            self.logger.warning(f"cookie:\n{cookie}")
-
-            return cookie
 
 
 # ----------------------------------------------------------------------------------
