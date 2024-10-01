@@ -91,7 +91,6 @@ class SQLite:
         sqlCheck = f"SELECT * FROM {self.fileName}"
         result = self.startSQLPromptBase(sql=sqlCheck, fetch='all')
         self.logger.info(f"【success】{self.fileName} 指定のカラムデータをすべて抽出")
-        self.logger.info(f"result: {result}")
         return result
 
 

@@ -338,25 +338,21 @@ class Decorators:
         def decorator(func):
             @wraps(func)
             def wrapper(*args, **kwargs):
+                self.logger.warning(f"デコレーターが適用された関数: {func.__name__}")
                 self.logger.info(f"引数:\nargs={args}, kwargs={kwargs}")
                 retryCount = 0
                 while retryCount < maxRetry:
-                    try:
-                        self.logger.info(f"********** {func.__name__} start {retryCount + 1}回目 **********")
+                    self.logger.info(f"********** {func.__name__} start {retryCount + 1}回目 **********")
 
-                        result = func(*args, **kwargs)
+                    result = func(*args, **kwargs)
 
-                        if result is None:
-                            retryCount += 1
-                            self.logger.warning(f"結果がNoneだったためリトライ {retryCount}回目")
-                            time.sleep(delay)
-                            continue
-
-                        return result
-
-                    except Exception as e:
+                    if result is None:
                         retryCount += 1
-                        retryCount = self.networkError.gssRetryHandler(e=e, maxRetry=maxRetry, delay=delay, retryCount=retryCount)
+                        self.logger.warning(f"結果がNoneだったためリトライ {retryCount}回目")
+                        time.sleep(delay)
+                        continue
+
+                    return result
 
             return wrapper
         return decorator

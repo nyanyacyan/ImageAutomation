@@ -40,7 +40,7 @@ class CookieManager:
 
     @decoInstance.funcBase
     def startCheckCookieInDB(self):
-        cookieAllData = self.getCookieInSqlite()
+        cookieAllData = self.sqlite.startGetAllRecordsByCol()
         if cookieAllData:
             self.logger.info("DBにCookieデータの存在を確認できました")
             return self.checkCookieLimit()
@@ -121,7 +121,8 @@ class CookieManager:
 
     @decoInstance.funcBase
     def insertSqlite(self):
-        cookie = self.getCookie()
+        cookie = self.getfirstCookie()
+        self.logger.warning(f"cookie: {cookie}")
         cookieName = cookie['name']
         cookieValue = cookie.get('value')
         cookieDomain = cookie.get('domain')
@@ -139,7 +140,6 @@ class CookieManager:
 # ----------------------------------------------------------------------------------
 
 
-    @property
     def getCookies(self):
         return self.chrome.get_cookies()
 
@@ -147,10 +147,15 @@ class CookieManager:
 # ----------------------------------------------------------------------------------
 
 
-    @decoInstance.noneRetryAction
-    def getCookie(self):
-        cookies = self.getCookies
-        return cookies[0]
+    @decoInstance.noneRetryAction()
+    def getfirstCookie(self):
+        cookies = self.getCookies()
+        self.logger.warning(f"cookies: {cookies}")
+        cookie = cookies[0]
+
+        if not cookie.get('name') or not cookie.get('value'):
+            self.logger.warning(f"cookieに必要な情報が記載されてません")
+            return None
 
 
 # ----------------------------------------------------------------------------------

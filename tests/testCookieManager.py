@@ -57,7 +57,7 @@ class TestCookie:
 
         instance = CookieManager(chrome=chrome, homeUrl=homeUrl, debugMode=True)
 
-        with patch.object(instance.__class__, 'getCookies', new_callable=PropertyMock) as mock_getCookie:
+        with patch.object(instance.__class__, 'getCookies') as mock_getCookie:
             mock_getCookie.return_value = [{
                 'name': "sessionId",
                 'value': "dummySession",
@@ -86,7 +86,7 @@ class TestCookie:
 
         instance = CookieManager(chrome=chrome, homeUrl=homeUrl, debugMode=True)
 
-        with patch.object(instance.__class__, 'getCookies', new_callable=PropertyMock) as mock_getCookie:
+        with patch.object(instance.__class__, 'getCookies') as mock_getCookie:
             mock_getCookie.return_value = [{
                 'name': "sessionId",
                 'value': "dummySession",
@@ -117,7 +117,7 @@ class TestCookie:
 
         instance = CookieManager(chrome=chrome, homeUrl=homeUrl, debugMode=True)
 
-        with patch.object(instance.__class__, 'getCookies', new_callable=PropertyMock) as mock_getCookie:
+        with patch.object(instance.__class__, 'getCookies') as mock_getCookie:
             mock_getCookie.return_value = [{
                 'name': "",
                 'value': "",
