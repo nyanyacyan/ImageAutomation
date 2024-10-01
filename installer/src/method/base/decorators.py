@@ -334,3 +334,29 @@ class Decorators:
 
 # ----------------------------------------------------------------------------------
 
+    def noneRetryAction(self, maxRetry: int=3, delay: int=30):
+        def decorator(func):
+            @wraps(func)
+            def wrapper(*args, **kwargs):
+                self.logger.info(f"引数:\nargs={args}, kwargs={kwargs}")
+                retryCount = 0
+                while retryCount < maxRetry:
+                    try:
+                        self.logger.info(f"********** {func.__name__} start {retryCount + 1}回目 **********")
+
+                        result = func(*args, **kwargs)
+
+                        if result is None:
+                            retryCount += 1
+                            self.logger.warning(f"結果がNoneだったためリトライ {retryCount}回目")
+                            time.sleep(delay)
+                            continue
+
+                        return result
+
+                    except Exception as e:
+                        retryCount += 1
+                        retryCount = self.networkError.gssRetryHandler(e=e, maxRetry=maxRetry, delay=delay, retryCount=retryCount)
+
+            return wrapper
+        return decorator

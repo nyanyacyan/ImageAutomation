@@ -38,7 +38,7 @@ class TestCookie:
             }]
 
 
-            result = instance.checkCookieInDB()
+            result = instance.startCheckCookieInDB()
             resultWithoutId = {key: value for key, value in result.items() if key != 'id' and key != 'max-age'}
 
             mock_getCookie_value = mock_getCookie.return_value[0]
@@ -67,7 +67,7 @@ class TestCookie:
             }]
 
 
-            result = instance.checkCookieInDB()
+            result = instance.startCheckCookieInDB()
             resultWithoutId = {key: value for key, value in result.items() if key != 'id' and key != 'max-age'}
 
             mock_getCookie_value = mock_getCookie.return_value[0]
@@ -78,7 +78,7 @@ class TestCookie:
 
 
 # ----------------------------------------------------------------------------------
-
+# テストOK
 
     def testCookieNoExpires(self):
         chrome = MagicMock()
@@ -97,7 +97,7 @@ class TestCookie:
             }]
 
 
-            result = instance.checkCookieInDB()
+            result = instance.startCheckCookieInDB()
             resultWithoutId = {key: value for key, value in result.items() if key != 'id'}
 
             mock_getCookie_value = mock_getCookie.return_value[0]
@@ -128,7 +128,7 @@ class TestCookie:
             }]
 
 
-            result = instance.checkCookieInDB()
+            result = instance.startCheckCookieInDB()
             resultWithoutId = {key: value for key, value in result.items() if key != 'id'}
 
             mock_getCookie_value = mock_getCookie.return_value[0]

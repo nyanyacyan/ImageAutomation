@@ -121,7 +121,7 @@ class CookieManager:
 
     @decoInstance.funcBase
     def insertSqlite(self):
-        cookie = self.getCookie
+        cookie = self.getCookie()
         cookieName = cookie['name']
         cookieValue = cookie.get('value')
         cookieDomain = cookie.get('domain')
@@ -147,7 +147,7 @@ class CookieManager:
 # ----------------------------------------------------------------------------------
 
 
-    @property
+    @decoInstance.noneRetryAction
     def getCookie(self):
         cookies = self.getCookies
         return cookies[0]
