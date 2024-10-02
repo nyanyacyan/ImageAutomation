@@ -40,7 +40,7 @@ class CookieManager:
 # DBが存在確認
 
     @decoInstance.funcBase
-    def startCheckCookieInDB(self):
+    def startDBExists(self):
         cookieAllData = self.sqlite.startGetAllRecordsByCol()
         if cookieAllData:
             self.logger.info("DBにCookieデータの存在を確認できました")
@@ -53,7 +53,8 @@ class CookieManager:
 # ②
 # DBにCookieの存在確認
 
-    def can
+    def cookieDataExistsInDB(self):
+        pass
 
 
 
@@ -110,13 +111,24 @@ class CookieManager:
 
 
 # ----------------------------------------------------------------------------------
-
+# 有効期限をクリアしたmethod
+# DBよりcookie情報を取得する
 
     @decoInstance.funcBase
-    def processValidCookie(self):
-        self.sqlite.createTable()
-        self.insertSqlite()
-        return self.checkCookieLimit()
+    def insertCookieData(self, cookie):
+
+        cookieName = cookie['name']
+        cookieValue = cookie.get('value')
+        cookieDomain = cookie.get('domain')
+        cookiePath = cookie.get('path')
+        cookieExpires = cookie.get('expires')
+        cookieMaxAge = cookie.get('max-age')  # expiresよりも優先される、〇〇秒間、持たせる権限
+        cookieCreateTime = int(time.time())
+
+        col = ('name', 'value', 'domain', 'path', 'expires', 'maxAge', 'createTime')
+        values = (cookieName, cookieValue, cookieDomain, cookiePath, cookieExpires, cookieMaxAge, cookieCreateTime)
+
+        self.sqlite.insertData(col=col, values=values)
 
 
 # ----------------------------------------------------------------------------------
@@ -144,6 +156,27 @@ class CookieManager:
 
 
 # ----------------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------------
+# Cookieの取得成功method
+
+
+
+
+
+
+
+
+
+    @decoInstance.funcBase
+    def processValidCookie(self):
+        self.sqlite.createTable()
+        self.insertCookieData()
+        return self.checkCookieLimit()
+
+
+# ----------------------------------------------------------------------------------
+
 # 指定するSQLiteからcookieのデータを取得
 
     def getCookieInSqlite(self, col: str='id', value: Any=1):
@@ -178,29 +211,7 @@ class CookieManager:
 
 
 # ----------------------------------------------------------------------------------
-# SQLiteにCookieのデータを書き込む
 
-    @decoInstance.funcBase
-    def insertSqlite(self):
-        cookie = self.getfirstCookie()
-        self.logger.warning(f"cookie: {cookie}")
-        if cookie is None:
-            return None
-        cookieName = cookie['name']
-        cookieValue = cookie.get('value')
-        cookieDomain = cookie.get('domain')
-        cookiePath = cookie.get('path')
-        cookieExpires = cookie.get('expires')
-        cookieMaxAge = cookie.get('max-age')  # expiresよりも優先される、〇〇秒間、持たせる権限
-        cookieCreateTime = int(time.time())
-
-        col = ('name', 'value', 'domain', 'path', 'expires', 'maxAge', 'createTime')
-        values = (cookieName, cookieValue, cookieDomain, cookiePath, cookieExpires, cookieMaxAge, cookieCreateTime)
-
-        self.sqlite.insertTable(col=col, values=values)
-
-
-# ----------------------------------------------------------------------------------
 
 
     def getCookies(self):
