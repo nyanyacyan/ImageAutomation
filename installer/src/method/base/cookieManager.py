@@ -36,7 +36,8 @@ class CookieManager:
         self.sqlite = SQLite(fileName=self.fileName, debugMode=debugMode)
 
 # ----------------------------------------------------------------------------------
-# Flow
+# start①
+# DBが存在確認
 
     @decoInstance.funcBase
     def startCheckCookieInDB(self):
@@ -48,8 +49,68 @@ class CookieManager:
             self.logger.debug("DBがまだ作成されてません。")
             return self.processValidCookie()
 
+# ----------------------------------------------------------------------------------
+# ②
+# DBにCookieの存在確認
+
+    def can
+
+
 
 # ----------------------------------------------------------------------------------
+# ③
+# DBにあるCookieの有効期限が有効化を確認
+
+    @decoInstance.funcBase
+    def checkCookieLimit(self, col: str='id', value: Any=1):
+        cookieAllData = self.getCookieInSqlite(col=col, value=value)
+
+        if cookieAllData:
+            expiresValue = cookieAllData[5]   # タプルの場合には数値で拾う
+            maxAgeValue = cookieAllData[6]
+            createTimeValue = cookieAllData[7]
+
+            if maxAgeValue:
+                return self.getMaxAgeLimit(maxAgeValue=maxAgeValue, createTimeValue=createTimeValue)
+
+            elif expiresValue:
+                return self.getExpiresLimit(expiresValue=expiresValue)
+
+            else:
+                self.logger.warning("Cookieの有効期限が設定されてません")
+                return None
+
+        else:
+            self.logger.error(f"cookieが存在しません: {cookieAllData}")
+            return None
+
+
+# ----------------------------------------------------------------------------------
+# ④
+# Cookieがちゃんと取得できてるかどうかを確認
+# リトライ実施
+
+
+    @decoInstance.noneRetryAction()
+    def getfirstCookie(self):
+        cookies = self.getCookies()
+        self.logger.warning(f"cookies: {cookies}")
+        cookie = cookies[0]
+        return cookie
+
+
+# ----------------------------------------------------------------------------------
+# ⑤
+# Cookieの値が入っているか確認
+
+    def canValueInCookie(self, cookie: dict):
+        if not cookie.get('name') or not cookie.get('value'):
+            self.logger.warning(f"cookieに必要な情報が記載されてません")
+            return None
+
+
+# ----------------------------------------------------------------------------------
+
 
     @decoInstance.funcBase
     def processValidCookie(self):
@@ -123,6 +184,8 @@ class CookieManager:
     def insertSqlite(self):
         cookie = self.getfirstCookie()
         self.logger.warning(f"cookie: {cookie}")
+        if cookie is None:
+            return None
         cookieName = cookie['name']
         cookieValue = cookie.get('value')
         cookieDomain = cookie.get('domain')
