@@ -28,7 +28,7 @@ class jsCompleteWaitDeco:
 # ----------------------------------------------------------------------------------
 # func > jsCompleteWait > refresh > retry
 
-    def jsCompleteWait(self, maxRetry: int=2, delay: int=2, timeout: int = 10):
+    def jsCompleteWaitRetry(self, maxRetry: int=2, delay: int=2, timeout: int = 10):
         def decorator(func):
             @wraps(func)
             def wrapper(instance, *args, **kwargs):
@@ -62,6 +62,80 @@ class jsCompleteWaitDeco:
                         break
             return wrapper
         return decorator
+
+
+# ----------------------------------------------------------------------------------
+
+
+    def jsCompleteWait(self, func):
+        @wraps(func)
+        def wrapper(instance, *args, **kwargs):
+            self.logger.info(f"********** {func.__name__} start **********")
+            self.logger.debug(f"引数:\nargs={args}, kwargs={kwargs}")
+            try:
+                chrome = instance.chrome
+
+                result = func(instance, *args, **kwargs)
+
+                self.jsPageChecker(chrome=chrome)
+
+                return result
+
+            except TimeoutException as e:
+                self.logger.error(f"{func.__name__} TimeoutException発生: {e}")
+                raise e
+
+            # ローカル変数をすべて出力
+            # self.logger.debug(f"利用した変数一覧:\n{locals()}")
+
+        return wrapper
+
+
+# ----------------------------------------------------------------------------------
+# 次のページに移動後にページがちゃんと開いてる状態か全体を確認してチェックする
+
+    def jsPageChecker(self, chrome: WebDriver, timeout: int = 10):
+            if WebDriverWait(chrome, timeout).until(lambda driver: driver.execute_script('return document.readyState')=='complete'):
+                self.logger.debug(f"{__name__} ページが更新OK")
+
+
+# ----------------------------------------------------------------------------------
+# **********************************************************************************
+
+class inputDeco:
+    def __init__(self, debugMode=True):
+
+        # logger
+        self.getLogger = Logger(__name__, debugMode=debugMode)
+        self.logger = self.getLogger.getLogger()
+
+
+# ----------------------------------------------------------------------------------
+# func > jsCompleteWait > refresh > retry
+
+    def inputWait(self, func):
+        @wraps(func)
+        def wrapper(instance, *args, **kwargs):
+            self.logger.info(f"********** {func.__name__} start **********")
+            self.logger.debug(f"引数:\nargs={args}, kwargs={kwargs}")
+            try:
+                chrome = instance.chrome
+
+                result = func(instance, *args, **kwargs)
+
+                self.jsPageChecker(chrome=chrome)
+
+                return result
+
+            except TimeoutException as e:
+                self.logger.error(f"{func.__name__} TimeoutException発生: {e}")
+                raise e
+
+            # ローカル変数をすべて出力
+            # self.logger.debug(f"利用した変数一覧:\n{locals()}")
+
+        return wrapper
+
 
 
 # ----------------------------------------------------------------------------------
