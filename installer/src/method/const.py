@@ -41,6 +41,12 @@ class Filename(Enum):
 # ----------------------------------------------------------------------------------
 
 
+class ColumnsName(Enum):
+    Cookies=('name', 'value', 'domain', 'path', 'expires', 'maxAge', 'createTime')
+
+# ----------------------------------------------------------------------------------
+
+
 class Extension(Enum):
     text='.txt'
     csv='.csv'

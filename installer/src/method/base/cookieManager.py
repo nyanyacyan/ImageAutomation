@@ -11,7 +11,7 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 # 自作モジュール
 from .utils import Logger
 from .SQLite import SQLite
-from ..const import Filename
+from ..const import Filename, ColumnsName
 from .decorators import Decorators
 
 decoInstance = Decorators(debugMode=True)
@@ -30,6 +30,7 @@ class CookieManager:
         self.chrome = chrome
         self.homeUrl = homeUrl
         self.fileName = Filename.Cookie.value
+        self.columnsName = ColumnsName.Cookies.value
         self.currentTime = int(time.time())
 
         # インスタンス
@@ -45,7 +46,7 @@ class CookieManager:
         if DBBool:
             return self.cookieDataExistsInDB()
         else:
-            self.logger.debug(f"{Filename} が作られてません。これよりテーブル作成開始")
+            self.logger.warning(f"{Filename} が作られてません。これよりテーブル作成開始")
             return self.sqlite.createTable()
 
 # ----------------------------------------------------------------------------------
@@ -54,10 +55,12 @@ class CookieManager:
 
     @decoInstance.funcBase
     def cookieDataExistsInDB(self):
-        cols = ('name', 'value', 'domain', 'path', 'expires', 'maxAge', 'createTime')
-
         DBColNames = self.sqlite.columnsExists()
-        return all(cokName in cols for cokName in DBColNames)
+        result = all(cokName in self.columnsName for cokName in DBColNames)
+        if result is True:
+            self.checkCookieLimit()
+        else:
+            self.logger.warning(f"{Filename} のテーブルデータがありません。Cookieを取得します")
 
 
 
@@ -96,7 +99,7 @@ class CookieManager:
 
 
     @decoInstance.noneRetryAction()
-    def getfirstCookie(self):
+    def getCookie(self):
         cookies = self.getCookies()
         self.logger.warning(f"cookies: {cookies}")
         cookie = cookies[0]
@@ -128,10 +131,9 @@ class CookieManager:
         cookieMaxAge = cookie.get('max-age')  # expiresよりも優先される、〇〇秒間、持たせる権限
         cookieCreateTime = int(time.time())
 
-        col = ('name', 'value', 'domain', 'path', 'expires', 'maxAge', 'createTime')
         values = (cookieName, cookieValue, cookieDomain, cookiePath, cookieExpires, cookieMaxAge, cookieCreateTime)
 
-        self.sqlite.insertData(col=col, values=values)
+        self.sqlite.insertData(col=self.columnsName, values=values)
 
 
 # ----------------------------------------------------------------------------------
@@ -162,14 +164,6 @@ class CookieManager:
 
 # ----------------------------------------------------------------------------------
 # Cookieの取得成功method
-
-
-
-
-
-
-
-
 
     @decoInstance.funcBase
     def processValidCookie(self):
