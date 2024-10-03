@@ -47,7 +47,8 @@ class CookieManager:
             return self.cookieDataExistsInDB()
         else:
             self.logger.warning(f"{Filename} が作られてません。これよりテーブル作成開始")
-            return self.sqlite.createTable()
+            self.sqlite.createTable()
+            return self.getCookieFromAction()
 
 # ----------------------------------------------------------------------------------
 # ②
@@ -61,7 +62,7 @@ class CookieManager:
             self.checkCookieLimit()
         else:
             self.logger.warning(f"{Filename} のテーブルデータがありません。Cookieを取得します")
-
+            return self.getCookieFromAction()
 
 
 # ----------------------------------------------------------------------------------
@@ -85,11 +86,21 @@ class CookieManager:
 
             else:
                 self.logger.warning("Cookieの有効期限が設定されてません")
-                return None
+                return self.getCookieFromAction()
 
         else:
             self.logger.error(f"cookieが存在しません: {cookieAllData}")
-            return None
+            return self.getCookieFromAction()
+
+
+# ----------------------------------------------------------------------------------
+
+
+    @decoInstance.noneRetryAction()
+    def getCookieFromAction(self):
+        cookie = self.getCookie()
+        Cookie = self.insertCookieData(cookie=cookie)
+        return self.canValueInCookie(cookie=Cookie)
 
 
 # ----------------------------------------------------------------------------------
@@ -97,23 +108,35 @@ class CookieManager:
 # Cookieがちゃんと取得できてるかどうかを確認
 # リトライ実施
 
-
-    @decoInstance.noneRetryAction()
+    @decoInstance.funcBase
     def getCookie(self):
         cookies = self.getCookies()
         self.logger.warning(f"cookies: {cookies}")
         cookie = cookies[0]
-        return cookie
+        if cookie:
+            return cookie
+        else:
+            return None
 
 
 # ----------------------------------------------------------------------------------
-# ⑤
+
+
+    def getCookies(self):
+        return self.chrome.get_cookies()
+
+
+# ----------------------------------------------------------------------------------
+# # ⑤
 # Cookieの値が入っているか確認
 
+    @decoInstance.funcBase
     def canValueInCookie(self, cookie: dict):
         if not cookie.get('name') or not cookie.get('value'):
             self.logger.warning(f"cookieに必要な情報が記載されてません")
             return None
+        else:
+            return cookie
 
 
 # ----------------------------------------------------------------------------------
@@ -122,7 +145,6 @@ class CookieManager:
 
     @decoInstance.funcBase
     def insertCookieData(self, cookie):
-
         cookieName = cookie['name']
         cookieValue = cookie.get('value')
         cookieDomain = cookie.get('domain')
@@ -131,9 +153,12 @@ class CookieManager:
         cookieMaxAge = cookie.get('max-age')  # expiresよりも優先される、〇〇秒間、持たせる権限
         cookieCreateTime = int(time.time())
 
+        # 値をtuple化
         values = (cookieName, cookieValue, cookieDomain, cookiePath, cookieExpires, cookieMaxAge, cookieCreateTime)
 
+        # データを入れ込む
         self.sqlite.insertData(col=self.columnsName, values=values)
+        return cookie
 
 
 # ----------------------------------------------------------------------------------
@@ -158,26 +183,6 @@ class CookieManager:
             self.logger.warning(f"cookie:\n{cookie}")
 
             return cookie
-
-
-# ----------------------------------------------------------------------------------
-
-# ----------------------------------------------------------------------------------
-# Cookieの取得成功method
-
-    @decoInstance.funcBase
-    def processValidCookie(self):
-        self.sqlite.createTable()
-        self.insertCookieData()
-        return self.checkCookieLimit()
-
-
-# ----------------------------------------------------------------------------------
-
-# 指定するSQLiteからcookieのデータを取得
-
-    def getCookieInSqlite(self, col: str='id', value: Any=1):
-        return self.sqlite.getRowRecordsByCol(col=col, value=value)
 
 
 # ----------------------------------------------------------------------------------
@@ -208,29 +213,13 @@ class CookieManager:
 
 
 # ----------------------------------------------------------------------------------
+# 指定するSQLiteからcookieのデータを取得
 
-
-
-    def getCookies(self):
-        return self.chrome.get_cookies()
-
-
-# ----------------------------------------------------------------------------------
-
-
-    @decoInstance.noneRetryAction()
-    def getfirstCookie(self):
-        cookies = self.getCookies()
-        self.logger.warning(f"cookies: {cookies}")
-        cookie = cookies[0]
-
-        if not cookie.get('name') or not cookie.get('value'):
-            self.logger.warning(f"cookieに必要な情報が記載されてません")
-            return None
+    def getCookieInSqlite(self, col: str='id', value: Any=1):
+        return self.sqlite.getRowRecordsByCol(col=col, value=value)
 
 
 # ----------------------------------------------------------------------------------
-
 # max-ageの時間の有効性を確認する
 
     @decoInstance.funcBase
@@ -254,7 +243,6 @@ class CookieManager:
         if self.currentTime < expiresValue:
             self.logger.info("cookieが有効: 既存のCookieを使ってログイン")
             return self.cookieMakeAgain()
-
         else:
             self.logger.error("有効期限切れのcookie: 既存のCookieを消去して再度IDログイン実施")
             self.deleteRecordsProcess()
