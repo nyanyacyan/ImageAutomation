@@ -12,13 +12,16 @@ from .utils import Logger
 from .driverWait import Wait
 from .browserHandler import BrowserHandler
 from .elementManager import ElementManager
+from .driverDeco import jsCompleteWaitDeco
+
+decoInstance = jsCompleteWaitDeco(debugMode=True)
 
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # **********************************************************************************
 
 
-class IdLogin:
+class LoginID:
     def __init__(self, chrome: WebDriver, loginUrl: str, homeUrl: str, debugMode=True):
         # logger
         self.getLogger = Logger(__name__, debugMode=debugMode)
@@ -29,43 +32,37 @@ class IdLogin:
         self.homeUrl = homeUrl
 
         # インスタンス
-        self.element = ElementManager(debugMode=debugMode)
-        self.browser = BrowserHandler(debugMode=debugMode)
-        self.wait = Wait(debugMode=debugMode)
+        self.element = ElementManager(chrome=chrome, debugMode=debugMode)
+        self.browser = BrowserHandler(chrome=chrome, homeUrl=self.homeUrl, debugMode=debugMode)
 
 
 # ----------------------------------------------------------------------------------
 # IDログイン
+# loginInfoはconstから取得
 
-    def IDLogin(
-        self,
-        idBy: str, idValue: str, idText: str,
-        passBy: str, passValue: str, passText: str,
-        btnBy: str, btnValue: str, btnText: str,
-        delay: int=2,
-    ):
+    def loginID(self, loginInfo: dict, delay: int=2):
 
         # サイトを開いてCookieを追加
         self.openSite()
         time.sleep(delay)
 
-        self.inputId(by=idBy, value=idValue, inputText=idText)
+        self.inputId(by=loginInfo['idBy'], value=loginInfo['idValue'], inputText=loginInfo['idText'])
         time.sleep(delay)
 
-        self.inputPass(by=passBy, value=passValue, inputText=passText)
+        self.inputPass(by=loginInfo['passBy'], value=loginInfo['passValue'], inputText=loginInfo['passText'])
         time.sleep(delay)
 
-        self.clickLoginBtn(by=btnBy, value=btnValue, inputText=btnText)
+        self.clickLoginBtn(by=loginInfo['btnBy'], value=loginInfo['btnValue'], inputText=loginInfo['btnText'])
         time.sleep(delay)
 
         return self.loginCheck()
 
 
 # ----------------------------------------------------------------------------------
-# TODO jsPageCheckerのデコ
 
+
+    @decoInstance.jsCompleteWait()
     def openSite(self):
-        self.browser.openSite()
         return self.chrome.get(self.loginUrl)
 
 
@@ -77,7 +74,6 @@ class IdLogin:
 
 
 # ----------------------------------------------------------------------------------
-# TODO jsPageCheckerのデコ
 # IDの取得
 
     def inputId(self, by: str, value: str, inputText: str):
@@ -85,17 +81,17 @@ class IdLogin:
 
 
 # ----------------------------------------------------------------------------------
-# TODO jsPageCheckerのデコ
 # passの入力
+
 
     def inputPass(self, by: str, value: str, inputText: str):
         return self.element.inputText(by=by, value=value, inputText=inputText)
 
 
 # ----------------------------------------------------------------------------------
-# TODO jsPageCheckerのデコ
 # ログインボタン押下
 
+    @decoInstance.jsCompleteWait
     def clickLoginBtn(self, by: str, value: str):
         return self.element.clickElement(by=by, value=value)
 

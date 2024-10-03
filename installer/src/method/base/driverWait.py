@@ -9,16 +9,15 @@ import os
 import time
 from datetime import datetime
 from bs4 import BeautifulSoup
-
-
-
+from functools import wraps
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.common.exceptions import (TimeoutException)
+from selenium.common.exceptions import TimeoutException
 
 # 自作モジュール
 from .utils import Logger
+
 
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
@@ -35,6 +34,8 @@ class Wait:
 
 
 # ----------------------------------------------------------------------------------
+
+
 # ロケーター選択→直接文字列で入れ込むことができない
 
     def _locator_select(self, locator):
@@ -128,26 +129,9 @@ class Wait:
 
 
 # ----------------------------------------------------------------------------------
-# 次のページに移動後にページがちゃんと開いてる状態か全体を確認してチェックする
-
-    def jsPageChecker(self, timeout=10):
-            if WebDriverWait(self.chrome, timeout).until(lambda driver: driver.execute_script('return document.readyState')=='complete'):
-                self.logger.debug(f"{__name__} ページが更新OK")
-            else:
-                raise TimeoutError("ページが更新されません")
-                self.chrome.refresh()
-
-        # except TimeoutException as e:
-        #     self.logger.error(f"{field_name} ページが更新されるまで、{timeout}秒以上経過したためタイムアウト: {e}")
-        #     raise
-
-        # except Exception as e:
-        #     self.logger.error(f"{field_name} ページが更新されるまでの待機中になんらかのエラーが発生: {e}")
-        #     raise
 
 
-# ----------------------------------------------------------------------------------
-#! サーバー用にスクショチェックができるように修正
+# #! サーバー用にスクショチェックができるように修正
 # クリックができるようになるまで待機 デフォルト10秒
 # self.driver_wait._element_clickable(by_pattern=, xpath=, timeout=)
 
@@ -288,3 +272,4 @@ class Wait:
 
 
 # ----------------------------------------------------------------------------------
+# **********************************************************************************

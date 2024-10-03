@@ -110,6 +110,7 @@ class TestCookie:
 
 # ----------------------------------------------------------------------------------
 # Cookie情報が、なにもない場合の挙動
+# テストOK
 
     def testCookieNoData(self):
         chrome = MagicMock()

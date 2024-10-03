@@ -18,6 +18,24 @@ class SiteUrl(Enum):
 # ----------------------------------------------------------------------------------
 
 
+class LoginInfo(Enum):
+    IDLoginInfo={
+        'idBy': '',
+        'idValue': '',
+        'idText': '',
+        'passBy': '',
+        'passValue': '',
+        'passText': '',
+        'btnBy': '',
+        'btnValue': '',
+        'btnText': ''
+    }
+
+
+
+# ----------------------------------------------------------------------------------
+
+
 class Dir(Enum):
     result='resultOutput'
     input='inputData'

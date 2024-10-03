@@ -1,16 +1,6 @@
 # coding: utf-8
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
-# TODO 最新のCookieテキストを確認→問題なければCookieログイン
-# TODO 問題なければこれでログイン
-# TODO 問題会った場合には
-# TODO ログイン画面にアクセス
-# TODO IDとパスを入力してログイン
-# TODO Cookieの取得
-# TODO Cookieログイン
-
-
-
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
 import requests
@@ -21,6 +11,11 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 from .utils import Logger
 from .driverWait import Wait
 from .browserHandler import BrowserHandler
+from .cookieManager import CookieManager
+from .loginWithId import IdLogin
+from .driverDeco import jsCompleteWaitDeco
+
+decoInstance = jsCompleteWaitDeco(debugMode=True)
 
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
@@ -28,25 +23,29 @@ from .browserHandler import BrowserHandler
 
 
 class CookieLogin:
-    def __init__(self, chrome: WebDriver, loginUrl: str, homeUrl: str, debugMode=True):
+    def __init__(self, chrome: WebDriver, homeUrl: str, debugMode=True):
         # logger
         self.getLogger = Logger(__name__, debugMode=debugMode)
         self.logger = self.getLogger.getLogger()
 
         self.chrome = chrome
-        self.url = homeUrl
+        self.homeUrl = homeUrl
 
         # インスタンス
         self.browser = BrowserHandler(debugMode=debugMode)
         self.driverWait = Wait(chrome=self.chrome, debugMode=debugMode)
+        self.cookieManager = CookieManager(chrome=chrome, debugMode=debugMode)
+        self.idLogin = IdLogin(chrome=chrome, debugMode=debugMode)
 
 
 # ----------------------------------------------------------------------------------
 # 2段階ログイン
 
-    def switchLogin(self):
+    def switchLogin(self, loginInfo: dict):
         # pickleファイルの読込
-        cookies = self.fileRead.readCookieLatestResult()
+        cookies = self.cookieManager.startDBExists()
+        if cookies is None:
+            self.idLogin.IDLogin(loginInfo=loginInfo)
 
         if self.cookieLogin(cookies=cookies):
             self.logger.info(f"Cookieログインに成功")
@@ -85,12 +84,12 @@ class CookieLogin:
 
 
 # ----------------------------------------------------------------------------------
-# TODO jsPageCheckerのデコ
 
 
+    @decoInstance.jsCompleteWait
     def openSite(self):
         self.browser.openSite()
-        return self.chrome.get(self.url)
+        return self.chrome.get(self.homeUrl)
 
 
 # ----------------------------------------------------------------------------------
@@ -108,9 +107,9 @@ class CookieLogin:
 
 
 # ----------------------------------------------------------------------------------
-# TODO jsPageCheckerのデコ
 
 
+    @decoInstance.jsCompleteWait
     def sessionSetting(self, cookies):
         if cookies:
             session = self.session
