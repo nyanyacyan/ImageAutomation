@@ -57,6 +57,10 @@ class CookieManager:
     @decoInstance.funcBase
     def cookieDataExistsInDB(self):
         DBColNames = self.sqlite.columnsExists()
+
+        self.logger.warning(f"DBColNames: {DBColNames}")
+        self.logger.warning(f"self.columnsName: {self.columnsName}")
+
         result = all(cokName in self.columnsName for cokName in DBColNames)
         if result is True:
             self.checkCookieLimit()

@@ -334,7 +334,8 @@ class Decorators:
 
 # ----------------------------------------------------------------------------------
 
-    def noneRetryAction(self, maxRetry: int=3, delay: int=30):
+
+    def noneRetryAction(self, maxRetry: int=2, delay: int=10):
         def decorator(func):
             @wraps(func)
             def wrapper(*args, **kwargs):
@@ -356,3 +357,6 @@ class Decorators:
 
             return wrapper
         return decorator
+
+
+# ----------------------------------------------------------------------------------

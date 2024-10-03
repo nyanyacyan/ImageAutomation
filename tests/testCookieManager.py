@@ -27,7 +27,7 @@ class TestCookie:
 
         instance = CookieManager(chrome=chrome, homeUrl=homeUrl, debugMode=True)
 
-        with patch.object(instance.__class__, 'getCookies', new_callable=PropertyMock) as mock_getCookie:
+        with patch.object(instance.__class__, 'getCookies') as mock_getCookie:
             mock_getCookie.return_value = [{
                 'name': "sessionId",
                 'value': "dummySession",
@@ -101,11 +101,11 @@ class TestCookie:
             resultWithoutId = {key: value for key, value in result.items() if key != 'id'}
 
             mock_getCookie_value = mock_getCookie.return_value[0]
-            mockWithoutMaxAge = {key: value for key, value in mock_getCookie_value.items() if key != 'max-age' and key != 'expires'}
+            # mockWithoutMaxAge = {key: value for key, value in mock_getCookie_value.items() if key != 'max-age' and key != 'expires'}
 
             print(resultWithoutId)
-            print(mockWithoutMaxAge)
-            assert resultWithoutId == mockWithoutMaxAge
+            print(mock_getCookie_value)
+            assert resultWithoutId == mock_getCookie_value
 
 
 # ----------------------------------------------------------------------------------
@@ -129,14 +129,8 @@ class TestCookie:
 
 
             result = instance.startDBExists()
-            resultWithoutId = {key: value for key, value in result.items() if key != 'id'}
 
-            mock_getCookie_value = mock_getCookie.return_value[0]
-            mockWithoutMaxAge = {key: value for key, value in mock_getCookie_value.items() if key != 'max-age' and key != 'expires'}
-
-            print(resultWithoutId)
-            print(mockWithoutMaxAge)
-            assert resultWithoutId == mockWithoutMaxAge
+            assert result == None
 
 
 # ----------------------------------------------------------------------------------

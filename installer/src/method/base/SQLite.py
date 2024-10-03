@@ -100,9 +100,9 @@ class SQLite:
 
 # ----------------------------------------------------------------------------------
 
-
+    @decoInstance.funcBase
     def tableExists(self):
-        sql = "SELECT name FROM sqlite_master WHERE type='table AND name=?;"
+        sql = "SELECT name FROM sqlite_master WHERE type='table' AND name=?;"
         result = self.tableExistsPrompt(sql=sql, params=(self.fileName,))
         self.logger.info(f"【success】{self.fileName} テーブルデータは存在してます")
         return result
@@ -131,7 +131,7 @@ class SQLite:
             c.execute(sql, params)  # 実行するSQL文にて定義して実行まで行う
 
             if fetch == 'one':
-                self.logger.debug(f"[all] c.fetchall()が実行されました")
+                self.logger.debug(f"[all] c.fetchone()が実行されました")
                 return c.fetchone()
             elif fetch == 'all':
                 self.logger.debug(f"[all] c.fetchall()が実行されました")
@@ -213,7 +213,9 @@ class SQLite:
     @decoInstance.funcBase
     def columnsExists(self):
         sql = f"PRAGMA table_info({self.fileName});"
-        columnsStatus = self.SQLPromptBase(sql=sql, fetch=None)
+        columnsStatus = self.SQLPromptBase(sql=sql, fetch='all')
+        self.logger.warning(f"columnsStatus: {columnsStatus}")
+
         columnNames = [columnData[1] for columnData in columnsStatus]
         self.logger.info(f"columnNames: {columnNames}")
         return columnNames
