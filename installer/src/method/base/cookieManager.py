@@ -41,20 +41,23 @@ class CookieManager:
 
     @decoInstance.funcBase
     def startDBExists(self):
-        cookieAllData = self.sqlite.startGetAllRecordsByCol()
-        if cookieAllData:
-            self.logger.info("DBにCookieデータの存在を確認できました")
-            return self.checkCookieLimit()
+        DBBool = self.sqlite.tableExists()
+        if DBBool:
+            return self.cookieDataExistsInDB()
         else:
-            self.logger.debug("DBがまだ作成されてません。")
-            return self.processValidCookie()
+            self.logger.debug(f"{Filename} が作られてません。これよりテーブル作成開始")
+            return self.sqlite.createTable()
 
 # ----------------------------------------------------------------------------------
 # ②
 # DBにCookieの存在確認
 
+    @decoInstance.funcBase
     def cookieDataExistsInDB(self):
-        pass
+        cols = ('name', 'value', 'domain', 'path', 'expires', 'maxAge', 'createTime')
+
+        DBColNames = self.sqlite.columnsExists()
+        return all(cokName in cols for cokName in DBColNames)
 
 
 

@@ -83,8 +83,33 @@ class SQLite:
             self.logger.warning("connを閉じました")
             conn.close()
 
+
 # ----------------------------------------------------------------------------------
-# 指定したColumnの値を指定して行を抽出 > Column=name Value=5 > 指定の行を抜き出す > List
+
+
+    @decoInstance.funcBase
+    def tableExistsPrompt(self, sql: str, params: tuple = ()):
+        conn = self.getDBconnect()
+        cursor = conn.cursor()
+        cursor.execute(sql, params)
+        result = cursor.fetchone()
+
+        conn.close()
+        return result
+
+
+# ----------------------------------------------------------------------------------
+
+
+    def tableExists(self):
+        sql = "SELECT name FROM sqlite_master WHERE type='table AND name=?;"
+        result = self.tableExistsPrompt(sql=sql, params=(self.fileName,))
+        self.logger.info(f"【success】{self.fileName} テーブルデータは存在してます")
+        return result
+
+
+# ----------------------------------------------------------------------------------
+
 
     @decoInstance.funcBase
     def startGetAllRecordsByCol(self):
@@ -129,6 +154,7 @@ class SQLite:
         finally:
             self.logger.warning("connを閉じました")
             conn.close()
+
 
 # ----------------------------------------------------------------------------------
 
@@ -175,6 +201,22 @@ class SQLite:
         sqlDrop = f"DROP TABLE IF EXISTS {self.fileName}"
         self.SQLPromptBase(sql=sqlDrop, fetch=None)
         return self.createTable()
+
+
+# ----------------------------------------------------------------------------------
+# テーブルのすべてのカラムを取得する
+# PRAGMA table_infoはそのテーブルのColumn情報を取得する
+# →1つ目のリストはcolumnID、２つ目column名、３つ目データ型、４つ目はカラムがNULLを許可するかどうかを示す（1はNOT NULL、0はNULL許可）
+# ５→columnに指定されたデフォルト値
+# columnData[1]=columns名
+
+    @decoInstance.funcBase
+    def columnsExists(self):
+        sql = f"PRAGMA table_info({self.fileName});"
+        columnsStatus = self.SQLPromptBase(sql=sql, fetch=None)
+        columnNames = [columnData[1] for columnData in columnsStatus]
+        self.logger.info(f"columnNames: {columnNames}")
+        return columnNames
 
 
 # ----------------------------------------------------------------------------------
