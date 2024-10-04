@@ -29,28 +29,36 @@ class Wait:
 # クリックができるまで待機
 
     def canWaitClick(self, by: str, value: str, timeout: int = 10):
-        return WebDriverWait(self.chrome, timeout).until(EC.element_to_be_clickable(by, value))
+        if WebDriverWait(self.chrome, timeout).until(EC.element_to_be_clickable(by, value)):
+            self.logger.info(f"insert（input）が可能になってます")
+        return
 
 
 # ----------------------------------------------------------------------------------
 # ページが完全に開くまで待機
 
     def loadPageWait(self, by: str, value: str, timeout: int = 10):
-        return WebDriverWait(self.chrome, timeout).until(EC.visibility_of_element_located((by, value)))
+        if WebDriverWait(self.chrome, timeout).until(EC.visibility_of_element_located((by, value))):
+            self.logger.info(f"指定の要素が見つかりました")
+        return
 
 
 # ----------------------------------------------------------------------------------
 # DOM上に存在するまで待機
 
     def canWaitDom(self, by: str, value: str, timeout: int = 10):
-        return WebDriverWait(self.chrome, timeout).until(EC.presence_of_element_located((self._locator_select(by), value)))
+        if WebDriverWait(self.chrome, timeout).until(EC.presence_of_element_located((self._locator_select(by), value))):
+            self.logger.info(f"指定の要素のDOMを確認できました")
+        return
 
 
 # ----------------------------------------------------------------------------------
 # 指定のURLに切り替わるまで待機
 
     def changeUrlWait(self, by: str, Url: str, timeout: int = 10):
-        return WebDriverWait(self.chrome, timeout).until(EC.url_changes(Url))
+        if WebDriverWait(self.chrome, timeout).until(EC.url_changes(Url)):
+            self.logger.info(f"指定のURLに切り替わりました")
+        return
 
 
 # ----------------------------------------------------------------------------------
