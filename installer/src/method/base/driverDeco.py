@@ -8,7 +8,8 @@ from functools import wraps
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
-
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.remote.webelement import WebElement
 
 # 自作モジュール
 from .utils import Logger
@@ -102,7 +103,7 @@ class jsCompleteWaitDeco:
 # ----------------------------------------------------------------------------------
 # **********************************************************************************
 
-class inputDeco:
+class InputDeco:
     def __init__(self, debugMode=True):
 
         # logger
@@ -111,9 +112,9 @@ class inputDeco:
 
 
 # ----------------------------------------------------------------------------------
-# func > jsCompleteWait > refresh > retry
+# WaitClick > func > checkInput
 
-    def inputWait(self, func):
+    def inputWait(self, func, delay: int = 2):
         @wraps(func)
         def wrapper(instance, *args, **kwargs):
             self.logger.info(f"********** {func.__name__} start **********")
@@ -121,9 +122,17 @@ class inputDeco:
             try:
                 chrome = instance.chrome
 
+                by = kwargs['by']
+                value = kwargs['value']
+                inputText = kwargs['inputText']
+
+                element = self.canWaitClick(chrome=chrome, by=by, value=value)
+
                 result = func(instance, *args, **kwargs)
 
-                self.jsPageChecker(chrome=chrome)
+                time.sleep(delay)
+
+                self.checkInput(element=element, inputText=inputText)
 
                 return result
 
@@ -139,11 +148,22 @@ class inputDeco:
 
 
 # ----------------------------------------------------------------------------------
-# 次のページに移動後にページがちゃんと開いてる状態か全体を確認してチェックする
+# クリックができるまで待機
 
-    def jsPageChecker(self, chrome: WebDriver, timeout: int = 10):
-            if WebDriverWait(chrome, timeout).until(lambda driver: driver.execute_script('return document.readyState')=='complete'):
-                self.logger.debug(f"{__name__} ページが更新OK")
+    def canWaitClick(self, chrome: WebDriver, by: str, value: str, timeout: int = 10):
+        return WebDriverWait(chrome, timeout).until(EC.element_to_be_clickable((by, value)))
+
+
+# ----------------------------------------------------------------------------------
+
+
+    def checkInput(self, element: WebElement, inputText: str):
+        enteredText = element.get_attribute('value')
+        if enteredText == inputText:
+            self.logger.info(f"入力に成功: {inputText}")
+        else:
+            self.logger.error(f"入力エラー: {inputText} → {enteredText} と表示されてしまってる")
+            # raise ValueError
 
 
 # ----------------------------------------------------------------------------------

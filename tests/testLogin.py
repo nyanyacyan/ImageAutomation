@@ -5,8 +5,7 @@
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
 
-import time
-from unittest.mock import patch, MagicMock, PropertyMock
+from unittest.mock import MagicMock
 
 # 自作モジュール
 from installer.src.method.base.loginWithId import LoginID
