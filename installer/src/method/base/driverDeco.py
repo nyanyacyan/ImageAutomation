@@ -127,9 +127,15 @@ class InputDeco:
                 inputText = kwargs['inputText']
 
                 element = self.canWaitClick(chrome=chrome, by=by, value=value)
+                self.logger.info(f"{__name__} Clickできる状態になってます")
+
+                element.click()
+                time.sleep(delay)
+
+                element.clear()
+                time.sleep(delay)
 
                 result = func(instance, *args, **kwargs)
-
                 time.sleep(delay)
 
                 self.checkInput(element=element, inputText=inputText)
@@ -164,6 +170,70 @@ class InputDeco:
         else:
             self.logger.error(f"入力エラー: {inputText} → {enteredText} と表示されてしまってる")
             # raise ValueError
+
+
+# ----------------------------------------------------------------------------------
+# **********************************************************************************
+
+class ClickDeco:
+    def __init__(self, debugMode=True):
+
+        # logger
+        self.getLogger = Logger(__name__, debugMode=debugMode)
+        self.logger = self.getLogger.getLogger()
+
+
+# ----------------------------------------------------------------------------------
+# WaitClick > func > jsPageChecker
+
+    def clickWait(self, func, delay: int = 2):
+        @wraps(func)
+        def wrapper(instance, *args, **kwargs):
+            self.logger.info(f"********** {func.__name__} start **********")
+            self.logger.debug(f"引数:\nargs={args}, kwargs={kwargs}")
+            try:
+                chrome = instance.chrome
+
+                by = kwargs['by']
+                value = kwargs['value']
+
+                self.canWaitClick(chrome=chrome, by=by, value=value)
+
+                time.sleep(delay)
+
+                result = func(instance, *args, **kwargs)
+
+                self.jsPageChecker(chrome=chrome)
+
+                return result
+
+            except TimeoutException as e:
+                self.logger.error(f"{func.__name__} TimeoutException発生: {e}")
+                raise e
+
+            # ローカル変数をすべて出力
+            # self.logger.debug(f"利用した変数一覧:\n{locals()}")
+
+        return wrapper
+
+
+
+# ----------------------------------------------------------------------------------
+# クリックができるまで待機
+
+    def canWaitClick(self, chrome: WebDriver, by: str, value: str, timeout: int = 10):
+        if WebDriverWait(chrome, timeout).until(EC.element_to_be_clickable((by, value))):
+            self.logger.info(f"{__name__} Clickできる状態になってます")
+
+
+# ----------------------------------------------------------------------------------
+
+
+# 次のページに移動後にページがちゃんと開いてる状態か全体を確認してチェックする
+
+    def jsPageChecker(self, chrome: WebDriver, timeout: int = 10):
+            if WebDriverWait(chrome, timeout).until(lambda driver: driver.execute_script('return document.readyState')=='complete'):
+                self.logger.debug(f"{__name__} ページが更新OK")
 
 
 # ----------------------------------------------------------------------------------

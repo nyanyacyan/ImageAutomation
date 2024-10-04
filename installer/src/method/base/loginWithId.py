@@ -12,10 +12,12 @@ from .utils import Logger
 from .driverWait import Wait
 from .browserHandler import BrowserHandler
 from .elementManager import ElementManager
-from .driverDeco import jsCompleteWaitDeco, InputDeco
+from .driverDeco import jsCompleteWaitDeco, InputDeco, ClickDeco
 
 decoInstance = jsCompleteWaitDeco(debugMode=True)
 decoInstanceInput = InputDeco(debugMode=True)
+decoInstanceClick = ClickDeco(debugMode=True)
+
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # **********************************************************************************
@@ -84,7 +86,7 @@ class LoginID:
 # ----------------------------------------------------------------------------------
 # passの入力
 
-
+    @decoInstanceInput.inputWait
     def inputPass(self, by: str, value: str, inputText: str):
         return self.element.inputText(by=by, value=value, inputText=inputText)
 
@@ -92,6 +94,7 @@ class LoginID:
 # ----------------------------------------------------------------------------------
 # ログインボタン押下
 
+    @decoInstanceClick.clickWait
     def clickLoginBtn(self, by: str, value: str):
         return self.element.clickElement(by=by, value=value)
 

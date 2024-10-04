@@ -58,3 +58,40 @@ class TestSeleniumInput:
 
 
 # ----------------------------------------------------------------------------------
+# **********************************************************************************
+# 単体テスト 写真を取得
+
+class TestSeleniumClick:
+
+# ----------------------------------------------------------------------------------
+# テストOK
+
+    def testClickSuccess(self):
+        chrome = MagicMock()
+        loginUrl = 'http://example.com'
+        homeUrl = 'dummyUrl.com'
+        by = 'id'
+        value = 'dummyPath'
+
+
+        instance = LoginID(chrome=chrome, loginUrl=loginUrl, homeUrl=homeUrl, debugMode=True)
+
+        instance.element = MagicMock()
+
+        # WebDriverWaitをモック化
+        with patch('installer.src.method.base.driverDeco.WebDriverWait') as mock_WebDriverWait:
+            # WebDriverWait の until メソッドが返すモックされた要素
+            mock_element = MagicMock(spec=WebElement)
+            mock_WebDriverWait.return_value.until.return_value = mock_element
+
+            # テスト対象のメソッドを実行
+            instance.clickLoginBtn(by=by, value=value)
+
+            # clickElement メソッドが正しい引数で呼ばれたか確認
+            instance.element.clickElement.assert_called_once_with(by=by, value=value)
+
+            # WebDriverWaitの呼び出し回数が2回であることを確認
+            assert mock_WebDriverWait.call_count == 2
+
+
+# ----------------------------------------------------------------------------------
