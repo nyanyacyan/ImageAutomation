@@ -10,7 +10,7 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 # 自作モジュール
 from .utils import Logger
 from .driverWait import Wait
-from .browserHandler import BrowserHandler
+from .seleniumBase import BrowserHandler
 from .cookieManager import CookieManager
 from .loginWithId import IdLogin
 from .driverDeco import jsCompleteWaitDeco

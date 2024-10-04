@@ -14,7 +14,7 @@ from .utils import Logger
 # **********************************************************************************
 
 
-class BrowserHandler:
+class SeleniumBasicOperations:
     def __init__(self, chrome: WebDriver, homeUrl: str, debugMode=True):
         # logger
         self.getLogger = Logger(__name__, debugMode=debugMode)

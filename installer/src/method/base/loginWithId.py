@@ -10,7 +10,6 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 # 自作モジュール
 from .utils import Logger
 from .driverWait import Wait
-from .browserHandler import BrowserHandler
 from .elementManager import ElementManager
 from .driverDeco import jsCompleteWaitDeco, InputDeco, ClickDeco
 
@@ -35,7 +34,6 @@ class LoginID:
 
         # インスタンス
         self.element = ElementManager(chrome=chrome, debugMode=debugMode)
-        self.browser = BrowserHandler(chrome=chrome, homeUrl=self.homeUrl, debugMode=debugMode)
 
 
 # ----------------------------------------------------------------------------------
@@ -72,7 +70,7 @@ class LoginID:
 
     @property
     def currentUrl(self):
-        return self.browser.currentUrl()
+        return self.chrome.current_url()
 
 
 # ----------------------------------------------------------------------------------
