@@ -78,7 +78,7 @@ class LoginID:
 
     @decoInstanceInput.inputWait
     def inputId(self, by: str, value: str, inputText: str):
-        return self.element.inputText(by=by, value=value, inputText=inputText)
+        return self.element.clickClearInput(by=by, value=value, inputText=inputText)
 
 
 # ----------------------------------------------------------------------------------
@@ -86,7 +86,7 @@ class LoginID:
 
     @decoInstanceInput.inputWait
     def inputPass(self, by: str, value: str, inputText: str):
-        return self.element.inputText(by=by, value=value, inputText=inputText)
+        return self.element.clickClearInput(by=by, value=value, inputText=inputText)
 
 
 # ----------------------------------------------------------------------------------

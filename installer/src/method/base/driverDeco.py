@@ -130,12 +130,6 @@ class InputDeco:
                 element = self.canWaitClick(chrome=chrome, by=by, value=value)
                 self.logger.info(f"{__name__} Clickできる状態になってます")
 
-                element.click()
-                time.sleep(delay)
-
-                element.clear()
-                time.sleep(delay)
-
                 result = func(instance, *args, **kwargs)
                 time.sleep(delay)
 

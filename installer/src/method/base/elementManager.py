@@ -3,6 +3,7 @@
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
+import time
 from selenium.webdriver.chrome.webdriver import WebDriver
 
 
@@ -70,18 +71,13 @@ class ElementManager:
 # ----------------------------------------------------------------------------------
 
 
-    def inputText(self, by: str, value: str, inputText: str):
-        inputElement = self.getElement(by=by, value=value)
-        inputElement.send_keys(inputText)
-
-
-# ----------------------------------------------------------------------------------
-
-
-    def ClearInputField(self, by: str, value: str):
+    def clickClearInput(self, by: str, value: str, inputText: str, delay: int = 2):
         element = self.getElement(by=by, value=value)
+        element.click()
+        time.sleep(delay)
         element.clear()
-        return
+        time.sleep(delay)
+        element.send_keys(inputText)
 
 
 # ----------------------------------------------------------------------------------
