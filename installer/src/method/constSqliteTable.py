@@ -47,9 +47,9 @@ class TableSchemas:
 #* メイン辞書
 
     TABLE_PATTERN = {
-        "cookies": COOKIES_TABLE_COLUMNS,
-        "text": TEXT_TABLE_COLUMNS,
-        "image": IMAGE_TABLE_COLUMNS
+        "cookiesDB": COOKIES_TABLE_COLUMNS,
+        # "text": TEXT_TABLE_COLUMNS,
+        # "image": IMAGE_TABLE_COLUMNS
     }
 
 

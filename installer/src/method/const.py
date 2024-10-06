@@ -54,7 +54,7 @@ class SubDir(Enum):
 
 
 class TableName(Enum):
-    Cookie='cookie_DB'
+    Cookie='cookiesDB'
 
 
 # ----------------------------------------------------------------------------------

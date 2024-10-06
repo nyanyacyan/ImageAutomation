@@ -15,6 +15,7 @@ from .utils import Logger
 from .path import BaseToPath
 from .errorHandlers import NetworkHandler
 from .decorators import Decorators
+from ..const import Extension
 from ..constSqliteTable import TableSchemas
 
 decoInstance = Decorators(debugMode=True)
@@ -43,7 +44,7 @@ class SQLite:
 # ----------------------------------------------------------------------------------
 
 
-    def getDBFullPath(self, extension: str = '.db'):
+    def getDBFullPath(self, extension: str = Extension.DB.value):
         dbDirPath = self.path.getResultDBDirPath()
 
         dbFilePath = dbDirPath / f"{self.currentDate}{extension}"
@@ -73,45 +74,14 @@ class SQLite:
 
 
 # ---------------------------------------------------------------------------------
-# # params: tuple = () > パラメータが何もなかったら空にするという意味
+#TODO ここを修正する
 
     @decoInstance.funcBase
-    def startSQLPromptBase(self, sql: str, params: tuple = (), fetch: str = None):
-        conn = self.getDBconnect()
-        try:
-            c = conn.cursor()  # DBとの接続オブジェクトを受け取って通信ができるようにする
-            self.logger.debug(f"SQL実行: {sql}, パラメータ: {params}")
-            c.execute(sql, params)  # 実行するSQL文にて定義して実行まで行う
-
-            self.logger.info(f"[success]テーブルは存在してることを確認")
-
-            if fetch == 'all':
-                self.logger.debug(f"[all] c.fetchall()が実行されました")
-                return c.fetchall()
-
-        except sqlite3.OperationalError as e:
-            if 'no such table' in str(e):
-                self.logger.warning(f"テーブルが存在しません: {e}")
-                return self.createTable()
-
-        except Exception as e:
-            conn.rollback()
-            self.logger.error(f"エラーが発生しました。トランザクションをロールバックしました:{e}")  # ロールバックは変更する前の状態に戻すこと
-
-        finally:
-            self.logger.warning("connを閉じました")
-            conn.close()
-
-
-# ----------------------------------------------------------------------------------
-
-
-    @decoInstance.funcBase
-    def tableExistsPrompt(self, sql: str, params: tuple = ()):
+    def allTableExistsPrompt(self, sql: str, params: tuple = ()):
         conn = self.getDBconnect()
         cursor = conn.cursor()
         cursor.execute(sql, params)
-        result = cursor.fetchone()
+        result = cursor.fetchall()
 
         conn.close()
         return result
@@ -135,20 +105,14 @@ class SQLite:
     @decoInstance.funcBase
     def tableExists(self, tableName):
         sql = "SELECT name FROM sqlite_master WHERE type='table' AND name=?;"
-        result = self.tableExistsPrompt(sql=sql, params=(tableName,))
-        self.logger.info(f"【success】{tableName} テーブルデータは存在してます")
-        return result
-
-
-# ----------------------------------------------------------------------------------
-
-
-    @decoInstance.funcBase
-    def startGetAllRecordsByCol(self):
-        sqlCheck = f"SELECT * FROM {self.tableName}"
-        result = self.startSQLPromptBase(sql=sqlCheck, fetch='all')
-        self.logger.info(f"【success】{self.tableName} 指定のカラムデータをすべて抽出")
-        return result
+        tablesData = self.allTableExistsPrompt(sql=sql, params=(tableName,))
+        tableNames = [tableData[0] for tableData in tablesData]
+        if tableName in tableNames:
+            self.logger.info(f"【success】{tableName} tableDataは存在してます")
+            return True
+        else:
+            self.logger.error(f"【success】{tableName} tableDataが存在しません")
+            return False
 
 
 # ----------------------------------------------------------------------------------
@@ -210,7 +174,7 @@ class SQLite:
             self.logger.warning(f"tableName: {tableName}")
             sql = self.createTableSqlPrompt(tableName=tableName, cols=cols)
             self.SQLPromptBase(sql=sql, fetch=None)
-            # self.checkTableExists()
+            self.checkTableExists()
 
 
 # ----------------------------------------------------------------------------------
@@ -221,7 +185,7 @@ class SQLite:
         colDef = ',\n'.join([f"{colName} {colSTS}" for colName, colSTS in cols.items()])
         self.logger.debug(f"colDef: {colDef}")
 
-        prompt = f"CREATE TABLE IF NOT EXISTS {tableName}\n({colDef}\n)"
+        prompt = f"CREATE TABLE IF NOT EXISTS {tableName}(\n{colDef}\n)"
         return prompt
 
 

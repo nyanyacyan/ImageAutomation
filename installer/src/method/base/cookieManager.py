@@ -37,7 +37,7 @@ class CookieManager:
 
         # インスタンス
         self.sqlite = SQLite(tableName=self.tableName, debugMode=debugMode)
-        self.tablePattern = TableSchemas.TABLE_PATTERN['cookies']
+
 
 # ----------------------------------------------------------------------------------
 # start①
@@ -45,8 +45,8 @@ class CookieManager:
 
     @decoInstance.funcBase
     def startCookiesTableExists(self):
-        DBBool = self.sqlite.tableExists(tableName=self.tableName)
-        if DBBool:
+        tableBool = self.sqlite.tableExists(tableName=self.tableName)
+        if tableBool:
             return self.cookieDataExistsInDB()
         else:
             self.logger.warning(f"{self.tableName} が作られてません。これよりテーブル作成開始")

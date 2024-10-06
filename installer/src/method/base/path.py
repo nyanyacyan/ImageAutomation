@@ -176,7 +176,7 @@ class BaseToPath:
 # ----------------------------------------------------------------------------------
 # Result > SubDir > 0101.db
 
-    def getResultDBDirPath(self, subDirName: str=SubDir.DBSubDir.value, extension: str=Extension.DB.value):
+    def getResultDBDirPath(self, subDirName: str=SubDir.DBSubDir.value):
         resultOutputPath = self.getResultOutputPath()
         dirPath = resultOutputPath / subDirName
         self.isDirExists(path=dirPath)

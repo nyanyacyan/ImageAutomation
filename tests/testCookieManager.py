@@ -38,7 +38,7 @@ class TestCookie:
             }]
 
 
-            result = instance.startDBExists()
+            result = instance.startCookiesTableExists()
             resultWithoutId = {key: value for key, value in result.items() if key != 'id' and key != 'max-age'}
 
             mock_getCookie_value = mock_getCookie.return_value[0]
@@ -67,7 +67,7 @@ class TestCookie:
             }]
 
 
-            result = instance.startDBExists()
+            result = instance.startCookiesTableExists()
             resultWithoutId = {key: value for key, value in result.items() if key != 'id' and key != 'max-age'}
 
             mock_getCookie_value = mock_getCookie.return_value[0]
@@ -97,7 +97,7 @@ class TestCookie:
             }]
 
 
-            result = instance.startDBExists()
+            result = instance.startCookiesTableExists()
             resultWithoutId = {key: value for key, value in result.items() if key != 'id'}
 
             mock_getCookie_value = mock_getCookie.return_value[0]
@@ -129,7 +129,7 @@ class TestCookie:
             }]
 
 
-            result = instance.startDBExists()
+            result = instance.startCookiesTableExists()
 
             assert result == None
 
