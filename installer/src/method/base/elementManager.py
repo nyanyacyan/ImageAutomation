@@ -9,6 +9,9 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 
 # 自作モジュール
 from .utils import Logger
+from .decorators import Decorators
+
+decoInstance = Decorators(debugMode=True)
 
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
@@ -71,6 +74,7 @@ class ElementManager:
 # ----------------------------------------------------------------------------------
 
 
+    @decoInstance.funcBase
     def clickClearInput(self, by: str, value: str, inputText: str, delay: int = 2):
         element = self.getElement(by=by, value=value)
         element.click()
@@ -87,6 +91,24 @@ class ElementManager:
         element = self.getElement(by=by, value=value)
         element.click()
         return
+
+
+# ----------------------------------------------------------------------------------
+
+
+    @decoInstance.funcBase
+    def getText(self, by: str, value: str):
+        element = self.getElement(by=by, value=value)
+        return element.text
+
+
+# ----------------------------------------------------------------------------------
+
+
+    @decoInstance.funcBase
+    def getImageUrl(self, by: str, value: str):
+        element = self.getElement(by=by, value=value)
+        return element.get_attribute("src")
 
 
 # ----------------------------------------------------------------------------------
