@@ -53,7 +53,7 @@ class SubDir(Enum):
 # ----------------------------------------------------------------------------------
 
 
-class Filename(Enum):
+class TableName(Enum):
     Cookie='cookie_DB'
 
 

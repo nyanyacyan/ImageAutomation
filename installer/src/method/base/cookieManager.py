@@ -11,7 +11,7 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 # 自作モジュール
 from .utils import Logger
 from .SQLite import SQLite
-from ..const import Filename, ColumnsName
+from ..const import TableName, ColumnsName
 from .decorators import Decorators
 
 decoInstance = Decorators(debugMode=True)
@@ -29,12 +29,12 @@ class CookieManager:
 
         self.chrome = chrome
         self.homeUrl = homeUrl
-        self.fileName = Filename.Cookie.value
+        self.tableName = TableName.Cookie.value
         self.columnsName = ColumnsName.Cookies.value
         self.currentTime = int(time.time())
 
         # インスタンス
-        self.sqlite = SQLite(fileName=self.fileName, debugMode=debugMode)
+        self.sqlite = SQLite(tableName=self.tableName, debugMode=debugMode)
 
 # ----------------------------------------------------------------------------------
 # start①
@@ -46,7 +46,7 @@ class CookieManager:
         if DBBool:
             return self.cookieDataExistsInDB()
         else:
-            self.logger.warning(f"{Filename} が作られてません。これよりテーブル作成開始")
+            self.logger.warning(f"{self.tableName} が作られてません。これよりテーブル作成開始")
             self.sqlite.createTable()
             return self.getCookieFromAction()
 
@@ -65,7 +65,7 @@ class CookieManager:
         if result is True:
             self.checkCookieLimit()
         else:
-            self.logger.warning(f"{Filename} のテーブルデータがありません。Cookieを取得します")
+            self.logger.warning(f"{self.tableName} のテーブルデータがありません。Cookieを取得します")
             return self.getCookieFromAction()
 
 

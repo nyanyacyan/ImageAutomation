@@ -21,13 +21,13 @@ decoInstance = Decorators(debugMode=True)
 # 一連の流れ
 
 class SQLite:
-    def __init__(self, fileName: str, debugMode=True):
+    def __init__(self, tableName: str, debugMode=True):
 
         # logger
         self.getLogger = Logger(__name__, debugMode=debugMode)
         self.logger = self.getLogger.getLogger()
 
-        self.fileName = fileName
+        self.tableName = tableName
 
         # インスタンス化
         self.networkError = NetworkHandler(debugMode=debugMode)
@@ -103,8 +103,8 @@ class SQLite:
     @decoInstance.funcBase
     def tableExists(self):
         sql = "SELECT name FROM sqlite_master WHERE type='table' AND name=?;"
-        result = self.tableExistsPrompt(sql=sql, params=(self.fileName,))
-        self.logger.info(f"【success】{self.fileName} テーブルデータは存在してます")
+        result = self.tableExistsPrompt(sql=sql, params=(self.tableName,))
+        self.logger.info(f"【success】{self.tableName} テーブルデータは存在してます")
         return result
 
 
@@ -113,9 +113,9 @@ class SQLite:
 
     @decoInstance.funcBase
     def startGetAllRecordsByCol(self):
-        sqlCheck = f"SELECT * FROM {self.fileName}"
+        sqlCheck = f"SELECT * FROM {self.tableName}"
         result = self.startSQLPromptBase(sql=sqlCheck, fetch='all')
-        self.logger.info(f"【success】{self.fileName} 指定のカラムデータをすべて抽出")
+        self.logger.info(f"【success】{self.tableName} 指定のカラムデータをすべて抽出")
         return result
 
 
@@ -174,9 +174,9 @@ class SQLite:
 
     @decoInstance.funcBase
     def createTable(self):
-        self.logger.warning(f"self.fileName: {self.fileName}")
+        self.logger.warning(f"self.tableName: {self.tableName}")
         sql = f'''
-            CREATE TABLE IF NOT EXISTS {self.fileName} (
+            CREATE TABLE IF NOT EXISTS {self.tableName} (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL,
                 value TEXT NOT NULL,
@@ -197,7 +197,7 @@ class SQLite:
     @decoInstance.funcBase
     def resetTable(self):
         self.logger.warning("既存のテーブルを破棄して、再度構築")
-        sqlDrop = f"DROP TABLE IF EXISTS {self.fileName}"
+        sqlDrop = f"DROP TABLE IF EXISTS {self.tableName}"
         self.SQLPromptBase(sql=sqlDrop, fetch=None)
         return self.createTable()
 
@@ -211,7 +211,7 @@ class SQLite:
 
     @decoInstance.funcBase
     def columnsExists(self):
-        sql = f"PRAGMA table_info({self.fileName});"
+        sql = f"PRAGMA table_info({self.tableName});"
         columnsStatus = self.SQLPromptBase(sql=sql, fetch='all')
         self.logger.warning(f"columnsStatus: {columnsStatus}")
 
@@ -229,9 +229,9 @@ class SQLite:
         result = self.SQLPromptBase(sql=sql, fetch='all')
         self.logger.warning(f"result: {result}")
         if result:
-            self.logger.info(f"{self.fileName} テーブルの作成に成功しています。")
+            self.logger.info(f"{self.tableName} テーブルの作成に成功しています。")
         else:
-            self.logger.error(f"{self.fileName} テーブルの作成に失敗してます")
+            self.logger.error(f"{self.tableName} テーブルの作成に失敗してます")
         return result
 
 
@@ -242,14 +242,14 @@ class SQLite:
     def insertData(self, col: tuple, values: tuple):
         placeholders = ', '.join(['?' for _ in values]) # valuesの数の文？を追加して結合
         self.logger.warning(f"values: {values}")
-        sql = f"INSERT INTO {self.fileName} {col} VALUES ({placeholders})"
+        sql = f"INSERT INTO {self.tableName} {col} VALUES ({placeholders})"
         rowData = self.SQLPromptBase(sql=sql, params=values, fetch=None)
-        self.logger.warning(f"{self.fileName} の行データ: {rowData}")
-        self.logger.info(f"【success】{self.fileName} テーブルにデータを追加に成功")
+        self.logger.warning(f"{self.tableName} の行データ: {rowData}")
+        self.logger.info(f"【success】{self.tableName} テーブルにデータを追加に成功")
 
-        sqlCheck = f"SELECT * FROM {self.fileName}"
+        sqlCheck = f"SELECT * FROM {self.tableName}"
         allData = self.SQLPromptBase(sql=sqlCheck, fetch='all')
-        self.logger.warning(f"{self.fileName} の全データ: {allData}")
+        self.logger.warning(f"{self.tableName} の全データ: {allData}")
         return rowData
 
 
@@ -258,9 +258,9 @@ class SQLite:
 
     @decoInstance.funcBase
     def getRecordsAllData(self):
-        sql = f"SELECT * FROM {self.fileName}"
+        sql = f"SELECT * FROM {self.tableName}"
         result = self.SQLPromptBase(sql=sql, fetch='all')
-        self.logger.info(f"【success】{self.fileName} すべてのデータを抽出")
+        self.logger.info(f"【success】{self.tableName} すべてのデータを抽出")
         self.logger.info(f"result: {result}")
         return result
 
@@ -270,9 +270,9 @@ class SQLite:
 
     @decoInstance.funcBase
     def getAllRecordsByCol(self, col: str, value: Any):
-        sql = f"SELECT * FROM {self.fileName} WHERE {col} = ?"
+        sql = f"SELECT * FROM {self.tableName} WHERE {col} = ?"
         result = self.SQLPromptBase(sql=sql, params=(value, ), fetch='all')
-        self.logger.info(f"【success】{self.fileName} 指定のカラムデータをすべて抽出")
+        self.logger.info(f"【success】{self.tableName} 指定のカラムデータをすべて抽出")
         self.logger.info(f"result: {result}")
         return result
 
@@ -282,10 +282,10 @@ class SQLite:
 
     @decoInstance.funcBase
     def getRowRecordsByCol(self, col: str, value: Any):
-        sql = f"SELECT * FROM {self.fileName} WHERE {col} = ?"
+        sql = f"SELECT * FROM {self.tableName} WHERE {col} = ?"
         result = self.SQLPromptBase(sql=sql, params=(value, ), fetch='one')
         if result:
-            self.logger.info(f"【success】{self.fileName} 指定の行のデータを抽出")
+            self.logger.info(f"【success】{self.tableName} 指定の行のデータを抽出")
             self.logger.info(f"result: {result}")
             return result
         else:
@@ -299,9 +299,9 @@ class SQLite:
     def deleteRecordsByCol(self, col: str, value: Any):
         deleteRow = self.getRowRecordsByCol(col=col, value=value)
         self.logger.warning(f"削除対象のデータです\n{deleteRow}")
-        sql = f"DELETE FROM {self.fileName} WHERE {col} = ?"
+        sql = f"DELETE FROM {self.tableName} WHERE {col} = ?"
         result = self.SQLPromptBase(sql=sql, params=(value, ), fetch=None)
-        self.logger.info(f"【success】{self.fileName} 指定のデータを削除")
+        self.logger.info(f"【success】{self.tableName} 指定のデータを削除")
         self.logger.info(f"result: {result}")
         return result
 
@@ -313,9 +313,9 @@ class SQLite:
     def deleteAllRecords(self):
         deleteData = self.getRecordsAllData()
         self.logger.warning(f"削除対象のデータです\n{deleteData}")
-        sql = f"DELETE FROM {self.fileName}"
+        sql = f"DELETE FROM {self.tableName}"
         result = self.SQLPromptBase(sql=sql, fetch=None)
-        self.logger.info(f"【success】{self.fileName} すべてのデータを削除")
+        self.logger.info(f"【success】{self.tableName} すべてのデータを削除")
         self.logger.info(f"result: {result}")
         return result
 
