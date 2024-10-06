@@ -44,14 +44,14 @@ class CookieManager:
 # DBが存在確認
 
     @decoInstance.funcBase
-    def startDBExists(self):
-        DBBool = self.sqlite.tableExists()
+    def startCookiesTableExists(self):
+        DBBool = self.sqlite.tableExists(tableName=self.tableName)
         if DBBool:
             return self.cookieDataExistsInDB()
         else:
             self.logger.warning(f"{self.tableName} が作られてません。これよりテーブル作成開始")
-            self.sqlite.createTable(tablePattern=self.tablePattern)
             return self.getCookieFromAction()
+
 
 # ----------------------------------------------------------------------------------
 # ②
@@ -59,7 +59,7 @@ class CookieManager:
 
     @decoInstance.funcBase
     def cookieDataExistsInDB(self):
-        DBColNames = self.sqlite.columnsExists()
+        DBColNames = self.sqlite.columnsExists(tableName=self.tableName)
 
         self.logger.warning(f"DBColNames: {DBColNames}")
         self.logger.warning(f"self.columnsName: {self.columnsName}")

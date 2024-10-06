@@ -5,6 +5,9 @@
 # import
 import sqlite3
 from typing import Any
+from pathlib import Path
+from datetime import datetime
+
 
 
 # 自作モジュール
@@ -33,29 +36,44 @@ class SQLite:
         # インスタンス化
         self.networkError = NetworkHandler(debugMode=debugMode)
         self.path = BaseToPath(debugMode=debugMode)
+        self.currentDate = datetime.now().strftime('%y%m%d')
+        self.tablePattern = TableSchemas.TABLE_PATTERN
 
 
 # ----------------------------------------------------------------------------------
 
 
-    def getDBFullPath(self):
-        dbFilePath = self.path.getResultSubDirDBFilePath()
-        if not dbFilePath.exists():
-            try:
-                conn = sqlite3.connect(dbFilePath)
-                conn.close()
-                return dbFilePath
+    def getDBFullPath(self, extension: str = '.db'):
+        dbDirPath = self.path.getResultDBDirPath()
 
-            except sqlite3.OperationalError as e:
-                self.logger.error(f"dbFullPath: {dbFilePath}")
-                self.logger.error(f"データベース接続エラー: {e}")
-                raise
+        dbFilePath = dbDirPath / f"{self.currentDate}{extension}"
+        self.isFileExists(path=dbFilePath, tablePattern=self.tablePattern)
+        try:
+            conn = sqlite3.connect(dbFilePath)
+            conn.close()
+            return dbFilePath
 
-        return dbFilePath
+        except sqlite3.OperationalError as e:
+            self.logger.error(f"dbFullPath: {dbFilePath}")
+            self.logger.error(f"データベース接続エラー: {e}")
+            raise
 
 
 # ----------------------------------------------------------------------------------
-# params: tuple = () > パラメータが何もなかったら空にするという意味
+# ディレクトリがない可能性の箇所に貼る関数→同時にテーブルを作成
+
+    def isFileExists(self, path: Path, tablePattern: dict):
+        if not path.exists():
+            path.touch()
+            self.logger.info(f"{path.name} がないため作成")
+            self.createAllTable(tablePattern=tablePattern)
+        else:
+            self.logger.debug(f"{path.name} 発見")
+        return path
+
+
+# ---------------------------------------------------------------------------------
+# # params: tuple = () > パラメータが何もなかったら空にするという意味
 
     @decoInstance.funcBase
     def startSQLPromptBase(self, sql: str, params: tuple = (), fetch: str = None):
@@ -100,12 +118,25 @@ class SQLite:
 
 
 # ----------------------------------------------------------------------------------
+# 全てのテーブルが有るかどうかを確認
+
+    def checkAllTablesExist(self, tablePattern: dict):
+        for tableName in tablePattern.keys():
+            exists = self.tableExists(tableName=tableName)
+            if exists:
+                self.logger.info(f"{tableName} は存在してます")
+            else:
+                self.logger.error(f"{tableName} が存在しません")
+
+
+# ----------------------------------------------------------------------------------
+
 
     @decoInstance.funcBase
-    def tableExists(self):
+    def tableExists(self, tableName):
         sql = "SELECT name FROM sqlite_master WHERE type='table' AND name=?;"
-        result = self.tableExistsPrompt(sql=sql, params=(self.tableName,))
-        self.logger.info(f"【success】{self.tableName} テーブルデータは存在してます")
+        result = self.tableExistsPrompt(sql=sql, params=(tableName,))
+        self.logger.info(f"【success】{tableName} テーブルデータは存在してます")
         return result
 
 
@@ -174,26 +205,24 @@ class SQLite:
 # SQLiteにcookiesの情報を書き込めるようにするための初期設定
 
     @decoInstance.funcBase
-    def createTable(self, tablePattern: dict):
-        self.logger.warning(f"self.tableName: {self.tableName}")
-        sql = self.createTableSqlPrompt(tablePattern=tablePattern)
-        self.SQLPromptBase(sql=sql, fetch=None)
-        self.checkTableExists()
+    def createAllTable(self, tablePattern: dict):
+        for tableName, cols in tablePattern.items():
+            self.logger.warning(f"tableName: {tableName}")
+            sql = self.createTableSqlPrompt(tableName=tableName, cols=cols)
+            self.SQLPromptBase(sql=sql, fetch=None)
+            # self.checkTableExists()
 
 
 # ----------------------------------------------------------------------------------
 
 
-    def createTableSqlPrompt(self, tablePattern: dict):
-        prompts = []
-        for tableName, cols in tablePattern.items():
-            colDef = ',\n'.join([f"{colName} {colSTS}" for colName, colSTS in cols.items()])
-            self.logger.debug(f"colDef: {colDef}")
+    @decoInstance.funcBase
+    def createTableSqlPrompt(self, tableName: str, cols: dict):
+        colDef = ',\n'.join([f"{colName} {colSTS}" for colName, colSTS in cols.items()])
+        self.logger.debug(f"colDef: {colDef}")
 
-            prompt = f"CREATE TABLE IF NOT EXISTS {tableName}({colDef})"
-            self.logger.info(f"prompt: {prompt}")
-            prompts.append(prompt)
-        return prompts
+        prompt = f"CREATE TABLE IF NOT EXISTS {tableName}\n({colDef}\n)"
+        return prompt
 
 
 # ----------------------------------------------------------------------------------
@@ -215,8 +244,8 @@ class SQLite:
 # columnData[1]=columns名
 
     @decoInstance.funcBase
-    def columnsExists(self):
-        sql = f"PRAGMA table_info({self.tableName});"
+    def columnsExists(self, tableName: str):
+        sql = f"PRAGMA table_info({tableName});"
         columnsStatus = self.SQLPromptBase(sql=sql, fetch='all')
         self.logger.warning(f"columnsStatus: {columnsStatus}")
 

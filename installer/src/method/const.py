@@ -75,7 +75,7 @@ class Extension(Enum):
     excel='.xlsx'
     yaml='.yaml'
     cookie='cookie.pkl'
-    cookieDB='.db'
+    DB='.db'
 
 
 # ----------------------------------------------------------------------------------

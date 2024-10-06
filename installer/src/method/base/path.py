@@ -174,17 +174,17 @@ class BaseToPath:
 
 
 # ----------------------------------------------------------------------------------
-# Result > SubDir > File
+# Result > SubDir > 0101.db
 
-    def getResultSubDirDBFilePath(self, subDirName: str=SubDir.DBSubDir.value, extension: str=Extension.cookieDB.value):
+    def getResultDBDirPath(self, subDirName: str=SubDir.DBSubDir.value, extension: str=Extension.DB.value):
         resultOutputPath = self.getResultOutputPath()
         dirPath = resultOutputPath / subDirName
         self.isDirExists(path=dirPath)
         self.logger.debug(f"dirPath: {dirPath}")
-        filePath = dirPath / f"{self.currentDate}{extension}"
-        self.isFileExists(path=filePath)
-        self.logger.debug(f"FilePath: {filePath}")
-        return filePath
+        # filePath = dirPath / f"{self.currentDate}{extension}"
+        # self.isFileExists(path=filePath)
+        # self.logger.debug(f"FilePath: {filePath}")
+        return dirPath
 
 
 # ----------------------------------------------------------------------------------
