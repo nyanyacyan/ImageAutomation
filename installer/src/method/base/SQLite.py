@@ -146,7 +146,6 @@ class SQLite:
                 self.logger.error(f"テーブルは作成されてるはずなのにない: {e}")
                 raise Exception("テーブルの作成が完了してるはずができてない")
 
-
         except Exception as e:
             conn.rollback()
             self.logger.error(f"エラーが発生しました。トランザクションをロールバックしました:{e}")  # ロールバックは変更する前の状態に戻すこと

@@ -3,7 +3,7 @@
 # テストOK
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
-import time, sqlite3
+import time
 from functools import wraps
 from typing import Callable, Optional
 import aiohttp
@@ -40,7 +40,6 @@ class Decorators:
         self.generatePromptHandler = GeneratePromptHandler(debugMode=debugMode)
         self.chromeHandler = ChromeHandler(debugMode=debugMode)
         self.sysCommand = SysCommand(debugMode=debugMode)
-
 
 
 # ----------------------------------------------------------------------------------
@@ -244,9 +243,7 @@ class Decorators:
         return decorator
 
 
-
 # ----------------------------------------------------------------------------------
-
 
 
     def fileRead(self, func):

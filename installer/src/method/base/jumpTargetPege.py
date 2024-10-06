@@ -44,6 +44,7 @@ class JumpTargetPage:
 
         self.urlCheck()
         time.sleep(delay)
+        return
 
 
 # ----------------------------------------------------------------------------------

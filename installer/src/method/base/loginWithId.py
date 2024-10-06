@@ -40,7 +40,7 @@ class LoginID:
 # IDログイン
 # loginInfoはconstから取得
     @decoInstance.jsCompleteWaitRetry()
-    def loginID(self, loginInfo: dict, delay: int=2):
+    def flowLoginID(self, loginInfo: dict, delay: int=2):
 
         # サイトを開いてCookieを追加
         self.openSite()

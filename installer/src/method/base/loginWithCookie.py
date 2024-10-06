@@ -70,7 +70,7 @@ class CookieLogin:
 # ----------------------------------------------------------------------------------
 # Cookieログイン
 
-    def cookieLogin(self, cookies):
+    def flowCookieLogin(self, cookies):
 
         # サイトを開いてCookieを追加
         self.openSite()

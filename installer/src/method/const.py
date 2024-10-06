@@ -13,6 +13,7 @@ from enum import Enum
 class SiteUrl(Enum):
     LoginUrl=''
     HomeUrl=''
+    TargetUrl=''
 
 
 # ----------------------------------------------------------------------------------
@@ -30,7 +31,6 @@ class LoginInfo(Enum):
         'btnValue': '',
         'btnText': ''
     }
-
 
 
 # ----------------------------------------------------------------------------------
@@ -56,11 +56,13 @@ class SubDir(Enum):
 class Filename(Enum):
     Cookie='cookie_DB'
 
+
 # ----------------------------------------------------------------------------------
 
 
 class ColumnsName(Enum):
     Cookies=('name', 'value', 'domain', 'path', 'expires', 'maxAge', 'createTime')
+
 
 # ----------------------------------------------------------------------------------
 

@@ -37,7 +37,7 @@ class ChromeManager:
 
 
     @decoInstance.chromeSetup
-    def setupChrome(self):
+    def flowSetupChrome(self):
         service = Service(self.getChromeDriverPath)
         chrome = webdriver.Chrome(service=service, options=self.setupChromeOption)
         return chrome
