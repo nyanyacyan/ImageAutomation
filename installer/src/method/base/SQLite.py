@@ -12,6 +12,7 @@ from .utils import Logger
 from .path import BaseToPath
 from .errorHandlers import NetworkHandler
 from .decorators import Decorators
+from ..constSqliteTable import TableSchemas
 
 decoInstance = Decorators(debugMode=True)
 
@@ -173,22 +174,26 @@ class SQLite:
 # SQLiteにcookiesの情報を書き込めるようにするための初期設定
 
     @decoInstance.funcBase
-    def createTable(self):
+    def createTable(self, tablePattern: dict):
         self.logger.warning(f"self.tableName: {self.tableName}")
-        sql = f'''
-            CREATE TABLE IF NOT EXISTS {self.tableName} (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                value TEXT NOT NULL,
-                domain TEXT,
-                path TEXT,
-                expires INTEGER,
-                maxAge INTEGER,
-                createTime INTEGER
-            )
-        '''
+        sql = self.createTableSqlPrompt(tablePattern=tablePattern)
         self.SQLPromptBase(sql=sql, fetch=None)
         self.checkTableExists()
+
+
+# ----------------------------------------------------------------------------------
+
+
+    def createTableSqlPrompt(self, tablePattern: dict):
+        prompts = []
+        for tableName, cols in tablePattern.items():
+            colDef = ',\n'.join([f"{colName} {colSTS}" for colName, colSTS in cols.items()])
+            self.logger.debug(f"colDef: {colDef}")
+
+            prompt = f"CREATE TABLE IF NOT EXISTS {tableName}({colDef})"
+            self.logger.info(f"prompt: {prompt}")
+            prompts.append(prompt)
+        return prompts
 
 
 # ----------------------------------------------------------------------------------

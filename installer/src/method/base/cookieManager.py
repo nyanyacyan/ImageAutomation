@@ -12,6 +12,7 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 from .utils import Logger
 from .SQLite import SQLite
 from ..const import TableName, ColumnsName
+from ..constSqliteTable import TableSchemas
 from .decorators import Decorators
 
 decoInstance = Decorators(debugMode=True)
@@ -30,11 +31,13 @@ class CookieManager:
         self.chrome = chrome
         self.homeUrl = homeUrl
         self.tableName = TableName.Cookie.value
+
         self.columnsName = ColumnsName.Cookies.value
         self.currentTime = int(time.time())
 
         # インスタンス
         self.sqlite = SQLite(tableName=self.tableName, debugMode=debugMode)
+        self.tablePattern = TableSchemas.TABLE_PATTERN['cookies']
 
 # ----------------------------------------------------------------------------------
 # start①
@@ -47,7 +50,7 @@ class CookieManager:
             return self.cookieDataExistsInDB()
         else:
             self.logger.warning(f"{self.tableName} が作られてません。これよりテーブル作成開始")
-            self.sqlite.createTable()
+            self.sqlite.createTable(tablePattern=self.tablePattern)
             return self.getCookieFromAction()
 
 # ----------------------------------------------------------------------------------
