@@ -106,7 +106,8 @@ class SQLite:
 
 
 # ----------------------------------------------------------------------------------
-# # 全てのテーブルが有るかどうかを確認
+#TODO 現在使われてない
+
 
     def checkAllTablesExist(self, tablePattern: dict):
         for tableName in tablePattern.keys():
@@ -118,6 +119,7 @@ class SQLite:
 
 
 # ----------------------------------------------------------------------------------
+#TODO 現在使われてない
 
 
     @decoInstance.funcBase
@@ -125,6 +127,8 @@ class SQLite:
         sql = "SELECT name FROM sqlite_master WHERE type='table';"
         tablesData = self.SQLPromptBase(sql=sql, fetch='all')
         tableNames = [tableData[0] for tableData in tablesData]
+        self.logger.critical(f"tableNames: {tableNames}")
+
         self.logger.critical(f"tableNames:\n{tableNames}")
         if tableName in tableNames:
             self.logger.info(f"【success】{tableName} tableDataは存在してます")
@@ -230,6 +234,7 @@ class SQLite:
         self.logger.warning(f"result: {result}")
 
         tableNames = [table[0] for table in result]
+        self.logger.critical(f"tableNames: {tableNames}")
         if tableName in tableNames:
             self.logger.info(f"{tableName} テーブルの作成に成功しています。")
         else:
