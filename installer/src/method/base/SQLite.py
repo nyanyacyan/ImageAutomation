@@ -46,13 +46,13 @@ class SQLite:
 
     def boolFilePath(self, extension: str = Extension.DB.value):
         dbDirPath = self.path.getResultDBDirPath()
-        self.logger.warning(f"dbDirPath: {dbDirPath}")
+        self.logger.debug(f"dbDirPath: {dbDirPath}")
         dbFilePath = dbDirPath / f"{self.currentDate}{extension}"
         if dbFilePath.exists():
-            self.logger.warning(f"ファイルが見つかりました: {dbFilePath}")
+            self.logger.info(f"ファイルが見つかりました: {dbFilePath}")
             return True
         else:
-            self.logger.warning(f"ファイルが見つかりません: {dbFilePath}")
+            self.logger.error(f"ファイルが見つかりません: {dbFilePath}")
             return False
 
 
@@ -185,7 +185,7 @@ class SQLite:
     def columnsExists(self, tableName: str):
         sql = f"PRAGMA table_info({tableName});"
         columnsStatus = self.SQLPromptBase(sql=sql, fetch='all')
-        self.logger.warning(f"columnsStatus: {columnsStatus}")
+        self.logger.debug(f"columnsStatus: {columnsStatus}")
 
         columnNames = [columnData[1] for columnData in columnsStatus]
         self.logger.info(f"columnNames: {columnNames}")
@@ -219,15 +219,15 @@ class SQLite:
     @decoInstance.funcBase
     def insertData(self, tableName: str, col: tuple, values: tuple):
         placeholders = ', '.join(['?' for _ in values]) # valuesの数の文？を追加して結合
-        self.logger.warning(f"values: {values}")
+        self.logger.debug(f"values: {values}")
         sql = f"INSERT INTO {tableName} {col} VALUES ({placeholders})"
         rowData = self.SQLPromptBase(sql=sql, params=values, fetch=None)
-        self.logger.warning(f"{tableName} の行データ: {rowData}")
+        self.logger.debug(f"{tableName} の行データ: {rowData}")
         self.logger.info(f"【success】{tableName} テーブルにデータを追加に成功")
 
         sqlCheck = f"SELECT * FROM {tableName}"
         allData = self.SQLPromptBase(sql=sqlCheck, fetch='all')
-        self.logger.warning(f"{tableName} の全データ: {allData}")
+        self.logger.debug(f"{tableName} の全データ: {allData}")
         return rowData
 
 
@@ -276,7 +276,7 @@ class SQLite:
     @decoInstance.funcBase
     def deleteRecordsByCol(self, tableName: str, col: str, value: Any):
         deleteRow = self.getRowRecordsByCol(col=col, value=value)
-        self.logger.warning(f"削除対象のデータです\n{deleteRow}")
+        self.logger.debug(f"削除対象のデータです\n{deleteRow}")
         sql = f"DELETE FROM {tableName} WHERE {col} = ?"
         result = self.SQLPromptBase(sql=sql, params=(value, ), fetch=None)
         self.logger.info(f"【success】{tableName} 指定のデータを削除")
@@ -304,8 +304,28 @@ class SQLite:
     def getColMaxValueRow(self, tableName: str, primaryKey: str):
         sql = f"SELECT * FROM {tableName} ORDER BY {primaryKey} DESC LIMIT 1"
         result = self.SQLPromptBase(sql=sql, fetch='all')
-        self.logger.critical(f"【success】{tableName} 最新情報を取得: primaryKey: {primaryKey}")
-        self.logger.critical(f"result: {result}")
+        self.logger.info(f"【success】{tableName} 最新情報を取得: primaryKey: {primaryKey}")
+        self.logger.info(f"result: {result}")
+        return result
+
+
+# ----------------------------------------------------------------------------------
+
+
+    @decoInstance.sqliteErrorHandler
+    def getSqlOldData(self, tableName: str, primaryKey: str):
+        sql = f"""
+        DELETE FROM {tableName}
+        WHERE {primaryKey} IN (
+            SELECT {primaryKey}
+            FROM {tableName}
+            ORDER BY {primaryKey} ASC
+            LIMIT (SELECT COUNT(*) FROM {tableName}) - 5
+        );
+        """
+        result = self.SQLPromptBase(sql=sql, fetch='None')
+        self.logger.info(f"【success】{tableName} ５日以上経ったデータを消去しました: primaryKey: {primaryKey}")
+        self.logger.info(f"result: {result}")
         return result
 
 

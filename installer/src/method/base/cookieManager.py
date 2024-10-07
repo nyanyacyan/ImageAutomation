@@ -47,11 +47,16 @@ class CookieManager:
     @decoInstance.funcBase
     def startBoolFilePath(self):
         tableBool = self.sqlite.boolFilePath()
+        sqlCookieAllData = self.sqlite.getRecordsAllData(tableName=self.tableName)
+        cookieDataCount = len(sqlCookieAllData)
+        self.logger.warning(f"cookieDataCount: {cookieDataCount}")
+        if 5 < cookieDataCount:
+            self.sqlite.getSqlOldData(tableName=self.tableName, primaryKey=self.primaryKey)
+
         if tableBool:
-            self.sqlite.getRecordsAllData(tableName=self.tableName)
             return self.cookieDataExistsInDB()
         else:
-            self.logger.warning(f"{self.tableName} が作られてません。これよりテーブル作成開始")
+            self.logger.debug(f"{self.tableName} が作られてません。これよりテーブル作成開始")
             self.sqlite.isFileExists()  # ファイルを作成
             self.sqlite.createAllTable()  # 全てのテーブルを作成
             return self.getCookieFromAction()
@@ -65,8 +70,8 @@ class CookieManager:
     def cookieDataExistsInDB(self):
         DBColNames = self.sqlite.columnsExists(tableName=self.tableName)
 
-        self.logger.warning(f"DBColNames: {DBColNames}")
-        self.logger.warning(f"self.columnsName: {self.columnsName}")
+        self.logger.debug(f"DBColNames: {DBColNames}")
+        self.logger.debug(f"self.columnsName: {self.columnsName}")
 
         # self.columnsNameの中にあるものがDBColNamesに全て入っているのかを確認
         result = all(cokName in DBColNames for cokName in self.columnsName)
@@ -124,7 +129,7 @@ class CookieManager:
     @decoInstance.funcBase
     def getCookie(self):
         cookies = self.getCookies()
-        self.logger.warning(f"cookies: {cookies}")
+        self.logger.debug(f"cookies: {cookies}")
         cookie = cookies[0]
         if cookie:
             return cookie
@@ -194,7 +199,7 @@ class CookieManager:
                 cookie['expires'] = self.currentTime + cookieData[6]
             elif cookieData[5]:
                 cookie['expires'] = cookieData[5]
-            self.logger.warning(f"cookie:\n{cookie}")
+            self.logger.debug(f"cookie:\n{cookie}")
 
             return cookie
 
@@ -228,13 +233,6 @@ class CookieManager:
 
 
 # ----------------------------------------------------------------------------------
-# 指定するSQLiteからcookieのデータを取得
-
-    def getCookieInSqlite(self, col: str='id', value: Any=1):
-        return self.sqlite.getRowRecordsByCol(col=col, value=value)
-
-
-# ----------------------------------------------------------------------------------
 # max-ageの時間の有効性を確認する
 
     @decoInstance.funcBase
@@ -246,8 +244,8 @@ class CookieManager:
             return self.cookieMakeAgain()
         else:
             self.logger.error("有効期限切れのcookie: 既存のCookieを消去して再度IDログイン実施")
-            self.deleteRecordsProcess()
-            return None
+            return self.getCookieFromAction()
+
 
 
 # ----------------------------------------------------------------------------------
@@ -260,17 +258,8 @@ class CookieManager:
             return self.cookieMakeAgain()
         else:
             self.logger.error("有効期限切れのcookie: 既存のCookieを消去して再度IDログイン実施")
-            self.deleteRecordsProcess()
-            return None
+            return self.getCookieFromAction()
 
 
 # ----------------------------------------------------------------------------------
-# 削除が完了したあとにIDを取得する
-
-    def deleteRecordsProcess(self, col: str='id', value: Any=1):
-        return self.sqlite.deleteRecordsByCol(col=self.primaryKey, value=value)
-
-
-# ----------------------------------------------------------------------------------
-
 
