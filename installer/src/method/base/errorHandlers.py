@@ -486,15 +486,11 @@ class SqliteError:
         self.getLogger = Logger(__name__, debugMode=debugMode)
         self.logger = self.getLogger.getLogger()
 
-        # instance
-        self.popup = Popup(debugMode=debugMode)
-        self.sysCommand = SysCommand(debugMode=debugMode)
-
 
 # ----------------------------------------------------------------------------------
 
 
-    def Handler(self, e: Exception, notifyFunc: Optional[Callable[[], None]]):
+    def Handler(self, e: Exception, notifyFunc: Optional[Callable[[], None]] = None):
         errorMessages = {
             sqlite3.IntegrityError: "[データの整合性エラー]",
             sqlite3.OperationalError: "[操作エラー（テーブルがない等）]",

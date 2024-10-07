@@ -63,6 +63,7 @@ class TableName(Enum):
 class ColumnsName(Enum):
     Cookies=('name', 'value', 'domain', 'path', 'expires', 'maxAge', 'createTime')
 
+    PRIMARY_KEY='id'
 
 # ----------------------------------------------------------------------------------
 
@@ -180,3 +181,5 @@ class ChatgptUtils(Enum):
     MaxToken=16000
 
 # ----------------------------------------------------------------------------------
+
+

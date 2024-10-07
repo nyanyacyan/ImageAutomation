@@ -360,7 +360,7 @@ class Decorators:
 # ----------------------------------------------------------------------------------
 
 
-    def sqliteHandler(self, func):
+    def sqliteErrorHandler(self, func):
         @wraps(func)
         def wrapper(*args, **kwargs):
             self.logger.info(f"********** {func.__name__} start **********")

@@ -84,20 +84,20 @@ class SQLite:
 # ③
 # SQLiteにcookiesの情報を書き込めるようにするための初期設定
 
-    @decoInstance.funcBase
+    @decoInstance.sqliteErrorHandler
     def createAllTable(self):
         for tableName, cols in self.tablePattern.items():
             self.logger.debug(f"tableName: {tableName}")
-            sql = self.createTableSqlPrompt(tableName=tableName, cols=cols)
+            sql = self._createTableSqlPrompt(tableName=tableName, cols=cols)
             self.SQLPromptBase(sql=sql)
-            self.checkTableExists(tableName=tableName)
+        self.checkTableExists()
 
 
 # ----------------------------------------------------------------------------------
 # ④
 
     @decoInstance.funcBase
-    def createTableSqlPrompt(self, tableName: str, cols: dict):
+    def _createTableSqlPrompt(self, tableName: str, cols: dict):
         colDef = ',\n'.join([f"{colName} {colSTS}" for colName, colSTS in cols.items()])
         self.logger.debug(f"colDef: {colDef}")
 
@@ -106,42 +106,9 @@ class SQLite:
 
 
 # ----------------------------------------------------------------------------------
-#TODO 現在使われてない
+# params: tuple = () > パラメータが何もなかったら空にするという意味
 
-
-    def checkAllTablesExist(self, tablePattern: dict):
-        for tableName in tablePattern.keys():
-            exists = self._tableExists(tableName=tableName)
-            if exists:
-                self.logger.info(f"{tableName} は存在してます")
-            else:
-                self.logger.error(f"{tableName} が存在しません")
-
-
-# ----------------------------------------------------------------------------------
-#TODO 現在使われてない
-
-
-    @decoInstance.funcBase
-    def _tableExists(self, tableName: str):
-        sql = "SELECT name FROM sqlite_master WHERE type='table';"
-        tablesData = self.SQLPromptBase(sql=sql, fetch='all')
-        tableNames = [tableData[0] for tableData in tablesData]
-        self.logger.critical(f"tableNames: {tableNames}")
-
-        self.logger.critical(f"tableNames:\n{tableNames}")
-        if tableName in tableNames:
-            self.logger.info(f"【success】{tableName} tableDataは存在してます")
-            return True
-        else:
-            self.logger.error(f"【success】{tableName} tableDataが存在しません")
-            return False
-
-
-# ----------------------------------------------------------------------------------
-# # params: tuple = () > パラメータが何もなかったら空にするという意味
-
-    @decoInstance.sqliteHandler
+    @decoInstance.sqliteErrorHandler
     def SQLPromptBase(self, sql: str, params: tuple = (), fetch: str = None):
         conn = self._getDBconnect()
         if not conn:
@@ -160,7 +127,7 @@ class SQLite:
 # ----------------------------------------------------------------------------------
 # 実行するSQL文にて定義して実行まで行う
 
-    @decoInstance.sqliteHandler
+    @decoInstance.sqliteErrorHandler
     def _executeSQL(self, conn: sqlite3.Connection, sql: str, params: tuple = ()) -> sqlite3.Cursor:
         cursor = conn.cursor()  # DBとの接続オブジェクトを受け取って通信ができるようにする
         cursor.execute(sql, params)  # 実行するSQL文にて定義して実行まで行う
@@ -170,7 +137,7 @@ class SQLite:
 # ----------------------------------------------------------------------------------
 # fetchの属性をキャッチ
 
-    @decoInstance.sqliteHandler
+    @decoInstance.sqliteErrorHandler
     def _fetchBool(self, cursor: sqlite3.Cursor, fetch: Literal['one', 'all', None]):
         if fetch == 'one':
             self.logger.debug(f"[one] c.fetchone()が実行されました")
@@ -190,7 +157,7 @@ class SQLite:
 # ----------------------------------------------------------------------------------
 
 
-    @decoInstance.sqliteHandler
+    @decoInstance.sqliteErrorHandler
     def _getDBconnect(self) -> sqlite3.Connection:
         dbFullPath = self.DBFullPath()
         return sqlite3.connect(dbFullPath)
@@ -200,9 +167,9 @@ class SQLite:
 
 
     @decoInstance.funcBase
-    def resetTable(self):
+    def resetTable(self, tableName: str):
         self.logger.warning("既存のテーブルを破棄して、再度構築")
-        sqlDrop = f"DROP TABLE IF EXISTS {self.tableName}"
+        sqlDrop = f"DROP TABLE IF EXISTS {tableName}"
         self.SQLPromptBase(sql=sqlDrop, fetch=None)
         return self.createTable()
 
@@ -226,38 +193,41 @@ class SQLite:
 
 
 # ----------------------------------------------------------------------------------
-
+# 全てのテーブル名を取得して、作成したテーブルが反映してるのか確認
 
     @decoInstance.funcBase
-    def checkTableExists(self, tableName: str):
+    def checkTableExists(self):
         sql = f"SELECT name FROM sqlite_master WHERE type='table';"
-        result = self.SQLPromptBase(sql=sql, fetch='all')
-        self.logger.warning(f"result: {result}")
+        allTables = self.SQLPromptBase(sql=sql, fetch='all')
+        self.logger.debug(f"allTables: {allTables}")
 
-        tableNames = [table[0] for table in result]
-        self.logger.critical(f"tableNames: {tableNames}")
-        if tableName in tableNames:
-            self.logger.info(f"{tableName} テーブルの作成に成功しています。")
+        tableNames = [table[0] for table in allTables]
+        tables = [tableKey for tableKey in self.tablePattern.keys()]
+        self.logger.debug(f"tableNames: {tableNames}")
+        self.logger.debug(f"tables: {tables}")
+
+        if all(table in tableNames for table in tables):
+            self.logger.info(f"全てのテーブルの作成に成功しています。")
         else:
-            self.logger.error(f"{tableName} テーブルの作成に失敗してます")
-        return result
+            self.logger.error(f"テーブルの作成に失敗してます")
+        return allTables
 
 
 # ----------------------------------------------------------------------------------
 # SQLiteへ入れ込む
 
     @decoInstance.funcBase
-    def insertData(self, col: tuple, values: tuple):
+    def insertData(self, tableName: str, col: tuple, values: tuple):
         placeholders = ', '.join(['?' for _ in values]) # valuesの数の文？を追加して結合
         self.logger.warning(f"values: {values}")
-        sql = f"INSERT INTO {self.tableName} {col} VALUES ({placeholders})"
+        sql = f"INSERT INTO {tableName} {col} VALUES ({placeholders})"
         rowData = self.SQLPromptBase(sql=sql, params=values, fetch=None)
-        self.logger.warning(f"{self.tableName} の行データ: {rowData}")
-        self.logger.info(f"【success】{self.tableName} テーブルにデータを追加に成功")
+        self.logger.warning(f"{tableName} の行データ: {rowData}")
+        self.logger.info(f"【success】{tableName} テーブルにデータを追加に成功")
 
-        sqlCheck = f"SELECT * FROM {self.tableName}"
+        sqlCheck = f"SELECT * FROM {tableName}"
         allData = self.SQLPromptBase(sql=sqlCheck, fetch='all')
-        self.logger.warning(f"{self.tableName} の全データ: {allData}")
+        self.logger.warning(f"{tableName} の全データ: {allData}")
         return rowData
 
 
@@ -265,11 +235,11 @@ class SQLite:
 # テーブルデータを全て引っ張る
 
     @decoInstance.funcBase
-    def getRecordsAllData(self):
-        sql = f"SELECT * FROM {self.tableName}"
+    def getRecordsAllData(self, tableName: str):
+        sql = f"SELECT * FROM {tableName}"
         result = self.SQLPromptBase(sql=sql, fetch='all')
-        self.logger.info(f"【success】{self.tableName} すべてのデータを抽出")
-        self.logger.info(f"result: {result}")
+        self.logger.critical(f"【success】{tableName} すべてのデータを抽出")
+        self.logger.critical(f"result: {result}")
         return result
 
 
@@ -277,10 +247,10 @@ class SQLite:
 # 指定したColumnの値を指定して行を抽出 > Column=name Value=5 > 指定の行を抜き出す > List
 
     @decoInstance.funcBase
-    def getAllRecordsByCol(self, col: str, value: Any):
-        sql = f"SELECT * FROM {self.tableName} WHERE {col} = ?"
+    def getAllRecordsByCol(self, tableName: str, col: str, value: Any):
+        sql = f"SELECT * FROM {tableName} WHERE {col} = ?"
         result = self.SQLPromptBase(sql=sql, params=(value, ), fetch='all')
-        self.logger.info(f"【success】{self.tableName} 指定のカラムデータをすべて抽出")
+        self.logger.info(f"【success】{tableName} 指定のカラムデータをすべて抽出")
         self.logger.info(f"result: {result}")
         return result
 
@@ -289,11 +259,11 @@ class SQLite:
 # 指定したColumnの値を指定して行を抽出 > Column=name Value=5 > 指定の行を抜き出す > row
 
     @decoInstance.funcBase
-    def getRowRecordsByCol(self, col: str, value: Any):
-        sql = f"SELECT * FROM {self.tableName} WHERE {col} = ?"
+    def getRowRecordsByCol(self, tableName: str, col: str, value: Any):
+        sql = f"SELECT * FROM {tableName} WHERE {col} = ?"
         result = self.SQLPromptBase(sql=sql, params=(value, ), fetch='one')
         if result:
-            self.logger.info(f"【success】{self.tableName} 指定の行のデータを抽出")
+            self.logger.info(f"【success】{tableName} 指定の行のデータを抽出")
             self.logger.info(f"result: {result}")
             return result
         else:
@@ -304,12 +274,12 @@ class SQLite:
 # 指定したColumnの値を指定して行を削除 > Column=name Value=5 > 指定の行を抜き出す
 
     @decoInstance.funcBase
-    def deleteRecordsByCol(self, col: str, value: Any):
+    def deleteRecordsByCol(self, tableName: str, col: str, value: Any):
         deleteRow = self.getRowRecordsByCol(col=col, value=value)
         self.logger.warning(f"削除対象のデータです\n{deleteRow}")
-        sql = f"DELETE FROM {self.tableName} WHERE {col} = ?"
+        sql = f"DELETE FROM {tableName} WHERE {col} = ?"
         result = self.SQLPromptBase(sql=sql, params=(value, ), fetch=None)
-        self.logger.info(f"【success】{self.tableName} 指定のデータを削除")
+        self.logger.info(f"【success】{tableName} 指定のデータを削除")
         self.logger.info(f"result: {result}")
         return result
 
@@ -318,13 +288,24 @@ class SQLite:
 # 指定したColumnの値を指定して行を削除 > Column=name Value=5 > 指定の行を抜き出す
 
     @decoInstance.funcBase
-    def deleteAllRecords(self):
+    def deleteAllRecords(self, tableName: str):
         deleteData = self.getRecordsAllData()
         self.logger.warning(f"削除対象のデータです\n{deleteData}")
-        sql = f"DELETE FROM {self.tableName}"
+        sql = f"DELETE FROM {tableName}"
         result = self.SQLPromptBase(sql=sql, fetch=None)
-        self.logger.info(f"【success】{self.tableName} すべてのデータを削除")
+        self.logger.info(f"【success】{tableName} すべてのデータを削除")
         self.logger.info(f"result: {result}")
+        return result
+
+
+# ----------------------------------------------------------------------------------
+
+    @decoInstance.sqliteErrorHandler
+    def getColMaxValueRow(self, tableName: str, primaryKey: str):
+        sql = f"SELECT * FROM {tableName} ORDER BY {primaryKey} DESC LIMIT 1"
+        result = self.SQLPromptBase(sql=sql, fetch='all')
+        self.logger.critical(f"【success】{tableName} 最新情報を取得: primaryKey: {primaryKey}")
+        self.logger.critical(f"result: {result}")
         return result
 
 

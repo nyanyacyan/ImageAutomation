@@ -45,6 +45,7 @@ class TestCookie:
             mockWithoutMaxAge = {key: value for key, value in mock_getCookie_value.items() if key != 'max-age'}
 
             print(resultWithoutId)
+            print(mockWithoutMaxAge)
             assert resultWithoutId == mockWithoutMaxAge
 
 
