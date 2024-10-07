@@ -7,7 +7,7 @@ import sqlite3
 from typing import Any
 from pathlib import Path
 from datetime import datetime
-
+from typing import Literal
 
 
 # 自作モジュール
@@ -144,11 +144,17 @@ class SQLite:
     @decoInstance.sqliteHandler
     def SQLPromptBase(self, sql: str, params: tuple = (), fetch: str = None):
         conn = self._getDBconnect()
-        cursor = self._executeSQL(conn=conn, sql=sql, params=params)
-        result = self._fetchBool(cursor=cursor, fetch=fetch)
-        self.logger.debug("connを閉じました")
-        conn.close()
-        return result
+        if not conn:
+            return None
+
+        try:
+            cursor = self._executeSQL(conn=conn, sql=sql, params=params)
+            result = self._fetchBool(cursor=cursor, fetch=fetch)
+            return result
+
+        finally:
+            self.logger.debug("connを閉じました")
+            conn.close()
 
 
 # ----------------------------------------------------------------------------------
@@ -165,7 +171,7 @@ class SQLite:
 # fetchの属性をキャッチ
 
     @decoInstance.sqliteHandler
-    def _fetchBool(self, cursor: sqlite3.Cursor, fetch: str):
+    def _fetchBool(self, cursor: sqlite3.Cursor, fetch: Literal['one', 'all', None]):
         if fetch == 'one':
             self.logger.debug(f"[one] c.fetchone()が実行されました")
             return cursor.fetchone()
