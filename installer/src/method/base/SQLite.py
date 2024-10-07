@@ -46,8 +46,9 @@ class SQLite:
 
     def boolFilePath(self, extension: str = Extension.DB.value):
         dbDirPath = self.path.getResultDBDirPath()
+        self.logger.warning(f"dbDirPath: {dbDirPath}")
         dbFilePath = dbDirPath / f"{self.currentDate}{extension}"
-        if dbFilePath:
+        if dbFilePath.exists():
             self.logger.warning(f"ファイルが見つかりました: {dbFilePath}")
             return True
         else:
@@ -74,7 +75,6 @@ class SQLite:
         if not fullPath.exists():
             fullPath.touch()
             self.logger.info(f"{fullPath.name} がないため作成")
-            self.createAllTable()
         else:
             self.logger.debug(f"{fullPath.name} 発見")
         return fullPath
@@ -143,8 +143,15 @@ class SQLite:
         try:
             c = conn.cursor()  # DBとの接続オブジェクトを受け取って通信ができるようにする
 
-            self.logger.debug(f"SQL実行: {sql}, パラメータ: {params}")
-            c.execute(sql, params)  # 実行するSQL文にて定義して実行まで行う
+            self.logger.debug(f"SQL: \n{sql}, パラメータ: \n{params}")
+
+
+            try:
+                c.execute(sql, params)  # 実行するSQL文にて定義して実行まで行う
+            except sqlite3.Error as e:
+                self.logger.error(f"SQL実行時にエラーが発生しました: {e}")
+                raise
+
 
             self.logger.warning(f"fetch: {fetch}")
 

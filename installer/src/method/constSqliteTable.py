@@ -16,7 +16,7 @@ class TableSchemas:
 # サブ辞書
 
     COOKIES_TABLE_COLUMNS = {
-        "id": "PRIMARY KEY AUTOINCREMENT",
+        "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
         "name": "TEXT NOT NULL",
         "value": "TEXT NOT NULL",
         "domain": "TEXT",
