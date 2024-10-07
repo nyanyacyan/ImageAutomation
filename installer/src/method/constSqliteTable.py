@@ -48,8 +48,8 @@ class TableSchemas:
 
     TABLE_PATTERN = {
         "cookiesDB": COOKIES_TABLE_COLUMNS,
-        # "text": TEXT_TABLE_COLUMNS,
-        # "image": IMAGE_TABLE_COLUMNS
+        "text": TEXT_TABLE_COLUMNS,
+        "image": IMAGE_TABLE_COLUMNS
     }
 
 

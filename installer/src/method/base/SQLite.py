@@ -42,53 +42,71 @@ class SQLite:
 
 
 # ----------------------------------------------------------------------------------
+# ①
 
-
-    def getDBFullPath(self, extension: str = Extension.DB.value):
+    def boolFilePath(self, extension: str = Extension.DB.value):
         dbDirPath = self.path.getResultDBDirPath()
-
         dbFilePath = dbDirPath / f"{self.currentDate}{extension}"
-        self.isFileExists(path=dbFilePath, tablePattern=self.tablePattern)
-        try:
-            conn = sqlite3.connect(dbFilePath)
-            conn.close()
-            return dbFilePath
-
-        except sqlite3.OperationalError as e:
-            self.logger.error(f"dbFullPath: {dbFilePath}")
-            self.logger.error(f"データベース接続エラー: {e}")
-            raise
+        if dbFilePath:
+            self.logger.warning(f"ファイルが見つかりました: {dbFilePath}")
+            return True
+        else:
+            self.logger.warning(f"ファイルが見つかりません: {dbFilePath}")
+            return False
 
 
 # ----------------------------------------------------------------------------------
+# # ①
+
+    def DBFullPath(self, extension: str = Extension.DB.value):
+        dbDirPath = self.path.getResultDBDirPath()
+        dbFilePath = dbDirPath / f"{self.currentDate}{extension}"
+        return dbFilePath
+
+
+# ----------------------------------------------------------------------------------
+# ②
 # ディレクトリがない可能性の箇所に貼る関数→同時にテーブルを作成
 
-    def isFileExists(self, path: Path, tablePattern: dict):
-        if not path.exists():
-            path.touch()
-            self.logger.info(f"{path.name} がないため作成")
-            self.createAllTable(tablePattern=tablePattern)
+    def isFileExists(self):
+        fullPath = self.DBFullPath()
+
+        if not fullPath.exists():
+            fullPath.touch()
+            self.logger.info(f"{fullPath.name} がないため作成")
+            self.createAllTable()
         else:
-            self.logger.debug(f"{path.name} 発見")
-        return path
-
-
-# ---------------------------------------------------------------------------------
-#TODO ここを修正する
-
-    @decoInstance.funcBase
-    def allTableExistsPrompt(self, sql: str, params: tuple = ()):
-        conn = self.getDBconnect()
-        cursor = conn.cursor()
-        cursor.execute(sql, params)
-        result = cursor.fetchall()
-
-        conn.close()
-        return result
+            self.logger.debug(f"{fullPath.name} 発見")
+        return fullPath
 
 
 # ----------------------------------------------------------------------------------
-# 全てのテーブルが有るかどうかを確認
+# ③
+# SQLiteにcookiesの情報を書き込めるようにするための初期設定
+
+    @decoInstance.funcBase
+    def createAllTable(self):
+        for tableName, cols in self.tablePattern.items():
+            self.logger.warning(f"tableName: {tableName}")
+            sql = self.createTableSqlPrompt(tableName=tableName, cols=cols)
+            self.SQLPromptBase(sql=sql)
+            self.checkTableExists()
+
+
+# ----------------------------------------------------------------------------------
+# ④
+
+    @decoInstance.funcBase
+    def createTableSqlPrompt(self, tableName: str, cols: dict):
+        colDef = ',\n'.join([f"{colName} {colSTS}" for colName, colSTS in cols.items()])
+        self.logger.debug(f"colDef: {colDef}")
+
+        prompt = f"CREATE TABLE IF NOT EXISTS {tableName}(\n{colDef}\n)"
+        return prompt
+
+
+# ----------------------------------------------------------------------------------
+# # 全てのテーブルが有るかどうかを確認
 
     def checkAllTablesExist(self, tablePattern: dict):
         for tableName in tablePattern.keys():
@@ -103,10 +121,11 @@ class SQLite:
 
 
     @decoInstance.funcBase
-    def tableExists(self, tableName):
-        sql = "SELECT name FROM sqlite_master WHERE type='table' AND name=?;"
-        tablesData = self.allTableExistsPrompt(sql=sql, params=(tableName,))
+    def tableExists(self, tableName: str):
+        sql = "SELECT name FROM sqlite_master WHERE type='table';"
+        tablesData = self.SQLPromptBase(sql=sql, fetch='all')
         tableNames = [tableData[0] for tableData in tablesData]
+        self.logger.critical(f"tableNames:\n{tableNames}")
         if tableName in tableNames:
             self.logger.info(f"【success】{tableName} tableDataは存在してます")
             return True
@@ -123,14 +142,17 @@ class SQLite:
         conn = self.getDBconnect()
         try:
             c = conn.cursor()  # DBとの接続オブジェクトを受け取って通信ができるようにする
+
             self.logger.debug(f"SQL実行: {sql}, パラメータ: {params}")
             c.execute(sql, params)  # 実行するSQL文にて定義して実行まで行う
 
+            self.logger.warning(f"fetch: {fetch}")
+
             if fetch == 'one':
-                self.logger.debug(f"[all] c.fetchone()が実行されました")
+                self.logger.warning(f"[all] c.fetchone()が実行されました")
                 return c.fetchone()
             elif fetch == 'all':
-                self.logger.debug(f"[all] c.fetchall()が実行されました")
+                self.logger.warning(f"[all] c.fetchall()が実行されました")
                 return c.fetchall()
             else:
                 conn.commit()
@@ -155,7 +177,7 @@ class SQLite:
 
 
     def getDBconnect(self) -> sqlite3.Connection:
-        dbFullPath = self.getDBFullPath()
+        dbFullPath = self.DBFullPath()
         try:
             conn = sqlite3.connect(dbFullPath)
             return conn
@@ -163,30 +185,6 @@ class SQLite:
             self.logger.error(f"dbFullPath: {dbFullPath}")
             self.logger.error(f"データベース接続エラー: {e}")
             raise
-
-
-# ----------------------------------------------------------------------------------
-# SQLiteにcookiesの情報を書き込めるようにするための初期設定
-
-    @decoInstance.funcBase
-    def createAllTable(self, tablePattern: dict):
-        for tableName, cols in tablePattern.items():
-            self.logger.warning(f"tableName: {tableName}")
-            sql = self.createTableSqlPrompt(tableName=tableName, cols=cols)
-            self.SQLPromptBase(sql=sql, fetch=None)
-            self.checkTableExists()
-
-
-# ----------------------------------------------------------------------------------
-
-
-    @decoInstance.funcBase
-    def createTableSqlPrompt(self, tableName: str, cols: dict):
-        colDef = ',\n'.join([f"{colName} {colSTS}" for colName, colSTS in cols.items()])
-        self.logger.debug(f"colDef: {colDef}")
-
-        prompt = f"CREATE TABLE IF NOT EXISTS {tableName}(\n{colDef}\n)"
-        return prompt
 
 
 # ----------------------------------------------------------------------------------
