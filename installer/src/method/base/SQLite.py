@@ -87,10 +87,10 @@ class SQLite:
     @decoInstance.funcBase
     def createAllTable(self):
         for tableName, cols in self.tablePattern.items():
-            self.logger.warning(f"tableName: {tableName}")
+            self.logger.debug(f"tableName: {tableName}")
             sql = self.createTableSqlPrompt(tableName=tableName, cols=cols)
             self.SQLPromptBase(sql=sql)
-            self.checkTableExists()
+            self.checkTableExists(tableName=tableName)
 
 
 # ----------------------------------------------------------------------------------
@@ -152,18 +152,15 @@ class SQLite:
                 self.logger.error(f"SQL実行時にエラーが発生しました: {e}")
                 raise
 
-
-            self.logger.warning(f"fetch: {fetch}")
-
             if fetch == 'one':
-                self.logger.warning(f"[all] c.fetchone()が実行されました")
+                self.logger.debug(f"[all] c.fetchone()が実行されました")
                 return c.fetchone()
             elif fetch == 'all':
-                self.logger.warning(f"[all] c.fetchall()が実行されました")
+                self.logger.debug(f"[all] c.fetchall()が実行されました")
                 return c.fetchall()
             else:
                 conn.commit()
-                self.logger.warning("コミットの実施を行いました")
+                self.logger.info("コミットの実施を行いました")
                 return None
 
         except sqlite3.OperationalError as e:
@@ -176,7 +173,7 @@ class SQLite:
             self.logger.error(f"エラーが発生しました。トランザクションをロールバックしました:{e}")  # ロールバックは変更する前の状態に戻すこと
 
         finally:
-            self.logger.warning("connを閉じました")
+            self.logger.debug("connを閉じました")
             conn.close()
 
 
@@ -227,14 +224,16 @@ class SQLite:
 
 
     @decoInstance.funcBase
-    def checkTableExists(self):
+    def checkTableExists(self, tableName: str):
         sql = f"SELECT name FROM sqlite_master WHERE type='table';"
         result = self.SQLPromptBase(sql=sql, fetch='all')
         self.logger.warning(f"result: {result}")
-        if result:
-            self.logger.info(f"{self.tableName} テーブルの作成に成功しています。")
+
+        tableNames = [table[0] for table in result]
+        if tableName in tableNames:
+            self.logger.info(f"{tableName} テーブルの作成に成功しています。")
         else:
-            self.logger.error(f"{self.tableName} テーブルの作成に失敗してます")
+            self.logger.error(f"{tableName} テーブルの作成に失敗してます")
         return result
 
 
