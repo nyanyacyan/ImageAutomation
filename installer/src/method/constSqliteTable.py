@@ -31,7 +31,13 @@ class TableSchemas:
 # サブ辞書
 
     TEXT_TABLE_COLUMNS = {
-        "startWord": "TEXT NOT NULL"
+        "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
+        "name": "TEXT NOT NULL",
+        "getWord": "TEXT NOT NULL",
+        "createTime": "INTEGER NOT NULL",
+        "url": "TEXT",
+        "title": "TEXT",
+        "status": "TEXT CHECK (status IN ('complete', 'Error', NULL))"
     }
 
 
@@ -39,7 +45,13 @@ class TableSchemas:
 # サブ辞書
 
     IMAGE_TABLE_COLUMNS = {
-        "startImage": "BLOB NOT NULL"
+        "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
+        "name": "TEXT NOT NULL",
+        "imageData": "BLOB NOT NULL",
+        "createTime": "INTEGER NOT NULL",
+        "url": "TEXT",
+        "title": "TEXT",
+        "status": "TEXT CHECK (status IN ('complete', 'Error', NULL))"
     }
 
 
