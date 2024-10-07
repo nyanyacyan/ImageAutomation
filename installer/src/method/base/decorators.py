@@ -15,7 +15,7 @@ from .utils import Logger
 from .path import BaseToPath
 from .sysCommand import SysCommand
 from ..const import ErrorMessage
-from .errorHandlers import NetworkHandler, FileWriteError, RequestRetryAction, FileReadHandler, GeneratePromptHandler, ChromeHandler
+from .errorHandlers import NetworkHandler, FileWriteError, RequestRetryAction, FileReadHandler, GeneratePromptHandler, ChromeHandler, SqliteError
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -40,6 +40,7 @@ class Decorators:
         self.generatePromptHandler = GeneratePromptHandler(debugMode=debugMode)
         self.chromeHandler = ChromeHandler(debugMode=debugMode)
         self.sysCommand = SysCommand(debugMode=debugMode)
+        self.sqliteHandler = SqliteError(debugMode=debugMode)
 
 
 # ----------------------------------------------------------------------------------
@@ -354,6 +355,26 @@ class Decorators:
 
             return wrapper
         return decorator
+
+
+# ----------------------------------------------------------------------------------
+
+
+    def sqliteHandler(self, func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            self.logger.info(f"********** {func.__name__} start **********")
+            self.logger.debug(f"引数:\nargs={args}, kwargs={kwargs}")
+            try:
+                # 実行する関数を定義
+                result = func(*args, **kwargs)
+                return result
+
+            except Exception as e:
+                self.sqliteHandler.Handler(e=e)
+                return None
+
+        return wrapper
 
 
 # ----------------------------------------------------------------------------------

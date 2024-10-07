@@ -5,7 +5,7 @@
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
 
-import os, sys, time, pickle, subprocess
+import os, sys, time, pickle, subprocess, sqlite3
 import asyncio
 import gspread
 import aiohttp
@@ -474,5 +474,39 @@ class ChromeHandler:
 
         self.popup.popupCommentChoice(popupTitle=popupTitle, comment=comment, func=func)
 
+
+# ----------------------------------------------------------------------------------
+# **********************************************************************************
+
+
+class SqliteError:
+    def __init__(self, debugMode=True):
+
+        # logger
+        self.getLogger = Logger(__name__, debugMode=debugMode)
+        self.logger = self.getLogger.getLogger()
+
+        # instance
+        self.popup = Popup(debugMode=debugMode)
+        self.sysCommand = SysCommand(debugMode=debugMode)
+
+
+# ----------------------------------------------------------------------------------
+
+
+    def Handler(self, e: Exception, notifyFunc: Optional[Callable[[], None]]):
+        errorMessages = {
+            sqlite3.IntegrityError: "[データの整合性エラー]",
+            sqlite3.OperationalError: "[操作エラー（テーブルがない等）]",
+            sqlite3.ProgrammingError: "[プログラミングエラー（SQL構文ミス等）]",
+            sqlite3.DatabaseError: "[データベースに関するエラー]",
+        }
+
+        errorType = type(e)
+        errorMessage = errorMessages.get(errorType, "[不明なSQLiteエラー]")
+        self.logger.error(f"{errorMessage}: {e}")
+
+        if not notifyFunc is None:
+            notifyFunc(e)
 
 # ----------------------------------------------------------------------------------

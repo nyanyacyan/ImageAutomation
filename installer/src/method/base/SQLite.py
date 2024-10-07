@@ -111,7 +111,7 @@ class SQLite:
 
     def checkAllTablesExist(self, tablePattern: dict):
         for tableName in tablePattern.keys():
-            exists = self.tableExists(tableName=tableName)
+            exists = self._tableExists(tableName=tableName)
             if exists:
                 self.logger.info(f"{tableName} は存在してます")
             else:
@@ -123,7 +123,7 @@ class SQLite:
 
 
     @decoInstance.funcBase
-    def tableExists(self, tableName: str):
+    def _tableExists(self, tableName: str):
         sql = "SELECT name FROM sqlite_master WHERE type='table';"
         tablesData = self.SQLPromptBase(sql=sql, fetch='all')
         tableNames = [tableData[0] for tableData in tablesData]
@@ -141,58 +141,53 @@ class SQLite:
 # ----------------------------------------------------------------------------------
 # # params: tuple = () > パラメータが何もなかったら空にするという意味
 
-    @decoInstance.funcBase
+    @decoInstance.sqliteHandler
     def SQLPromptBase(self, sql: str, params: tuple = (), fetch: str = None):
-        conn = self.getDBconnect()
-        try:
-            c = conn.cursor()  # DBとの接続オブジェクトを受け取って通信ができるようにする
+        conn = self._getDBconnect()
+        cursor = self._executeSQL(conn=conn, sql=sql, params=params)
+        result = self._fetchBool(cursor=cursor, fetch=fetch)
+        self.logger.debug("connを閉じました")
+        conn.close()
+        return result
 
-            self.logger.debug(f"SQL: \n{sql}, パラメータ: \n{params}")
+
+# ----------------------------------------------------------------------------------
+# 実行するSQL文にて定義して実行まで行う
+
+    @decoInstance.sqliteHandler
+    def _executeSQL(self, conn: sqlite3.Connection, sql: str, params: tuple = ()) -> sqlite3.Cursor:
+        cursor = conn.cursor()  # DBとの接続オブジェクトを受け取って通信ができるようにする
+        cursor.execute(sql, params)  # 実行するSQL文にて定義して実行まで行う
+        return cursor
 
 
-            try:
-                c.execute(sql, params)  # 実行するSQL文にて定義して実行まで行う
-            except sqlite3.Error as e:
-                self.logger.error(f"SQL実行時にエラーが発生しました: {e}")
-                raise
+# ----------------------------------------------------------------------------------
+# fetchの属性をキャッチ
 
-            if fetch == 'one':
-                self.logger.debug(f"[all] c.fetchone()が実行されました")
-                return c.fetchone()
-            elif fetch == 'all':
-                self.logger.debug(f"[all] c.fetchall()が実行されました")
-                return c.fetchall()
-            else:
-                conn.commit()
-                self.logger.info("コミットの実施を行いました")
-                return None
+    @decoInstance.sqliteHandler
+    def _fetchBool(self, cursor: sqlite3.Cursor, fetch: str):
+        if fetch == 'one':
+            self.logger.debug(f"[one] c.fetchone()が実行されました")
+            return cursor.fetchone()
 
-        except sqlite3.OperationalError as e:
-            if 'no such table' in str(e):
-                self.logger.error(f"テーブルは作成されてるはずなのにない: {e}")
-                raise Exception("テーブルの作成が完了してるはずができてない")
+        elif fetch == 'all':
+            self.logger.debug(f"[all] c.fetchall()が実行されました")
+            return cursor.fetchall()
 
-        except Exception as e:
-            conn.rollback()
-            self.logger.error(f"エラーが発生しました。トランザクションをロールバックしました:{e}")  # ロールバックは変更する前の状態に戻すこと
-
-        finally:
-            self.logger.debug("connを閉じました")
-            conn.close()
+        # データ抽出以外の処理を実施した場合
+        else:
+            cursor.connection.commit()
+            self.logger.info(f"コミットの実施をしました")
+            return None
 
 
 # ----------------------------------------------------------------------------------
 
 
-    def getDBconnect(self) -> sqlite3.Connection:
+    @decoInstance.sqliteHandler
+    def _getDBconnect(self) -> sqlite3.Connection:
         dbFullPath = self.DBFullPath()
-        try:
-            conn = sqlite3.connect(dbFullPath)
-            return conn
-        except sqlite3.OperationalError as e:
-            self.logger.error(f"dbFullPath: {dbFullPath}")
-            self.logger.error(f"データベース接続エラー: {e}")
-            raise
+        return sqlite3.connect(dbFullPath)
 
 
 # ----------------------------------------------------------------------------------
