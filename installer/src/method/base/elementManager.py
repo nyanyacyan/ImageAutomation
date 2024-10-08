@@ -5,6 +5,7 @@
 # import
 import time
 from selenium.webdriver.chrome.webdriver import WebDriver
+from datetime import datetime
 
 
 # 自作モジュール
@@ -25,6 +26,7 @@ class ElementManager:
         self.logger = self.getLogger.getLogger()
 
         self.chrome = chrome
+        self.currentDate = datetime.now().strftime('%y%m%d_%H%M%S')
 
 
 # ----------------------------------------------------------------------------------
@@ -112,3 +114,14 @@ class ElementManager:
 
 
 # ----------------------------------------------------------------------------------
+
+
+    def getTextAndMeta(self, by: str, titleBy: str, value: str, titleValue: str):
+        textMeta = {}
+        date = self.currentDate
+        text = self.getElement(by=by, value=value)
+        url = self.chrome.current_url()
+        title = self.getElement(by=titleBy, value=titleValue)
+        
+        if text:
+            status = "success"
