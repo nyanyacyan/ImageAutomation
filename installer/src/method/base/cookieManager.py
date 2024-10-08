@@ -4,7 +4,6 @@
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
 import time
-from typing import Any
 from selenium.webdriver.chrome.webdriver import WebDriver
 
 
@@ -12,7 +11,6 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 from .utils import Logger
 from .SQLite import SQLite
 from ..const import TableName, ColumnsName
-from ..constSqliteTable import TableSchemas
 from .decorators import Decorators
 
 decoInstance = Decorators(debugMode=True)
@@ -97,10 +95,10 @@ class CookieManager:
             createTimeValue = newCookieData[7]
 
             if maxAgeValue:
-                return self.getMaxAgeLimit(maxAgeValue=maxAgeValue, createTimeValue=createTimeValue)
+                return self._getMaxAgeLimit(maxAgeValue=maxAgeValue, createTimeValue=createTimeValue)
 
             elif expiresValue:
-                return self.getExpiresLimit(expiresValue=expiresValue)
+                return self._getExpiresLimit(expiresValue=expiresValue)
 
             else:
                 self.logger.warning("Cookieの有効期限が設定されてません")
@@ -128,7 +126,7 @@ class CookieManager:
 
     @decoInstance.funcBase
     def getCookie(self):
-        cookies = self.getCookies()
+        cookies = self._getCookies()
         self.logger.debug(f"cookies: {cookies}")
         cookie = cookies[0]
         if cookie:
@@ -140,7 +138,7 @@ class CookieManager:
 # ----------------------------------------------------------------------------------
 
 
-    def getCookies(self):
+    def _getCookies(self):
         return self.chrome.get_cookies()
 
 
@@ -218,10 +216,10 @@ class CookieManager:
             createTimeValue = cookieData[7]
 
             if maxAgeValue:
-                return self.getMaxAgeLimit(maxAgeValue=maxAgeValue, createTimeValue=createTimeValue)
+                return self._getMaxAgeLimit(maxAgeValue=maxAgeValue, createTimeValue=createTimeValue)
 
             elif expiresValue:
-                return self.getExpiresLimit(expiresValue=expiresValue)
+                return self._getExpiresLimit(expiresValue=expiresValue)
 
             else:
                 self.logger.warning("Cookieの有効期限が設定されてません")
@@ -236,7 +234,7 @@ class CookieManager:
 # max-ageの時間の有効性を確認する
 
     @decoInstance.funcBase
-    def getMaxAgeLimit(self, maxAgeValue: int, createTimeValue: int):
+    def _getMaxAgeLimit(self, maxAgeValue: int, createTimeValue: int):
         limitTime = maxAgeValue + createTimeValue
 
         if self.currentTime < limitTime:
@@ -252,7 +250,7 @@ class CookieManager:
 # expiresの時間の有効性を確認する
 
     @decoInstance.funcBase
-    def getExpiresLimit(self, expiresValue: int):
+    def _getExpiresLimit(self, expiresValue: int):
         if self.currentTime < expiresValue:
             self.logger.info("cookieが有効: 既存のCookieを使ってログインを行います")
             return self.cookieMakeAgain()

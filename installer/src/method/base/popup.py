@@ -5,7 +5,7 @@
 # import
 import tkinter as tk
 from tkinter import messagebox
-from typing import Callable, Optional, Any
+from typing import Callable, Optional
 
 
 # 自作モジュール

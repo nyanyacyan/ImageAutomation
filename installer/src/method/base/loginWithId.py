@@ -9,7 +9,6 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 
 # 自作モジュール
 from .utils import Logger
-from .driverWait import Wait
 from .elementManager import ElementManager
 from .driverDeco import jsCompleteWaitDeco, InputDeco, ClickDeco
 
