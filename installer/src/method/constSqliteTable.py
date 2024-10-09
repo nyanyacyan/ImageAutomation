@@ -35,7 +35,7 @@ class TableSchemas:
     TEXT_TABLE_COLUMNS = {
         "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
         "name": "TEXT NOT NULL",
-        "getWord": "TEXT NOT NULL",
+        "getText": "TEXT NOT NULL",
         "createTime": "TEXT NOT NULL",
         "url": "TEXT NOT NULL",
         "title": "TEXT",

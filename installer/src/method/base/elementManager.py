@@ -116,12 +116,35 @@ class ElementManager:
 # ----------------------------------------------------------------------------------
 
 
-    def getTextAndMeta(self, by: str, titleBy: str, value: str, titleValue: str):
-        textMeta = {}
+    def getTextAndMeta(self, name: str, by: str, titleBy: str, value: str, titleValue: str, placement: int, priority: int, chatGpt1: str, chatGpt2: str):
+        dataDict = {}
+        name = name
         date = self.currentDate
-        text = self.getElement(by=by, value=value)
+        getText = self.getElement(by=by, value=value)
         url = self.chrome.current_url()
         title = self.getElement(by=titleBy, value=titleValue)
-        
-        if text:
+        chatGpt1 = "ここに関数をいれる"
+        chatGpt1 = "ここに関数をいれる"
+
+        if getText:
             status = "success"
+        else:
+            status = "failure"
+
+        dataDict[name]={
+            "name": name,
+            "getText": getText,
+            "createTime": date,
+            "url": url,
+            "title": title,
+            "placement": placement,
+            "priority": priority,
+            "status": status,
+            "chatGpt1": chatGpt1,
+            "chatGpt2": chatGpt2,
+        }
+
+        return dataDict
+
+
+# ----------------------------------------------------------------------------------
