@@ -29,15 +29,21 @@ class TableSchemas:
 
 # ----------------------------------------------------------------------------------
 # サブ辞書
+# priorityは優先順位→若い番号ほど順位が高い
+
 
     TEXT_TABLE_COLUMNS = {
         "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
         "name": "TEXT NOT NULL",
         "getWord": "TEXT NOT NULL",
-        "createTime": "INTEGER NOT NULL",
-        "url": "TEXT",
+        "createTime": "TEXT NOT NULL",
+        "url": "TEXT NOT NULL",
         "title": "TEXT",
-        "status": "TEXT CHECK (status IN ('complete', 'Error', NULL))"
+        "placement": "INTEGER CHECK (placement IN (1, 2, 3, 4))",
+        "priority": "INTEGER NOT NULL",
+        "status": "TEXT CHECK (status IN ('complete', 'Error'))",
+        "chatGpt1": "TEXT",
+        "chatGpt2": "TEXT",
     }
 
 
@@ -48,10 +54,12 @@ class TableSchemas:
         "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
         "name": "TEXT NOT NULL",
         "imageData": "BLOB NOT NULL",
-        "createTime": "INTEGER NOT NULL",
-        "url": "TEXT",
+        "createTime": "TEXT NOT NULL",
+        "url": "TEXT NOT NULL",
         "title": "TEXT",
-        "status": "TEXT CHECK (status IN ('complete', 'Error', NULL))"
+        "placement": "INTEGER CHECK (placement IN (1, 2, 3, 4))",
+        "priority": "INTEGER NOT NULL",
+        "status": "TEXT CHECK (status IN ('complete', 'Error'))",
     }
 
 
