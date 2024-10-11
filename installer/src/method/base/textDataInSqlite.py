@@ -54,10 +54,22 @@ class TextDataInSQLite:
 # metaInfo
 
     def _metaInfo(self, **kwargs):
-        pass
+        date = self.currentDate
+        getText = self.getElement(by=kwargs['textBy'], value=kwargs['textValue'])
+        url = self.chrome.current_url()
+        title = self.getElement(by=kwargs['titleBy'], value=kwargs['titleValue'])
 
+        dataDict = {
+            "getText": getText,
+            "createTime": date,
+            "url": url,  # URL
+            "title": title,  # サイトタイトル
+            "placementPage": kwargs['placementPage'],
+            "priority": kwargs['priority'],
+            "status": kwargs['status'],
+        }
 
-
+        return dataDict
 
 
 # ----------------------------------------------------------------------------------
@@ -79,7 +91,6 @@ class TextDataInSQLite:
         return dataDict
 
 
-
 # ----------------------------------------------------------------------------------
 
 
@@ -96,6 +107,7 @@ class TextDataInSQLite:
         }
 
         return dataDict
+
 
 # ----------------------------------------------------------------------------------
 
