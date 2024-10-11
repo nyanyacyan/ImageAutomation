@@ -6,7 +6,7 @@
 import time
 from selenium.webdriver.chrome.webdriver import WebDriver
 from datetime import datetime
-
+from typing import Dict, Any
 
 # 自作モジュール
 from .utils import Logger
@@ -120,78 +120,6 @@ class ElementManager:
 # ----------------------------------------------------------------------------------
 
 
-    def getTextAndMeta(
-        self,
-        name: str,
-        by: str,
-        titleBy: str,
-        itemBy: str,
-        value: str,
-        titleValue: str,
-        itemValue: str,
-        addressBy: str,
-        addressValue: str,
-        areaBy: str,
-        areaValue: str,
-        placementPage: int,
-        priority: int,
-        chatGpt1: str,
-        chatGpt2: str
-    ):
-
-        dataDict = {}
-        name = name
-        date = self.currentDate
-        getText = self.getElement(by=by, value=value)
-        url = self.chrome.current_url()
-        title = self.getElement(by=titleBy, value=titleValue)
-
-
-        address = self._getAddress(by=addressBy, value=addressValue)
-        areaScale = self.getElement(by=areaBy, value=areaValue)
-        itemList = self._textCleaner(by=itemBy, value=itemValue)
-        chatGpt1 = "ここに関数をいれる"
-        chatGpt1 = "ここに関数をいれる"
-
-        if getText:
-            status = "success"
-        else:
-            status = "failure"
-
-        dataDict[name]={
-            "name": name,
-            "getText": getText,
-            "createTime": date,
-            "url": url,
-            "title": title,
-
-            "address": address,
-            "areaScale": areaScale,
-            "item1": itemList[0],
-            "item2": itemList[1],
-            "item3": itemList[2],
-            "item4": itemList[3],
-            "item5": itemList[4],
-            "item6": itemList[5],
-            "item7": itemList[6],
-            "item8": itemList[7],
-            "item9": itemList[8],
-            "item10": itemList[9],
-            "item11": itemList[10],
-            "item12": itemList[11],
-            "placementPage": placementPage,
-            "priority": priority,
-            "status": status,
-            "chatGpt1": chatGpt1,
-            "chatGpt2": chatGpt2,
-        }
-
-        return dataDict
-
-
-# ----------------------------------------------------------------------------------
-
-
     def _getItemsList(self, by: str, value: str):
         itemElements = self.getElement(by=by, value=value)
         itemsText = itemElements.text
@@ -219,6 +147,120 @@ class ElementManager:
         for address in addressList:
             if fullAddress.startswith(address):
                 return address
+
+
+# ----------------------------------------------------------------------------------
+# 辞書dataの初期化
+
+    def _initDict(self, name: str):# -> dict[str, dict]:
+        return {name: {}}
+
+
+# ----------------------------------------------------------------------------------
+# サブ辞書の中身を入れ込む
+
+    def updateSubDict(self, dictBox: dict[str, dict[str, Any]], name: str, inputDict: Dict[str, Any]):
+        dictBox[name].update(inputDict)
+        return dictBox
+
+
+# ----------------------------------------------------------------------------------
+
+
+    def getTextAndMeta(
+        self,
+        name: str,
+
+        # 1枚目
+        trainLineBy: str,
+        trainLineValue: str,
+        stationBy: str,
+        stationValue: str,
+        walkingBy: str,
+        walkingValue: str,
+        addressBy: str,
+        addressValue: str,
+
+        # 2枚目以降
+        itemBy: str,
+        itemValue: str,
+        by: str,
+        value: str,
+        titleBy: str,
+        titleValue: str,
+        areaBy: str,
+        areaValue: str,
+        placementPage: int,
+        priority: int,
+        chatGpt1: str,
+        chatGpt2: str
+    ):
+
+        dataDict = {}
+        name = name
+        date = self.currentDate
+        getText = self.getElement(by=by, value=value)
+        url = self.chrome.current_url()
+        title = self.getElement(by=titleBy, value=titleValue)
+
+        # 1枚目
+        trainLine = self._getAddress(by=trainLineBy, value=trainLineValue)
+        station = self._getAddress(by=stationBy, value=stationValue)
+        address = self._getAddress(by=addressBy, value=addressValue)
+        walking = self._getAddress(by=walkingBy, value=walkingValue)
+
+
+        areaScale = self.getElement(by=areaBy, value=areaValue)
+        itemList = self._textCleaner(by=itemBy, value=itemValue)
+        chatGpt1 = "ここに関数をいれる"
+        chatGpt1 = "ここに関数をいれる"
+
+        if getText:
+            status = "success"
+        else:
+            status = "failure"
+
+        dataDict[name]={
+            # meta
+            "name": name,
+            "getText": getText,
+            "createTime": date,
+            "url": url,  # URL
+            "title": title,  # サイトタイトル
+            "placementPage": placementPage,
+            "priority": priority,
+            "status": status,
+
+            # 1枚目
+            "trainLine": trainLine,
+            "station": station,  # 駅名
+            "address": address,  # 都道府県
+            "walking": walking,  # 徒歩
+
+            # 2枚目
+            "areaScale": areaScale,  # 専有面積
+            "item1": itemList[0],  # 設備
+            "item2": itemList[1],
+            "item3": itemList[2],
+            "item4": itemList[3],
+
+            # 3枚目
+            "item5": itemList[4],  # 設備
+            "item6": itemList[5],
+            "item7": itemList[6],
+            "item8": itemList[7],
+            "chatGpt1": chatGpt1,
+
+
+            # 4枚目
+            "item9": itemList[8],  # 設備
+            "item10": itemList[9],
+            "item11": itemList[10],
+            "item12": itemList[11],
+            "chatGpt2": chatGpt2,
+        }
+
+        return dataDict
 
 
 # ----------------------------------------------------------------------------------
