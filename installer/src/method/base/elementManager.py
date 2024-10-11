@@ -209,7 +209,6 @@ class ElementManager:
         address = self._getAddress(by=addressBy, value=addressValue)
         walking = self._getAddress(by=walkingBy, value=walkingValue)
 
-
         areaScale = self.getElement(by=areaBy, value=areaValue)
         itemList = self._textCleaner(by=itemBy, value=itemValue)
         chatGpt1 = "ここに関数をいれる"
