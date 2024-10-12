@@ -6,7 +6,7 @@
 from selenium.webdriver.chrome.webdriver import WebDriver
 from datetime import datetime
 from typing import Dict, Any, List, Tuple
-
+from dataclasses import dataclass
 
 
 # 自作モジュール
@@ -17,6 +17,22 @@ from .textManager import TextManager
 
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+# **********************************************************************************
+
+@dataclass
+class MetaInfo:
+    textBy: str
+    textValue: str
+    titleBy: str
+    titleValue: str
+    placementPage: str
+    priority: str
+    status: str
+
+# ここから先のものを追記する→
+# 引数の整理する→引数を返す関数を作成する
+# mergeDictを整理する
+
 # **********************************************************************************
 
 
@@ -36,12 +52,77 @@ class TextDataInSQLite:
 # ----------------------------------------------------------------------------------
 
 
-    def mergeDict(self, name: str):
-        metaInfo = self._topPageInfo()
-        topPageInfo = self._secondPageInfo()
-        secondPageInfo = self._secondPageInfo()
-        thirdPageInfo = self._thirdPageInfo()
-        fourthPageInfo = self._fourthPageInfo()
+    def mergeDict(
+        self,
+        name: str,
+        textBy: str, textValue: str,
+        titleBy: str, titleValue: str,
+        placementPage: str, priority: str, status: str,
+        trainLineBy: str, trainLineValue: str,
+        stationBy: str, stationValue: str,
+        addressBy: str, addressValue: str,
+        walkingBy: str, walkingValue: str,
+        areaBy: str, areaValue: str,
+        itemBy: str, itemValue: str,
+        firstWord: str, lastWord: str, ifValueList: List,
+        rentBy: str, rentValue: str,
+        managementCostBy: str, managementCostValue: str,
+        prompt1: str,
+        fixedPrompt :str,
+        endpointUrl: str,
+        model: str,
+        apiKey: str,
+        maxTokens: int,
+        maxlen: int,
+        prompt2: str,
+    ):
+
+        metaInfo = self._metaInfo(
+            textBy=textBy, textValue=textValue,
+            titleBy=titleBy, titleValue=titleValue,
+            placementPage=placementPage, priority=priority, status=status
+        )
+
+        topPageInfo = self._topPageInfo(
+            trainLineBy=trainLineBy, trainLineValue=trainLineValue,
+            stationBy=stationBy, stationValue=stationValue,
+            addressBy=addressBy, addressValue=addressValue,
+            walkingBy=walkingBy, walkingValue=walkingValue,
+        )
+
+        secondPageInfo = self._secondPageInfo(
+            areaBy=areaBy, areaValue=areaValue,
+            itemBy=itemBy, itemValue=itemValue,
+            firstWord=firstWord, lastWord=lastWord, ifValueList=ifValueList,
+            trainLineBy=trainLineBy, trainLineValue=trainLineValue,
+            stationBy=stationBy, stationValue=stationValue,
+            walkingBy=walkingBy, walkingValue=walkingValue,
+            addressBy=addressBy, addressValue=addressValue,
+            rentBy=rentBy, rentValue=rentValue,
+            managementCostBy=managementCostBy, managementCostValue=managementCostValue,
+        )
+
+        thirdPageInfo = self._thirdPageInfo(
+            itemBy=itemBy, itemValue=itemValue,
+            prompt1=prompt1,
+            fixedPrompt=fixedPrompt,
+            endpointUrl=endpointUrl,
+            model=model,
+            apiKey=apiKey,
+            maxTokens=maxTokens,
+            maxlen=maxlen
+        )
+
+        fourthPageInfo = self._fourthPageInfo(
+            itemBy=itemBy, itemValue=itemValue,
+            prompt2=prompt2,
+            fixedPrompt=fixedPrompt,
+            endpointUrl=endpointUrl,
+            model=model,
+            apiKey=apiKey,
+            maxTokens=maxTokens,
+            maxlen=maxlen
+        )
 
         # サブ辞書の初期化
         dataDict = self.element._initDict(name=name)
@@ -59,20 +140,26 @@ class TextDataInSQLite:
 # ----------------------------------------------------------------------------------
 # metaInfo
 
-    def _metaInfo(self, **kwargs):
+    def _metaInfo(
+        self,
+        textBy: str, textValue: str,
+        titleBy: str, titleValue: str,
+        placementPage: str, priority: str, status: str
+    ):
+
         date = self.currentDate
-        getText = self.getElement(by=kwargs['textBy'], value=kwargs['textValue'])
+        getText = self.getElement(by=textBy, value=textValue)
         url = self.chrome.current_url()
-        title = self.getElement(by=kwargs['titleBy'], value=kwargs['titleValue'])
+        title = self.getElement(by=titleBy, value=titleValue)
 
         dataDict = {
             "getText": getText,
             "createTime": date,
             "url": url,  # URL
             "title": title,  # サイトタイトル
-            "placementPage": kwargs['placementPage'],
-            "priority": kwargs['priority'],
-            "status": kwargs['status'],
+            "placementPage": placementPage,
+            "priority": priority,
+            "status": status,
         }
 
         return dataDict
@@ -107,12 +194,32 @@ class TextDataInSQLite:
 # ----------------------------------------------------------------------------------
 
 
-    def _secondPageInfo(self, areaBy: str, areaValue: str, itemBy: str, itemValue: str, firstWord: str, lastWord: str):
+    def _secondPageInfo(
+        self,
+        areaBy: str, areaValue: str,
+        itemBy: str, itemValue: str,
+        firstWord: str, lastWord: str, ifValueList: List,
+        trainLineBy: str, trainLineValue: str,
+        stationBy: str, stationValue: str,
+        walkingBy: str, walkingValue: str,
+        addressBy: str, addressValue: str,
+        rentBy: str, rentValue: str,
+        managementCostBy: str, managementCostValue: str
+    ):
+
         areaScale = self.element.getElement(by=areaBy, value=areaValue)
         itemList = self.element._textCleaner(by=itemBy, value=itemValue)
 
         # 要素の取得を行ってリスト化
-        commentElementLst = self._textJoinList()
+        commentElementLst = self._textJoinList(
+            ifValueList=ifValueList,
+            trainLineBy=trainLineBy, trainLineValue=trainLineValue,
+            stationBy=stationBy, stationValue=stationValue,
+            walkingBy=walkingBy, walkingValue=walkingValue,
+            addressBy=addressBy, addressValue=addressValue,
+            rentBy=rentBy, rentValue=rentValue,
+            managementCostBy=managementCostBy, managementCostValue=managementCostValue
+        )
         # 最初と最後に文言を追加
         commentElementLst = self.textManager.addListFirstLast(lst=commentElementLst, firstWord=firstWord, lastWord=lastWord)
         # 全てを繋げてコメントに変換
@@ -162,23 +269,23 @@ class TextDataInSQLite:
         self,
         itemBy: str, itemValue: str,
         prompt1: str,
-        fixedPrompt1 :str,
-        endpointUrl1: str,
-        model1: str,
-        apiKey1: str,
-        maxTokens1: int,
-        maxlen1: int
+        fixedPrompt :str,
+        endpointUrl: str,
+        model: str,
+        apiKey: str,
+        maxTokens: int,
+        maxlen: int
     ):
 
         itemList = self._textCleaner(by=itemBy, value=itemValue)
         chatGpt1 = self.chatGPT.resultOutput(
             prompt=prompt1,
-            fixedPrompt=fixedPrompt1,
-            endpointUrl=endpointUrl1,
-            model=model1,
-            apiKey=apiKey1,
-            maxlen=maxlen1,
-            maxTokens=maxTokens1,
+            fixedPrompt=fixedPrompt,
+            endpointUrl=endpointUrl,
+            model=model,
+            apiKey=apiKey,
+            maxlen=maxlen,
+            maxTokens=maxTokens,
         )
 
         dataDict = {
@@ -197,26 +304,25 @@ class TextDataInSQLite:
 
     def _fourthPageInfo(
         self,
-        itemBy: str,
-        itemValue: str,
+        itemBy: str, itemValue: str,
         prompt2: str,
-        fixedPrompt2: str,
-        endpointUrl2: str,
-        model2: str,
-        apiKey2: str,
-        maxTokens2: int,
-        maxlen2: int
+        fixedPrompt :str,
+        endpointUrl: str,
+        model: str,
+        apiKey: str,
+        maxTokens: int,
+        maxlen: int
     ):
 
         itemList = self._textCleaner(by=itemBy, value=itemValue)
         chatGpt1 = self.chatGPT.resultOutput(
             prompt=prompt2,
-            fixedPrompt=fixedPrompt2,
-            endpointUrl=endpointUrl2,
-            model=model2,
-            apiKey=apiKey2,
-            maxlen=maxlen2,
-            maxTokens=maxTokens2,
+            fixedPrompt=fixedPrompt,
+            endpointUrl=endpointUrl,
+            model=model,
+            apiKey=apiKey,
+            maxlen=maxlen,
+            maxTokens=maxTokens,
         )
 
         dataDict = {
