@@ -4,6 +4,7 @@
 # ----------------------------------------------------------------------------------
 # import
 import sys, os
+from typing import List
 
 
 # 自作モジュール
@@ -24,9 +25,25 @@ class TextManager:
 # ----------------------------------------------------------------------------------
 # 大元のリストからNGWordを除外したリストを作成
 
-    def filterWords(targetList: list, ngWords: list):
+    def filterWords(self, targetList: list, ngWords: list):
         filterWords = [word for word in targetList if word not in ngWords]
         return filterWords
 
+
+# ----------------------------------------------------------------------------------
+# テキストを複数結合させる(Noneは除外する)
+
+    def textJoin(self, joinWordsList: list, joint: str = ''):
+        result = filter(None, joinWordsList)
+        return joint.join(result)
+
+
+# ----------------------------------------------------------------------------------
+# リストの最初にテキストを追加
+
+    def addListFirstLast(self, lst: List, firstWord: str, lastWord: str):
+        lst.insert(0, firstWord)
+        lst.append(lastWord)
+        return lst
 
 # ----------------------------------------------------------------------------------

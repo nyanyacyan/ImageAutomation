@@ -43,7 +43,7 @@ class ChatGPTOrder:
 
 
 # ----------------------------------------------------------------------------------
-
+# SNSバージョン　リクエストした文章とresponseで帰ってきた文章を整理してjsonファイルに書き込む
 
     async def resultSave(
         self,
@@ -78,6 +78,23 @@ class ChatGPTOrder:
 
 
 # ----------------------------------------------------------------------------------
+# 純粋にチャッピーからの出力を返す
+
+    async def resultOutput(self, prompt: str, fixedPrompt :str, endpointUrl: str, model: str, apiKey: str, maxTokens: int, maxlen: int):
+        result = await self.wordCountCheck(
+            prompt=prompt,
+            fixedPrompt=fixedPrompt,
+            endpointUrl=endpointUrl,
+            model=model,
+            apiKey=apiKey,
+            maxlen=maxlen,
+            maxTokens=maxTokens,
+        )
+        assistantMsg = result['assistantMsg']['content']
+        return assistantMsg
+
+
+# ----------------------------------------------------------------------------------
 
 
     def userToNotifyMsg(self, userMsg, assistantMsg, notifyMsg):
@@ -91,7 +108,7 @@ class ChatGPTOrder:
 
 
 # ----------------------------------------------------------------------------------
-
+# 文字数がオーバーした際に再リクエスト
 
     async def wordCountCheck(self, prompt: str, fixedPrompt :str, endpointUrl: str, model: str, apiKey: str, maxTokens: int, maxlen: int):
         result = await self.ChatHistory(prompt=prompt, endpointUrl=endpointUrl, model=model, apiKey=apiKey, maxTokens=maxTokens)
