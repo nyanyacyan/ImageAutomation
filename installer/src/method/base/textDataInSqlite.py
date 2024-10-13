@@ -3,6 +3,7 @@
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
+import time
 from selenium.webdriver.chrome.webdriver import WebDriver
 from datetime import datetime
 from typing import Dict, Any, List, Tuple
@@ -16,6 +17,7 @@ from .elementManager import ElementManager
 from .AiOrder import ChatGPTOrder
 from .textManager import TextManager
 from ..dataclass import ListPageInfo, DetailPageInfo
+from .SQLite import SQLite
 from .decorators import Decorators
 
 decoInstance = Decorators(debugMode=True)
@@ -33,29 +35,46 @@ class TextDataInSQLite:
 
         self.chrome = chrome
         self.currentDate = datetime.now().strftime('%y%m%d_%H%M%S')
-        self.element = ElementManager(debugMode=debugMode)
+        self.element = ElementManager(chrome=self.chrome, debugMode=debugMode)
         self.chatGPT = ChatGPTOrder(debugMode=debugMode)
         self.textManager = TextManager(debugMode=debugMode)
+        self.SQLite = SQLite(debugMode=debugMode)
 
 
 # ----------------------------------------------------------------------------------
 # nameを主としたサブ辞書の作成
 
     @decoInstance.funcBase
-    def mergeTextDict(self, listPageInfo: Dict[str, WebElement], detailPageInfo: Dict[str, WebElement]):
+    def flowMoveGetElement(self, tableValue: int, tableName: str ,delay: int = 2):
+        # 一覧ページで取得
+        listPageInfo = self._listPageInfo(tableValue=tableValue)
+
+        # 移動
+        self.element.clickElement(
+            by='xpath',
+            value=f"//div[@class='searchResultLsit'][{tableValue}]//tr[@class='resultLsitBtnTr2']//a[contains(text(), '物件画像')]"
+        )
+
+        time.sleep(delay)
+
+        # 詳細ページで取得
+        detailPageInfo = self._detailPageInfo()
+
         # 辞書の結合
         mergeDict = {**listPageInfo, **detailPageInfo}
-        name = detailPageInfo.get('name')
-        namePrimaryKeyDict = {name: mergeDict}
-        return namePrimaryKeyDict
+
+        # SQLiteに書込
+        self.SQLite.insertDictData(tableName=tableName, inputDict=mergeDict)
+
+        return mergeDict
 
 
 # ----------------------------------------------------------------------------------
-# 一覧ページから取得
+# # 一覧ページから取得
 
     @decoInstance.funcBase
-    def _listPageInfo(self) -> Dict[str, WebElement]:
-        listInstance = self._listPageInfo()
+    def _listPageInfo(self, tableValue: int) -> Dict[str, WebElement]:
+        listInstance = self._listPageInfo(tableValue)
         return self._getListPageElement(listPageInfo=listInstance)
 
 

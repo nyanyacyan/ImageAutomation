@@ -7,7 +7,8 @@ import sqlite3
 from typing import Any
 from pathlib import Path
 from datetime import datetime
-from typing import Literal
+from typing import Dict, Any, List, Tuple, Literal
+
 
 
 # 自作モジュール
@@ -106,16 +107,16 @@ class SQLite:
 
 
 # ----------------------------------------------------------------------------------
-# params: tuple = () > パラメータが何もなかったら空にするという意味
+# values: tuple = () > パラメータが何もなかったら空にするという意味
 
     @decoInstance.sqliteErrorHandler
-    def SQLPromptBase(self, sql: str, params: tuple = (), fetch: str = None):
+    def SQLPromptBase(self, sql: str, values: tuple = (), fetch: str = None):
         conn = self._getDBconnect()
         if not conn:
             return None
 
         try:
-            cursor = self._executeSQL(conn=conn, sql=sql, params=params)
+            cursor = self._executeSQL(conn=conn, sql=sql, values=values)
             result = self._fetchBool(cursor=cursor, fetch=fetch)
             return result
 
@@ -128,9 +129,9 @@ class SQLite:
 # 実行するSQL文にて定義して実行まで行う
 
     @decoInstance.sqliteErrorHandler
-    def _executeSQL(self, conn: sqlite3.Connection, sql: str, params: tuple = ()) -> sqlite3.Cursor:
+    def _executeSQL(self, conn: sqlite3.Connection, sql: str, values: tuple = ()) -> sqlite3.Cursor:
         cursor = conn.cursor()  # DBとの接続オブジェクトを受け取って通信ができるようにする
-        cursor.execute(sql, params)  # 実行するSQL文にて定義して実行まで行う
+        cursor.execute(sql, values)  # 実行するSQL文にて定義して実行まで行う
         return cursor
 
 
@@ -221,10 +222,39 @@ class SQLite:
         placeholders = ', '.join(['?' for _ in values]) # valuesの数の文？を追加して結合
         self.logger.debug(f"values: {values}")
         sql = f"INSERT INTO {tableName} {col} VALUES ({placeholders})"
-        rowData = self.SQLPromptBase(sql=sql, params=values, fetch=None)
+        rowData = self.SQLPromptBase(sql=sql, values=values, fetch=None)
         self.logger.debug(f"{tableName} の行データ: {rowData}")
         self.logger.info(f"【success】{tableName} テーブルにデータを追加に成功")
 
+        # SQLiteにデータが入ったか確認
+        sqlCheck = f"SELECT * FROM {tableName}"
+        allData = self.SQLPromptBase(sql=sqlCheck, fetch='all')
+        self.logger.debug(f"{tableName} の全データ: {allData}")
+        return rowData
+
+
+# ----------------------------------------------------------------------------------
+# 基本の辞書をSQLiteへ入れ込む
+# placeholders→(?, ?, ?)
+
+    @decoInstance.funcBase
+    def insertDictData(self, tableName: str, inputDict: Dict):
+        cols = ', '.join(inputDict.keys())
+        placeholders = ', '.join(['?' for _ in inputDict.values()]) # valuesの数の文？を追加して結合
+        self.logger.debug(f"cols: {cols}")
+        self.logger.debug(f"values: {placeholders}")  # valueの数だけ「？」ができる
+
+        # INSERT INTO tableName (col1, col2, col3) VALUES (?, ?, ?)→この形にする
+        sql = f"INSERT INTO {tableName} ({cols}) VALUES ({placeholders})"
+
+        # 値をtupleに変更→オブジェクトになっているためtupleに変更が必要
+        values = tuple(inputDict.values())
+
+        rowData = self.SQLPromptBase(sql=sql, values=values, fetch=None)
+        self.logger.debug(f"{tableName} の行データ: {rowData}")
+        self.logger.info(f"【success】{tableName} テーブルにデータを追加に成功")
+
+        # SQLiteにデータが入ったか確認
         sqlCheck = f"SELECT * FROM {tableName}"
         allData = self.SQLPromptBase(sql=sqlCheck, fetch='all')
         self.logger.debug(f"{tableName} の全データ: {allData}")
@@ -249,7 +279,7 @@ class SQLite:
     @decoInstance.funcBase
     def getAllRecordsByCol(self, tableName: str, col: str, value: Any):
         sql = f"SELECT * FROM {tableName} WHERE {col} = ?"
-        result = self.SQLPromptBase(sql=sql, params=(value, ), fetch='all')
+        result = self.SQLPromptBase(sql=sql, values=(value, ), fetch='all')
         self.logger.info(f"【success】{tableName} 指定のカラムデータをすべて抽出")
         self.logger.info(f"result: {result}")
         return result
@@ -261,7 +291,7 @@ class SQLite:
     @decoInstance.funcBase
     def getRowRecordsByCol(self, tableName: str, col: str, value: Any):
         sql = f"SELECT * FROM {tableName} WHERE {col} = ?"
-        result = self.SQLPromptBase(sql=sql, params=(value, ), fetch='one')
+        result = self.SQLPromptBase(sql=sql, values=(value, ), fetch='one')
         if result:
             self.logger.info(f"【success】{tableName} 指定の行のデータを抽出")
             self.logger.info(f"result: {result}")
@@ -278,7 +308,7 @@ class SQLite:
         deleteRow = self.getRowRecordsByCol(col=col, value=value)
         self.logger.debug(f"削除対象のデータです\n{deleteRow}")
         sql = f"DELETE FROM {tableName} WHERE {col} = ?"
-        result = self.SQLPromptBase(sql=sql, params=(value, ), fetch=None)
+        result = self.SQLPromptBase(sql=sql, values=(value, ), fetch=None)
         self.logger.info(f"【success】{tableName} 指定のデータを削除")
         self.logger.info(f"result: {result}")
         return result
