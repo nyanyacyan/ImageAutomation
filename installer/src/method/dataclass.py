@@ -19,8 +19,6 @@ class MetaInfo:
     textValue: str
     titleBy: str
     titleValue: str
-    placementPage: str
-    priority: str
     status: str
 
 

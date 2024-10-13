@@ -36,77 +36,20 @@ class TextDataInSQLite:
 # ----------------------------------------------------------------------------------
 
 
-    def mergeDict(
-        self,
-        name: str,
-        textBy: str, textValue: str,
-        titleBy: str, titleValue: str,
-        placementPage: str, priority: str, status: str,
-        trainLineBy: str, trainLineValue: str,
-        stationBy: str, stationValue: str,
-        addressBy: str, addressValue: str,
-        walkingBy: str, walkingValue: str,
-        areaBy: str, areaValue: str,
-        itemBy: str, itemValue: str,
-        firstWord: str, lastWord: str, ifValueList: List,
-        rentBy: str, rentValue: str,
-        managementCostBy: str, managementCostValue: str,
-        prompt1: str,
-        fixedPrompt :str,
-        endpointUrl: str,
-        model: str,
-        apiKey: str,
-        maxTokens: int,
-        maxlen: int,
-        prompt2: str,
-    ):
+    def mergeDict(self, name: str):
 
-        metaInfo = self._metaInfo(
-            textBy=textBy, textValue=textValue,
-            titleBy=titleBy, titleValue=titleValue,
-            placementPage=placementPage, priority=priority, status=status
-        )
+        # 実数を入れたインスタンス
+        metaInfoInstance = self.createMetaInfo()
+        topInstance = self.createTopPageInfo()
+        secondInstance = self.createSecondPageInfo()
+        thirdFourthInstance = self.createThirdFourthInfo()
 
-        topPageInfo = self._topPageInfo(
-            trainLineBy=trainLineBy, trainLineValue=trainLineValue,
-            stationBy=stationBy, stationValue=stationValue,
-            addressBy=addressBy, addressValue=addressValue,
-            walkingBy=walkingBy, walkingValue=walkingValue,
-        )
-
-        secondPageInfo = self._secondPageInfo(
-            areaBy=areaBy, areaValue=areaValue,
-            itemBy=itemBy, itemValue=itemValue,
-            firstWord=firstWord, lastWord=lastWord, ifValueList=ifValueList,
-            trainLineBy=trainLineBy, trainLineValue=trainLineValue,
-            stationBy=stationBy, stationValue=stationValue,
-            walkingBy=walkingBy, walkingValue=walkingValue,
-            addressBy=addressBy, addressValue=addressValue,
-            rentBy=rentBy, rentValue=rentValue,
-            managementCostBy=managementCostBy, managementCostValue=managementCostValue,
-        )
-
-        thirdPageInfo = self._thirdPageInfo(
-            itemBy=itemBy, itemValue=itemValue,
-            prompt1=prompt1,
-            fixedPrompt=fixedPrompt,
-            endpointUrl=endpointUrl,
-            model=model,
-            apiKey=apiKey,
-            maxTokens=maxTokens,
-            maxlen=maxlen
-        )
-
-        fourthPageInfo = self._fourthPageInfo(
-            itemBy=itemBy, itemValue=itemValue,
-            prompt2=prompt2,
-            fixedPrompt=fixedPrompt,
-            endpointUrl=endpointUrl,
-            model=model,
-            apiKey=apiKey,
-            maxTokens=maxTokens,
-            maxlen=maxlen
-        )
+        # 各処理を入れた関数
+        metaInfo = self._metaInfo(metaInfo=metaInfoInstance)
+        topPageInfo = self._topPageInfo(topPageInfo=topInstance)
+        secondPageInfo = self._secondPageInfo(secondPageInfo=secondInstance)
+        thirdPageInfo = self._thirdPageInfo(thirdFourthInfo=thirdPageInfo)
+        fourthPageInfo = self._fourthPageInfo(thirdFourthInfo=thirdFourthInstance)
 
         # サブ辞書の初期化
         dataDict = self.element._initDict(name=name)
@@ -119,6 +62,79 @@ class TextDataInSQLite:
         result = self.element.updateSubDict(dictBox=dataDictInThird, name=name, inputDict=fourthPageInfo)
 
         return result
+
+
+# ----------------------------------------------------------------------------------
+
+
+    def createMetaInfo(self) -> MetaInfo:
+        return MetaInfo(
+            textBy="",
+            textValue="",
+            titleBy="",
+            titleValue="",
+            status="",
+        )
+
+
+# ----------------------------------------------------------------------------------
+
+
+    def createTopPageInfo(self) -> TopPageInfo:
+        return TopPageInfo(
+            trainLineBy="",
+            trainLineValue="",
+            stationBy="",
+            stationValue="",
+            addressBy="",
+            addressValue="",
+            walkingBy="",
+            walkingValue="",
+        )
+
+
+# ----------------------------------------------------------------------------------
+
+
+    def createSecondPageInfo(self) -> SecondPageInfo:
+        return SecondPageInfo(
+            areaBy="",
+            areaValue="",
+            itemBy="",
+            ifValueList="",
+            firstWord="",
+            lastWord="",
+            ifValueList="",
+            trainLineBy="",
+            trainLineValue="",
+            stationBy="",
+            stationValue="",
+            walkingBy="",
+            walkingValue="",
+            addressBy="",
+            addressValue="",
+            rentBy="",
+            rentValue="",
+            managementCostBy="",
+            managementCostValue="",
+        )
+
+
+# ----------------------------------------------------------------------------------
+
+
+    def createThirdFourthInfo(self) -> ThirdFourthInfo:
+        return ThirdFourthInfo(
+            itemBy="",
+            itemValue="",
+            prompt="",
+            fixedPrompt="",
+            endpointUrl="",
+            model="",
+            apiKey="",
+            maxTokens="",
+            maxlen="",
+        )
 
 
 # ----------------------------------------------------------------------------------
