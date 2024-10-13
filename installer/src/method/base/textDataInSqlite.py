@@ -7,13 +7,18 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 from datetime import datetime
 from typing import Dict, Any, List, Tuple
 
+from selenium.webdriver.remote.webelement import WebElement
+
 
 # 自作モジュール
 from .utils import Logger
 from .elementManager import ElementManager
 from .AiOrder import ChatGPTOrder
 from .textManager import TextManager
-from ..dataclass import MetaInfo, TopPageInfo, SecondPageInfo, ThirdFourthInfo
+from ..dataclass import ListPageInfo, DetailPageInfo
+from .decorators import Decorators
+
+decoInstance = Decorators(debugMode=True)
 
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
@@ -34,147 +39,84 @@ class TextDataInSQLite:
 
 
 # ----------------------------------------------------------------------------------
+# nameを主としたサブ辞書の作成
+
+    @decoInstance.funcBase
+    def mergeTextDict(self, listPageInfo: Dict[str, WebElement], detailPageInfo: Dict[str, WebElement]):
+        # 辞書の結合
+        mergeDict = {**listPageInfo, **detailPageInfo}
+        name = detailPageInfo.get('name')
+        namePrimaryKeyDict = {name: mergeDict}
+        return namePrimaryKeyDict
 
 
-    def mergeDict(self, name: str):
+# ----------------------------------------------------------------------------------
+# 一覧ページから取得
 
-        # 実数を入れたインスタンス
-        metaInfoInstance = self.createMetaInfo()
-        topInstance = self.createTopPageInfo()
-        secondInstance = self.createSecondPageInfo()
-        thirdFourthInstance = self.createThirdFourthInfo()
+    @decoInstance.funcBase
+    def _listPageInfo(self) -> Dict[str, WebElement]:
+        listInstance = self._listPageInfo()
+        return self._getListPageElement(listPageInfo=listInstance)
 
-        # 各処理を入れた関数
-        metaInfo = self._metaInfo(metaInfo=metaInfoInstance)
-        topPageInfo = self._topPageInfo(topPageInfo=topInstance)
-        secondPageInfo = self._secondPageInfo(secondPageInfo=secondInstance)
-        thirdPageInfo = self._thirdPageInfo(thirdFourthInfo=thirdPageInfo)
-        fourthPageInfo = self._fourthPageInfo(thirdFourthInfo=thirdFourthInstance)
 
-        # サブ辞書の初期化
-        dataDict = self.element._initDict(name=name)
+# ----------------------------------------------------------------------------------
+# 詳細ページからデータを取得
 
-        # 順番にサブ辞書を追加していく
-        dataDictInMeta = self.element.updateSubDict(dictBox=dataDict, name=name, inputDict=metaInfo)
-        dataDictInTop = self.element.updateSubDict(dictBox=dataDictInMeta, name=name, inputDict=topPageInfo)
-        dataDictInSecond = self.element.updateSubDict(dictBox=dataDictInTop, name=name, inputDict=secondPageInfo)
-        dataDictInThird = self.element.updateSubDict(dictBox=dataDictInSecond, name=name, inputDict=thirdPageInfo)
-        result = self.element.updateSubDict(dictBox=dataDictInThird, name=name, inputDict=fourthPageInfo)
-
-        return result
+    @decoInstance.funcBase
+    def _detailPageInfo(self) -> Dict[str, WebElement]:
+        detailInstance = self._detailPageInfo()
+        return self._getDetailPageElement(detailPageInfo=detailInstance)
 
 
 # ----------------------------------------------------------------------------------
 
 
-    def createMetaInfo(self) -> MetaInfo:
-        return MetaInfo(
-            textBy="",
-            textValue="",
-            titleBy="",
-            titleValue="",
-            status="",
+    def _listPageInfo(self, tableValue: int):
+        return ListPageInfo(
+            stationBy="xpath",
+            stationValue=f"//div[@class='searchResultLsit'][{tableValue}]//tr[@class='searchResultLsitTabTr1']//div[@class='vicinityInfo']/p[@class='new']/span[1]",
+            trainLineBy="xpath",
+            trainLineValue=f"//div[@class='searchResultLsit'][{tableValue}]//tr[@class='searchResultLsitTabTr1']//div[@class='vicinityInfo']/p[@class='new']/span[2]",
+            walkingBy="xpath",
+            walkingValue=f"//div[@class='searchResultLsit'][{tableValue}]//tr[@class='searchResultLsitTabTr1']//div[@class='vicinityInfo']/p[@class='new']/span[3]",
         )
 
 
 # ----------------------------------------------------------------------------------
 
 
-    def createTopPageInfo(self) -> TopPageInfo:
-        return TopPageInfo(
-            trainLineBy="",
-            trainLineValue="",
-            stationBy="",
-            stationValue="",
-            addressBy="",
-            addressValue="",
-            walkingBy="",
-            walkingValue="",
+    def _detailPageInfo(self):
+        return DetailPageInfo(
+            nameBy="xpath",
+            nameValue=f"//th[text()='物件名']/following-sibling::td[1]/span",
+            adBy="xpath",
+            adValue="//th[text()='広告可否']/following-sibling::td[1]/span",
+            areaBy="xpath",
+            areaValue="//th[text()='専有面積']/following-sibling::td[1]/span",
+            itemBy="xpath",
+            itemValue="//th[text()='広告可否']/following-sibling::td[1]/span",
+            addressBy="xpath",
+            addressValue="//th[text()='物件所在地']/following-sibling::td[1]/span",
+            rentBy="xpath",
+            rentValue="//th[text()='賃料']/following-sibling::td[1]/span",
+            managementCostBy="xpath",
+            managementCostValue="//th[text()='管理費等']/following-sibling::td[1]/span",
         )
 
 
 # ----------------------------------------------------------------------------------
 
 
-    def createSecondPageInfo(self) -> SecondPageInfo:
-        return SecondPageInfo(
-            areaBy="",
-            areaValue="",
-            itemBy="",
-            ifValueList="",
-            firstWord="",
-            lastWord="",
-            ifValueList="",
-            trainLineBy="",
-            trainLineValue="",
-            stationBy="",
-            stationValue="",
-            walkingBy="",
-            walkingValue="",
-            addressBy="",
-            addressValue="",
-            rentBy="",
-            rentValue="",
-            managementCostBy="",
-            managementCostValue="",
-        )
-
-
-# ----------------------------------------------------------------------------------
-
-
-    def createThirdFourthInfo(self) -> ThirdFourthInfo:
-        return ThirdFourthInfo(
-            itemBy="",
-            itemValue="",
-            prompt="",
-            fixedPrompt="",
-            endpointUrl="",
-            model="",
-            apiKey="",
-            maxTokens="",
-            maxlen="",
-        )
-
-
-# ----------------------------------------------------------------------------------
-# metaInfo
-
-    def _metaInfo(self, metaInfo:MetaInfo):
-
-        date = self.currentDate
-        getText = self.getElement(by=metaInfo.textBy, value=metaInfo.textValue)
-        url = self.chrome.current_url()
-        title = self.getElement(by=metaInfo.titleBy, value=metaInfo.titleValue)
-
-        dataDict = {
-            "getText": getText,
-            "createTime": date,
-            "url": url,  # URL
-            "title": title,  # サイトタイトル
-            "placementPage": metaInfo.placementPage,
-            "priority": metaInfo.priority,
-            "status": metaInfo.status,
-        }
-
-        return dataDict
-
-
-# ----------------------------------------------------------------------------------
-
-
-    def _topPageInfo(self, topPageInfo: TopPageInfo):
-
-        trainLine = self.element.getElement(by=topPageInfo.trainLineBy, value=topPageInfo.trainLineValue)
-        station = self.element.getElement(by=topPageInfo.stationBy, value=topPageInfo.stationValue)
-        walking = self.element.getElement(by=topPageInfo.walkingBy, value=topPageInfo.walkingValue)
-        address = self.element._getAddress(by=topPageInfo.addressBy, value=topPageInfo.addressValue)
+    @decoInstance.funcBase
+    def _getListPageElement(self, listPageInfo: ListPageInfo):
+        trainLine = self.element.getElement(by=listPageInfo.trainLineBy, value=listPageInfo.trainLineValue)
+        station = self.element.getElement(by=listPageInfo.stationBy, value=listPageInfo.stationValue)
+        walking = self.element.getElement(by=listPageInfo.walkingBy, value=listPageInfo.walkingValue)
 
         dataDict = {
             "trainLine": trainLine,  # 路線名
             "station": station,  # 駅名
             "walking": walking,  # 徒歩
-            "address": address,  # 都道府県
         }
 
         return dataDict
@@ -183,102 +125,24 @@ class TextDataInSQLite:
 # ----------------------------------------------------------------------------------
 
 
-    def _secondPageInfo(self, secondPageInfo: SecondPageInfo):
-
-        areaScale = self.element.getElement(by=secondPageInfo.areaBy, value=secondPageInfo.areaValue)
-        itemList = self.element._textCleaner(by=secondPageInfo.itemBy, value=secondPageInfo.itemValue)
-
-        # 要素の取得を行ってリスト化
-        commentElementLst = self._textJoinList(
-            ifValueList=secondPageInfo.ifValueList,
-            trainLineBy=secondPageInfo.trainLineBy, trainLineValue=secondPageInfo.trainLineValue,
-            stationBy=secondPageInfo.stationBy, stationValue=secondPageInfo.stationValue,
-            walkingBy=secondPageInfo.walkingBy, walkingValue=secondPageInfo.walkingValue,
-            addressBy=secondPageInfo.addressBy, addressValue=secondPageInfo.addressValue,
-            rentBy=secondPageInfo.rentBy, rentValue=secondPageInfo.rentValue,
-            managementCostBy=secondPageInfo.managementCostBy, managementCostValue=secondPageInfo.managementCostValue
-        )
-        # 最初と最後に文言を追加
-        commentElementLst = self.textManager.addListFirstLast(lst=commentElementLst, firstWord=secondPageInfo.firstWord, lastWord=secondPageInfo.lastWord)
-        # 全てを繋げてコメントに変換
-        comment = self.textManager.textJoin(joinWordsList=commentElementLst)
+    @decoInstance.funcBase
+    def _getDetailPageElement(self, detailPageInfo: DetailPageInfo):
+        name = self.element.getElement(by=detailPageInfo.trainLineBy, value=detailPageInfo.trainLineValue)
+        ad = self.element.getElement(by=detailPageInfo.adBy, value=detailPageInfo.adValue)
+        area = self.element.getElement(by=detailPageInfo.areaBy, value=detailPageInfo.areaValue)
+        item = self.element.getElement(by=detailPageInfo.itemBy, value=detailPageInfo.itemValue)
+        address = self.element.getElement(by=detailPageInfo.addressBy, value=detailPageInfo.addressValue)
+        rent = self.element.getElement(by=detailPageInfo.rentBy, value=detailPageInfo.rentValue)
+        managementCost = self.element.getElement(by=detailPageInfo.managementCostBy, value=detailPageInfo.managementCostValue)
 
         dataDict = {
-            "areaScale": areaScale,  # 専有面積
-            "item1": itemList[0],  # 設備
-            "item2": itemList[1],
-            "item3": itemList[2],
-            "item4": itemList[3],
-            "comment": comment
-        }
-
-        return dataDict
-
-# ----------------------------------------------------------------------------------
-
-
-    def _textJoinList(self, secondPageInfo: SecondPageInfo):
-
-        conditions = [
-            (secondPageInfo.trainLineBy, secondPageInfo.trainLineValue),
-            (secondPageInfo.stationBy, secondPageInfo.stationValue),
-            (secondPageInfo.walkingBy, secondPageInfo.walkingValue),
-            (secondPageInfo.addressBy, secondPageInfo.addressValue),
-            (secondPageInfo.rentBy, secondPageInfo.rentValue),
-            (secondPageInfo.managementCostBy, secondPageInfo.managementCostValue)
-        ]
-
-        return self.element._getElementList(conditions=conditions, ifValueList=secondPageInfo.ifValueList)
-
-
-# ----------------------------------------------------------------------------------
-
-
-    def _thirdPageInfo(self, thirdFourthInfo: ThirdFourthInfo):
-        itemList = self._textCleaner(by=thirdFourthInfo.itemBy, value=thirdFourthInfo.itemValue)
-        chatGpt1 = self.chatGPT.resultOutput(
-            prompt=thirdFourthInfo.prompt,
-            fixedPrompt=thirdFourthInfo.fixedPrompt,
-            endpointUrl=thirdFourthInfo.endpointUrl,
-            model=thirdFourthInfo.model,
-            apiKey=thirdFourthInfo.apiKey,
-            maxlen=thirdFourthInfo.maxlen,
-            maxTokens=thirdFourthInfo.maxTokens,
-        )
-
-        dataDict = {
-            "item5": itemList[4],  # 設備
-            "item6": itemList[5],
-            "item7": itemList[6],
-            "item8": itemList[7],
-            "chatGpt1": chatGpt1,
-        }
-
-        return dataDict
-
-
-# ----------------------------------------------------------------------------------
-
-
-    def _fourthPageInfo(self, thirdFourthInfo: ThirdFourthInfo):
-
-        itemList = self._textCleaner(by=thirdFourthInfo.itemBy, value=thirdFourthInfo.itemValue)
-        chatGpt2 = self.chatGPT.resultOutput(
-            prompt=thirdFourthInfo.prompt,
-            fixedPrompt=thirdFourthInfo.fixedPrompt,
-            endpointUrl=thirdFourthInfo.endpointUrl,
-            model=thirdFourthInfo.model,
-            apiKey=thirdFourthInfo.apiKey,
-            maxlen=thirdFourthInfo.maxlen,
-            maxTokens=thirdFourthInfo.maxTokens,
-        )
-
-        dataDict = {
-            "item5": itemList[4],  # 設備
-            "item6": itemList[5],
-            "item7": itemList[6],
-            "item8": itemList[7],
-            "chatGpt2": chatGpt2,
+            "name": name,  # 物件名
+            "ad": ad,  # 広告可否
+            "area": area,  # 路線名
+            "item": item,  # 駅名
+            "address": address,  # 徒歩
+            "rent": rent,  # 徒歩
+            "managementCost": managementCost,  # 徒歩
         }
 
         return dataDict

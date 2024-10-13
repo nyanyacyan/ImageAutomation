@@ -13,27 +13,14 @@ from typing import Dict, Any, List, Tuple
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # **********************************************************************************
 
-@dataclass
-class MetaInfo:
-    textBy: str
-    textValue: str
-    titleBy: str
-    titleValue: str
-    status: str
-
-
-# **********************************************************************************
-
 
 @dataclass
-class TopPageInfo:
-    trainLineBy: str
-    trainLineValue: str
-    stationBy: str
+class ListPageInfo:
+    stationBy: str  # 駅名
     stationValue: str
-    addressBy: str
-    addressValue: str
-    walkingBy: str
+    trainLineBy: str  # 路線名
+    trainLineValue: str
+    walkingBy: str  # 徒歩
     walkingValue: str
 
 
@@ -41,42 +28,21 @@ class TopPageInfo:
 
 
 @dataclass
-class SecondPageInfo:
-    areaBy: str
+class DetailPageInfo:
+    nameBy: str  # 物件名
+    nameValue: str
+    adBy: str  # 広告可否
+    adValue: str
+    areaBy: str  # 専有面積
     areaValue: str
-    itemBy: str
+    itemBy: str  # 設備
     itemValue: str
-    firstWord: str
-    lastWord: str
-    ifValueList: List[str]
-    trainLineBy: str
-    trainLineValue: str
-    stationBy: str
-    stationValue: str
-    walkingBy: str
-    walkingValue: str
-    addressBy: str
+    addressBy: str  # 都道府県
     addressValue: str
-    rentBy: str
+    rentBy: str  # 賃料
     rentValue: str
-    managementCostBy: str
+    managementCostBy: str  # 管理費等
     managementCostValue: str
-
-
-# **********************************************************************************
-
-
-@dataclass
-class ThirdFourthInfo:
-    itemBy: str
-    itemValue: str
-    prompt: str
-    fixedPrompt: str
-    endpointUrl: str
-    model: str
-    apiKey: str
-    maxTokens: int
-    maxlen: int
 
 
 # **********************************************************************************
