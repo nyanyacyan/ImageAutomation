@@ -29,9 +29,70 @@ class MetaInfo:
     priority: str
     status: str
 
-# ここから先のものを追記する→
-# 引数の整理する→引数を返す関数を作成する
-# mergeDictを整理する
+
+# **********************************************************************************
+
+
+@dataclass
+class TopPageInfo:
+    trainLineBy: str
+    trainLineValue: str
+    stationBy: str
+    stationValue: str
+    addressBy: str
+    addressValue: str
+    walkingBy: str
+    walkingValue: str
+
+
+# **********************************************************************************
+
+
+@dataclass
+class SecondPageInfo:
+    areaBy: str
+    areaValue: str
+    itemBy: str
+    itemValue: str
+    firstWord: str
+    lastWord: str
+    ifValueList: List[str]
+    trainLineBy: str
+    trainLineValue: str
+    stationBy: str
+    stationValue: str
+    walkingBy: str
+    walkingValue: str
+    addressBy: str
+    addressValue: str
+    rentBy: str
+    rentValue: str
+    managementCostBy: str
+    managementCostValue: str
+
+
+# **********************************************************************************
+
+
+@dataclass
+class ChatGPTInfo:
+    prompt: str
+    fixedPrompt: str
+    endpointUrl: str
+    model: str
+    apiKey: str
+    maxTokens: int
+    maxlen: int
+
+
+# **********************************************************************************
+
+
+@dataclass
+class ItemInfo:
+    itemBy: str
+    itemValue: str
+
 
 # **********************************************************************************
 
