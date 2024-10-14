@@ -62,7 +62,7 @@ class TextDataInSQLite:
             # 検索画面を消去
             self.element.clickElement(
                 by=ElementSpecify.XPATH.value,
-                value=ElementPath.searchDeleteBtbPath.value
+                value=ElementPath.SEARCH_DELETE_BTN_PATH.value
             )
             time.sleep(delay)
 
@@ -72,7 +72,7 @@ class TextDataInSQLite:
             # 詳細ページへ移動
             self.element.clickElement(
                 by=ElementSpecify.XPATH.value,
-                value=ElementPath.detailPageBtnPath.value.format(i + 1)
+                value=ElementPath.DETAIL_PAGE_BTN_PATH.value.format(i + 1)
             )
             time.sleep(delay)
 
@@ -118,11 +118,11 @@ class TextDataInSQLite:
     def _listPageInfo(self, tableValue: int):
         return ListPageInfo(
             stationBy=ElementSpecify.XPATH.value,
-            stationValue=f"//div[@class='searchResultLsit'][{tableValue}]//tr[@class='searchResultLsitTabTr1']//div[@class='vicinityInfo']/p[@class='new']/span[1]",
+            stationValue=ElementPath.STATION_VALUE.value.format(tableValue),
             trainLineBy=ElementSpecify.XPATH.value,
-            trainLineValue=f"//div[@class='searchResultLsit'][{tableValue}]//tr[@class='searchResultLsitTabTr1']//div[@class='vicinityInfo']/p[@class='new']/span[2]",
+            trainLineValue=ElementPath.TRAIN_LINE.value.format(tableValue),
             walkingBy=ElementSpecify.XPATH.value,
-            walkingValue=f"//div[@class='searchResultLsit'][{tableValue}]//tr[@class='searchResultLsitTabTr1']//div[@class='vicinityInfo']/p[@class='new']/span[3]",
+            walkingValue=ElementPath.WAKING.value.format(tableValue),
         )
 
 
@@ -132,19 +132,19 @@ class TextDataInSQLite:
     def _detailPageInfo(self):
         return DetailPageInfo(
             nameBy=ElementSpecify.XPATH.value,
-            nameValue="//th[text()='物件名']/following-sibling::td[1]/span",
+            nameValue=ElementPath.NAME.value,
             adBy=ElementSpecify.XPATH.value,
-            adValue="//th[text()='広告可否']/following-sibling::td[1]/span",
+            adValue=ElementPath.AD.value,
             areaBy=ElementSpecify.XPATH.value,
-            areaValue="//th[text()='専有面積']/following-sibling::td[1]/span",
+            areaValue=ElementPath.AREA.value,
             itemBy=ElementSpecify.XPATH.value,
-            itemValue="//th[text()='広告可否']/following-sibling::td[1]/span",
+            itemValue=ElementPath.ITEM.value,
             addressBy=ElementSpecify.XPATH.value,
-            addressValue="//th[text()='物件所在地']/following-sibling::td[1]/span",
+            addressValue=ElementPath.ADDRESS.value,
             rentBy=ElementSpecify.XPATH.value,
-            rentValue="//th[text()='賃料']/following-sibling::td[1]/span",
+            rentValue=ElementPath.RENT.value,
             managementCostBy=ElementSpecify.XPATH.value,
-            managementCostValue="//th[text()='管理費等']/following-sibling::td[1]/span",
+            managementCostValue=ElementPath.MANAGEMENT_COST.value,
         )
 
 
