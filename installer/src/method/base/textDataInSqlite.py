@@ -21,6 +21,7 @@ from .SQLite import SQLite
 from .decorators import Decorators
 from .jumpTargetPage import JumpTargetPage
 from ..constElementPath import ElementPath, ElementSpecify
+from ..constSqliteTable import TableName
 
 decoInstance = Decorators(debugMode=True)
 
@@ -36,12 +37,14 @@ class TextDataInSQLite:
         self.logger = self.getLogger.getLogger()
 
         self.chrome = chrome
+        self.tableName = TableName.TEXT_TABLE_COLUMNS
         self.currentDate = datetime.now().strftime('%y%m%d_%H%M%S')
         self.element = ElementManager(chrome=self.chrome, debugMode=debugMode)
         self.chatGPT = ChatGPTOrder(debugMode=debugMode)
         self.textManager = TextManager(debugMode=debugMode)
         self.SQLite = SQLite(debugMode=debugMode)
         self.jumpTargetPage = JumpTargetPage(chrome=self.chrome, debugMode=debugMode)
+
 
 # ----------------------------------------------------------------------------------
 # nameを主としたサブ辞書の作成
@@ -65,6 +68,7 @@ class TextDataInSQLite:
                 value=ElementPath.SEARCH_DELETE_BTN_PATH.value
             )
             time.sleep(delay)
+            metaInfo = self._metaInfo()
 
             # 一覧ページにて要素を取得
             listPageInfo = self._listPageInfo(tableValue={i + 1})
@@ -79,19 +83,63 @@ class TextDataInSQLite:
             # 詳細ページでtextを取得
             detailPageInfo = self._detailPageInfo()
 
+
             # TODO 取得したtextから整理、手直しをする
+
+            # 3枚目→チャッピー
+            # 4枚目→チャッピー
 
             # TODO 画像を取得
 
             # 辞書の結合
-            mergeDict = {**listPageInfo, **detailPageInfo}
+            mergeDict = {**metaInfo, **listPageInfo, **detailPageInfo}
             allList.append(mergeDict)  # デバッグ用
 
             # SQLiteに書込
             self.SQLite.insertDictData(tableName=tableName, inputDict=mergeDict)
             time.sleep(delay)
 
+            secondComment = self.createSecondPageComment(allList=allList)
+
+            # SQLiteに書込
+            self.SQLite.insertDictData(tableName=tableName, inputDict=secondComment)
+            time.sleep(delay)
+
         return allList
+
+
+# ----------------------------------------------------------------------------------
+
+
+    def createSecondPageComment(self, allList: str):
+        # 2枚目コメント→つなぎ合わせたもの
+        result = self.SQLite.getSortColData(
+            tableName = self.tableName,
+            primaryKeyCol = "name",
+            primaryKeyColValue = allList.get('name'),
+            cols=['trainLine', 'station', 'walking', 'rent', 'managementCost']
+        )
+        addCommentHead = "今回は"
+        addCommentEnd = "紹介するよ"
+
+        trainLine = result.get('trainLine', '-')
+        station = result.get('station', '-')
+        walking = result.get('walking', '-')
+        rent = result.get('rent', '-')
+        managementCost = result.get('managementCost', '-')
+
+        commentParts = [
+            addCommentHead,
+            f"{trainLine} の {station}駅 から {walking} の物件です。",
+            f"賃料は {rent}",
+            f"管理費等は {managementCost}",
+            addCommentEnd
+        ]
+
+        secondComment = '\n'.join(commentParts)
+        return {'secondComment': secondComment}
+
+
 
 
 # ----------------------------------------------------------------------------------
@@ -110,6 +158,20 @@ class TextDataInSQLite:
     def _detailPageInfo(self) -> Dict[str, WebElement]:
         detailInstance = self._detailPageInfo()
         return self._getDetailPageElement(detailPageInfo=detailInstance)
+
+
+# ----------------------------------------------------------------------------------
+
+
+    def _metaInfo(self):
+        currentUrl = self.chrome.current_url
+        currentDate = self.currentDate
+
+        dataDict = {
+            "url": currentUrl,
+            "createTime": currentDate
+        }
+        return dataDict
 
 
 # ----------------------------------------------------------------------------------

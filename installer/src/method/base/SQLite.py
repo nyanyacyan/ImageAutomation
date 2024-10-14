@@ -7,7 +7,7 @@ import sqlite3
 from typing import Any
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, Any, List, Tuple, Literal
+from typing import Dict, Any, List, Tuple, Literal, Union
 
 
 
@@ -161,7 +161,9 @@ class SQLite:
     @decoInstance.sqliteErrorHandler
     def _getDBconnect(self) -> sqlite3.Connection:
         dbFullPath = self.DBFullPath()
-        return sqlite3.connect(dbFullPath)
+        conn = sqlite3.connect(dbFullPath)
+        conn.row_factory = sqlite3.Row  # 行を辞書形式で取得できるようにする
+        return conn
 
 
 # ----------------------------------------------------------------------------------
@@ -355,6 +357,18 @@ class SQLite:
         """
         result = self.SQLPromptBase(sql=sql, fetch='None')
         self.logger.info(f"【success】{tableName} ５日以上経ったデータを消去しました: primaryKey: {primaryKey}")
+        self.logger.info(f"result: {result}")
+        return result
+
+
+# ----------------------------------------------------------------------------------
+
+
+    def getSortColData(self, tableName: str, primaryKeyCol: str, primaryKeyColValue: str, cols: List, sortCol: str):
+        allCol= ', '.join(cols)
+        sql = f"SELECT {allCol} FROM {tableName} WHERE {primaryKeyCol} = ? ORDER BY {sortCol} DESC"
+        result = self.SQLPromptBase(sql=sql, values=(primaryKeyColValue,), fetch='all')
+        self.logger.info(f"【success】{tableName}: primaryKey: {primaryKeyCol}: データ取得完了" )
         self.logger.info(f"result: {result}")
         return result
 

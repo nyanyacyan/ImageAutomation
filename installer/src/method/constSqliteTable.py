@@ -35,13 +35,19 @@ class TableSchemas:
     TEXT_TABLE_COLUMNS = {
         "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
         "name": "TEXT NOT NULL",
-        "getText": "TEXT NOT NULL",
         "createTime": "TEXT NOT NULL",
         "url": "TEXT NOT NULL",
-        "title": "TEXT",
-        "placement": "INTEGER CHECK (placement IN (1, 2, 3, 4))",
-        "priority": "INTEGER NOT NULL",
-        "status": "TEXT CHECK (status IN ('complete', 'Error'))",
+        "trainLine": "TEXT NOT NULL",
+        "station": "TEXT NOT NULL",
+        "walking": "TEXT NOT NULL",
+        "ad": "TEXT NOT NULL",
+        "area": "TEXT NOT NULL",
+        "item": "TEXT NOT NULL",
+        "address": "TEXT NOT NULL",
+        "rent": "TEXT NOT NULL",
+        "managementCost": "TEXT NOT NULL",
+
+        "secondComment": "TEXT",
         "chatGpt1": "TEXT",
         "chatGpt2": "TEXT",
     }
@@ -78,3 +84,7 @@ class TableSchemas:
 
 
 # ----------------------------------------------------------------------------------
+
+
+class TableName:
+    TEXT_TABLE_COLUMNS="TEXT_TABLE_COLUMNS"
