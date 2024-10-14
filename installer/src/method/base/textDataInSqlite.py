@@ -19,6 +19,8 @@ from .textManager import TextManager
 from ..dataclass import ListPageInfo, DetailPageInfo
 from .SQLite import SQLite
 from .decorators import Decorators
+from .jumpTargetPage import JumpTargetPage
+from ..constElementPath import ElementPath, ElementSpecify
 
 decoInstance = Decorators(debugMode=True)
 
@@ -39,34 +41,57 @@ class TextDataInSQLite:
         self.chatGPT = ChatGPTOrder(debugMode=debugMode)
         self.textManager = TextManager(debugMode=debugMode)
         self.SQLite = SQLite(debugMode=debugMode)
-
+        self.jumpTargetPage = JumpTargetPage(chrome=self.chrome, debugMode=debugMode)
 
 # ----------------------------------------------------------------------------------
 # nameを主としたサブ辞書の作成
 
     @decoInstance.funcBase
-    def flowMoveGetElement(self, tableValue: int, tableName: str ,delay: int = 2):
-        # 一覧ページで取得
-        listPageInfo = self._listPageInfo(tableValue=tableValue)
+    def flowMoveGetElement(self, targetUrl: str, tableName: str ,retryCount: int = 5, delay: int = 2):
 
-        # 移動
-        self.element.clickElement(
-            by='xpath',
-            value=f"//div[@class='searchResultLsit'][{tableValue}]//tr[@class='resultLsitBtnTr2']//a[contains(text(), '物件画像')]"
-        )
+        allList = []
+        for i in range(retryCount):
+            # ジャンプしてURLへ移動
+            self.jumpTargetPage.flowJumpTargetPage(targetUrl=targetUrl)
+            time.sleep(delay)
 
-        time.sleep(delay)
+            # 一度更新
+            self.chrome.refresh()
+            time.sleep(delay)
 
-        # 詳細ページで取得
-        detailPageInfo = self._detailPageInfo()
+            # 検索画面を消去
+            self.element.clickElement(
+                by=ElementSpecify.XPATH.value,
+                value=ElementPath.searchDeleteBtbPath.value
+            )
+            time.sleep(delay)
 
-        # 辞書の結合
-        mergeDict = {**listPageInfo, **detailPageInfo}
+            # 一覧ページにて要素を取得
+            listPageInfo = self._listPageInfo(tableValue={i + 1})
 
-        # SQLiteに書込
-        self.SQLite.insertDictData(tableName=tableName, inputDict=mergeDict)
+            # 詳細ページへ移動
+            self.element.clickElement(
+                by=ElementSpecify.XPATH.value,
+                value=ElementPath.detailPageBtnPath.value.format(i + 1)
+            )
+            time.sleep(delay)
 
-        return mergeDict
+            # 詳細ページでtextを取得
+            detailPageInfo = self._detailPageInfo()
+
+            # TODO 取得したtextから整理、手直しをする
+
+            # TODO 画像を取得
+
+            # 辞書の結合
+            mergeDict = {**listPageInfo, **detailPageInfo}
+            allList.append(mergeDict)  # デバッグ用
+
+            # SQLiteに書込
+            self.SQLite.insertDictData(tableName=tableName, inputDict=mergeDict)
+            time.sleep(delay)
+
+        return allList
 
 
 # ----------------------------------------------------------------------------------
@@ -92,11 +117,11 @@ class TextDataInSQLite:
 
     def _listPageInfo(self, tableValue: int):
         return ListPageInfo(
-            stationBy="xpath",
+            stationBy=ElementSpecify.XPATH.value,
             stationValue=f"//div[@class='searchResultLsit'][{tableValue}]//tr[@class='searchResultLsitTabTr1']//div[@class='vicinityInfo']/p[@class='new']/span[1]",
-            trainLineBy="xpath",
+            trainLineBy=ElementSpecify.XPATH.value,
             trainLineValue=f"//div[@class='searchResultLsit'][{tableValue}]//tr[@class='searchResultLsitTabTr1']//div[@class='vicinityInfo']/p[@class='new']/span[2]",
-            walkingBy="xpath",
+            walkingBy=ElementSpecify.XPATH.value,
             walkingValue=f"//div[@class='searchResultLsit'][{tableValue}]//tr[@class='searchResultLsitTabTr1']//div[@class='vicinityInfo']/p[@class='new']/span[3]",
         )
 
@@ -106,19 +131,19 @@ class TextDataInSQLite:
 
     def _detailPageInfo(self):
         return DetailPageInfo(
-            nameBy="xpath",
-            nameValue=f"//th[text()='物件名']/following-sibling::td[1]/span",
-            adBy="xpath",
+            nameBy=ElementSpecify.XPATH.value,
+            nameValue="//th[text()='物件名']/following-sibling::td[1]/span",
+            adBy=ElementSpecify.XPATH.value,
             adValue="//th[text()='広告可否']/following-sibling::td[1]/span",
-            areaBy="xpath",
+            areaBy=ElementSpecify.XPATH.value,
             areaValue="//th[text()='専有面積']/following-sibling::td[1]/span",
-            itemBy="xpath",
+            itemBy=ElementSpecify.XPATH.value,
             itemValue="//th[text()='広告可否']/following-sibling::td[1]/span",
-            addressBy="xpath",
+            addressBy=ElementSpecify.XPATH.value,
             addressValue="//th[text()='物件所在地']/following-sibling::td[1]/span",
-            rentBy="xpath",
+            rentBy=ElementSpecify.XPATH.value,
             rentValue="//th[text()='賃料']/following-sibling::td[1]/span",
-            managementCostBy="xpath",
+            managementCostBy=ElementSpecify.XPATH.value,
             managementCostValue="//th[text()='管理費等']/following-sibling::td[1]/span",
         )
 

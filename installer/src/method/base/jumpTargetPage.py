@@ -19,27 +19,27 @@ decoInstance = jsCompleteWaitDeco(debugMode=True)
 
 
 class JumpTargetPage:
-    def __init__(self, chrome: WebDriver, targetUrl: str, debugMode=True):
+    def __init__(self, chrome: WebDriver, debugMode=True):
         # logger
         self.getLogger = Logger(__name__, debugMode=debugMode)
         self.logger = self.getLogger.getLogger()
 
         self.chrome = chrome
-        self.targetUrl = targetUrl
+
 
 
 # ----------------------------------------------------------------------------------
 
 
     @decoInstance.jsCompleteWaitRetry
-    def flowJumpTargetPage(self, delay: int = 2):
+    def flowJumpTargetPage(self, targetUrl: str, delay: int = 2):
         self.openNewWindow()
         time.sleep(delay)
 
         self.changeNewPage()
         time.sleep(delay)
 
-        self.getTargetPage()
+        self.getTargetPage(targetUrl=targetUrl)
         time.sleep(delay)
 
         self.urlCheck()
@@ -69,8 +69,8 @@ class JumpTargetPage:
 # ----------------------------------------------------------------------------------
 
 
-    def getTargetPage(self):
-        self.chrome.get(self.targetUrl)
+    def getTargetPage(self, targetUrl: str):
+        self.chrome.get(targetUrl)
 
 
 # ----------------------------------------------------------------------------------
