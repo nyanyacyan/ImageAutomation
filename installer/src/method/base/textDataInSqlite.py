@@ -83,8 +83,6 @@ class TextDataInSQLite:
             # 詳細ページでtextを取得
             detailPageInfo = self._detailPageInfo()
 
-            # TODO 画像を取得
-
             # 辞書の結合
             mergeDict = {**metaInfo, **listPageInfo, **detailPageInfo}
             allList.append(mergeDict)  # デバッグ用
@@ -92,6 +90,17 @@ class TextDataInSQLite:
             # SQLiteに書込
             self.SQLite.insertDictData(tableName=self.textTableName, inputDict=mergeDict)
             time.sleep(delay)
+
+
+            # TODO 取得したtextから整理、手直しをする
+
+
+            # SQLiteからデータを取得→取得したデータを構築
+            # 3枚目→チャッピー
+            # 4枚目→チャッピー
+
+            # TODO 画像を取得
+
 
             secondComment = self.createSecondPageComment(mergeDict=mergeDict)
 
@@ -154,6 +163,36 @@ class TextDataInSQLite:
             tableName = self.textTableName,
             primaryKeyCol = "name",
             primaryKeyColValue = mergeDict.get('name'),
+        )
+
+    def ChatGPTPrompt(self, mergeDict: str):
+        # 2枚目コメント→つなぎ合わせたもの
+        items = self.SQLite.getSortColOneData(
+            tableName = self.tableName,
+            primaryKeyCol = "name",
+            primaryKeyColValue = mergeDict.get('name'),
+            cols=['item']
+        )
+
+        item5 = items[5]
+        item6 = items[6]
+        item7 = items[7]
+        item8 = items[8]
+
+
+
+        secondComment = '\n'.join(commentParts)
+        return {'secondComment': secondComment}
+
+
+# ----------------------------------------------------------------------------------
+
+    def createSecondPageComment(self, mergeDict: str):
+        # 2枚目コメント→つなぎ合わせたもの
+        result = self.SQLite.getSortColOneData(
+            tableName = self.tableName,
+            primaryKeyCol = "name",
+            primaryKeyColValue = mergeDict.get('name'),
             cols=['trainLine', 'station', 'walking', 'rent', 'managementCost']
         )
 
@@ -180,7 +219,7 @@ class TextDataInSQLite:
 
     @decoInstance.funcBase
     def _listPageInfo(self, tableValue: int) -> Dict[str, WebElement]:
-        listInstance = self._listPageInfo(tableValue)
+        listInstance = self._listPageInfoValue(tableValue)
         return self._getListPageElement(listPageInfo=listInstance)
 
 
@@ -189,7 +228,7 @@ class TextDataInSQLite:
 
     @decoInstance.funcBase
     def _detailPageInfo(self) -> Dict[str, WebElement]:
-        detailInstance = self._detailPageInfo()
+        detailInstance = self._detailPageInfoValue()
         return self._getDetailPageElement(detailPageInfo=detailInstance)
 
 
@@ -210,7 +249,7 @@ class TextDataInSQLite:
 # ----------------------------------------------------------------------------------
 
 
-    def _listPageInfo(self, tableValue: int):
+    def _listPageInfoValue(self, tableValue: int):
         return ListPageInfo(
             stationBy=ElementSpecify.XPATH.value,
             stationValue=ElementPath.STATION_VALUE.value.format(tableValue),
@@ -224,7 +263,7 @@ class TextDataInSQLite:
 # ----------------------------------------------------------------------------------
 
 
-    def _detailPageInfo(self):
+    def _detailPageInfoValue(self):
         return DetailPageInfo(
             nameBy=ElementSpecify.XPATH.value,
             nameValue=ElementPath.NAME.value,

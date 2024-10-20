@@ -362,10 +362,30 @@ class SQLite:
 
 
 # ----------------------------------------------------------------------------------
+#? ソートした一番上のデータを取得
+# sortするcolumn→createTimeを最新に並び替える
+# DESCは降順→createTimeを上に持ってくる
+# nameは物件名→部屋名＋部屋番号
 
-
-    def getSortColData(self, tableName: str, primaryKeyCol: str, primaryKeyColValue: str, cols: List, sortCol: str):
+    def getSortColOneData(self, tableName: str, primaryKeyCol: str, primaryKeyColValue: str, cols: List, sortCol: str):
         allCol= ', '.join(cols)
+        # SQL文 →SELECT col1, col2, col3 FROM tableName WHERE primaryKeyColのようになる
+        sql = f"SELECT {allCol} FROM {tableName} WHERE {primaryKeyCol} = ? ORDER BY {sortCol} DESC LIMIT 1"
+        result = self.SQLPromptBase(sql=sql, values=(primaryKeyColValue,), fetch='one')
+        self.logger.info(f"【success】{tableName}: primaryKey: {primaryKeyCol}: データ取得完了" )
+        self.logger.info(f"result: {result}")
+        return result
+
+
+# ----------------------------------------------------------------------------------
+#? ソートしたすべてのデータを取得
+# sortするcolumn→createTimeを最新に並び替える
+# DESCは降順→createTimeを上に持ってくる
+# nameは物件名→部屋名＋部屋番号
+
+    def getSortColAllData(self, tableName: str, primaryKeyCol: str, primaryKeyColValue: str, cols: List, sortCol: str):
+        allCol= ', '.join(cols)
+        # SQL文 →SELECT col1, col2, col3 FROM tableName WHERE primaryKeyColのようになる
         sql = f"SELECT {allCol} FROM {tableName} WHERE {primaryKeyCol} = ? ORDER BY {sortCol} DESC"
         result = self.SQLPromptBase(sql=sql, values=(primaryKeyColValue,), fetch='all')
         self.logger.info(f"【success】{tableName}: primaryKey: {primaryKeyCol}: データ取得完了" )
