@@ -56,6 +56,7 @@ class TextDataInSQLite:
     def flowMoveGetElement(self, targetUrl: str ,retryCount: int = 5, delay: int = 2):
 
         allList = []
+        insertID = []
         for i in range(retryCount):
             # ジャンプしてURLへ移動
             self.jumpTargetPage.flowJumpTargetPage(targetUrl=targetUrl)
@@ -95,7 +96,6 @@ class TextDataInSQLite:
 
             secondComment = self.createSecondPageComment(mergeDict=mergeDict)
 
-            # TODO 取得したtextから整理、手直しをする
             thirdComment = self.chatGPTComment(
                 mergeDict=mergeDict,
                 startValue=5,
@@ -118,6 +118,7 @@ class TextDataInSQLite:
 
             mergeDict = {**metaInfo, **listPageInfo, **detailPageInfo, **updateColumnsData}
             allList.append(mergeDict)
+            insertID.append(id)
 
 
             # SQLiteに書込
