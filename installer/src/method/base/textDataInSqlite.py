@@ -37,7 +37,7 @@ class TextDataInSQLite:
         self.logger = self.getLogger.getLogger()
 
         self.chrome = chrome
-        self.tableName = TableName.TEXT_TABLE_COLUMNS
+        self.textTableName = TableName.TEXT_TABLE_COLUMNS
         self.currentDate = datetime.now().strftime('%y%m%d_%H%M%S')
         self.element = ElementManager(chrome=self.chrome, debugMode=debugMode)
         self.chatGPT = ChatGPTOrder(debugMode=debugMode)
@@ -50,7 +50,7 @@ class TextDataInSQLite:
 # nameを主としたサブ辞書の作成
 
     @decoInstance.funcBase
-    def flowMoveGetElement(self, targetUrl: str, tableName: str ,retryCount: int = 5, delay: int = 2):
+    def flowMoveGetElement(self, targetUrl: str ,retryCount: int = 5, delay: int = 2):
 
         allList = []
         for i in range(retryCount):
@@ -83,12 +83,6 @@ class TextDataInSQLite:
             # 詳細ページでtextを取得
             detailPageInfo = self._detailPageInfo()
 
-
-            # TODO 取得したtextから整理、手直しをする
-
-            # 3枚目→チャッピー
-            # 4枚目→チャッピー
-
             # TODO 画像を取得
 
             # 辞書の結合
@@ -96,31 +90,72 @@ class TextDataInSQLite:
             allList.append(mergeDict)  # デバッグ用
 
             # SQLiteに書込
-            self.SQLite.insertDictData(tableName=tableName, inputDict=mergeDict)
+            self.SQLite.insertDictData(tableName=self.textTableName, inputDict=mergeDict)
             time.sleep(delay)
 
-            secondComment = self.createSecondPageComment(allList=allList)
+            secondComment = self.createSecondPageComment(mergeDict=mergeDict)
 
             # SQLiteに書込
-            self.SQLite.insertDictData(tableName=tableName, inputDict=secondComment)
+            self.SQLite.insertDictData(tableName=self.textTableName, inputDict=secondComment)
             time.sleep(delay)
+
+            thirdComment = self.createSecondPageComment(mergeDict=mergeDict)
+
+            # SQLiteに書込
+            self.SQLite.insertDictData(tableName=self.textTableName, inputDict=thirdComment)
+            time.sleep(delay)
+
+            fourthComment = self.createSecondPageComment(mergeDict=mergeDict)
+
+            # SQLiteに書込
+            self.SQLite.insertDictData(tableName=self.textTableName, inputDict=fourthComment)
+            time.sleep(delay)
+
 
         return allList
 
 
 # ----------------------------------------------------------------------------------
+# 3ページ目のChatGPT
+
+    async def chatGPTComment(self, mergeDict: Dict, recommend: str, startValue: int, endValue: int):
+        prompt = self.ChatGPTPromptCreate(mergeDict=mergeDict, recommend=recommend, startValue=startValue, endValue=endValue)
+        await self.chatGPT.resultOutput(
+            prompt=prompt,
+            fixedPrompt="",
+            endpointUrl="",
+            model="",
+            apiKey="",
+            maxlen="",
+            maxTokens=""
+        )
 
 
-    def createSecondPageComment(self, allList: str):
+# ----------------------------------------------------------------------------------
+# Prompt生成
+
+    def ChatGPTPromptCreate(self, mergeDict: Dict, recommend: str, startValue: int, endValue: int):
+        items = [mergeDict['item'][i] for i in range(startValue, endValue + 1)]
+        items.append(recommend)
+        prompt = ', '.join(items)
+        return prompt
+
+
+# ----------------------------------------------------------------------------------
+# 2ページ目のコメント作成
+
+    def createSecondPageComment(self, mergeDict: Dict):
+        primaryKeyValue = mergeDict.get('name')
+        if not primaryKeyValue:
+            raise ValueError("キー 'name' が見つからないか、値が不正です。")
+
         # 2枚目コメント→つなぎ合わせたもの
         result = self.SQLite.getSortColData(
-            tableName = self.tableName,
+            tableName = self.textTableName,
             primaryKeyCol = "name",
-            primaryKeyColValue = allList.get('name'),
+            primaryKeyColValue = mergeDict.get('name'),
             cols=['trainLine', 'station', 'walking', 'rent', 'managementCost']
         )
-        addCommentHead = "今回は"
-        addCommentEnd = "紹介するよ"
 
         trainLine = result.get('trainLine', '-')
         station = result.get('station', '-')
@@ -129,17 +164,15 @@ class TextDataInSQLite:
         managementCost = result.get('managementCost', '-')
 
         commentParts = [
-            addCommentHead,
+            "今回は",
             f"{trainLine} の {station}駅 から {walking} の物件です。",
             f"賃料は {rent}",
             f"管理費等は {managementCost}",
-            addCommentEnd
+            "紹介するよ"
         ]
 
         secondComment = '\n'.join(commentParts)
         return {'secondComment': secondComment}
-
-
 
 
 # ----------------------------------------------------------------------------------
