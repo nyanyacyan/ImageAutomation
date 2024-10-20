@@ -117,8 +117,20 @@ class SQLite:
 
         try:
             cursor = self._executeSQL(conn=conn, sql=sql, values=values)
-            result = self._fetchBool(cursor=cursor, fetch=fetch)
-            return result
+
+            if fetch == 'one':
+                self.logger.debug(f"[one] c.fetchone()が実行されました")
+                return cursor.fetchone()
+
+            elif fetch == 'all':
+                self.logger.debug(f"[all] c.fetchall()が実行されました")
+                return cursor.fetchall()
+
+            # データ抽出以外の処理を実施した場合
+            else:
+                conn.commit()
+                self.logger.info(f"コミットの実施をしました")
+                return cursor.lastrowid
 
         finally:
             self.logger.debug("connを閉じました")
@@ -133,26 +145,6 @@ class SQLite:
         cursor = conn.cursor()  # DBとの接続オブジェクトを受け取って通信ができるようにする
         cursor.execute(sql, values)  # 実行するSQL文にて定義して実行まで行う
         return cursor
-
-
-# ----------------------------------------------------------------------------------
-# fetchの属性をキャッチ
-
-    @decoInstance.sqliteErrorHandler
-    def _fetchBool(self, cursor: sqlite3.Cursor, fetch: Literal['one', 'all', None]):
-        if fetch == 'one':
-            self.logger.debug(f"[one] c.fetchone()が実行されました")
-            return cursor.fetchone()
-
-        elif fetch == 'all':
-            self.logger.debug(f"[all] c.fetchall()が実行されました")
-            return cursor.fetchall()
-
-        # データ抽出以外の処理を実施した場合
-        else:
-            cursor.connection.commit()
-            self.logger.info(f"コミットの実施をしました")
-            return None
 
 
 # ----------------------------------------------------------------------------------
@@ -221,18 +213,40 @@ class SQLite:
 
     @decoInstance.funcBase
     def insertData(self, tableName: str, col: tuple, values: tuple):
-        placeholders = ', '.join(['?' for _ in values]) # valuesの数の文？を追加して結合
+        # valuesのカウントをしてその分「？」を追加して結合
+        placeholders = ', '.join(['?' for _ in values])
         self.logger.debug(f"values: {values}")
+
         sql = f"INSERT INTO {tableName} {col} VALUES ({placeholders})"
-        rowData = self.SQLPromptBase(sql=sql, values=values, fetch=None)
-        self.logger.debug(f"{tableName} の行データ: {rowData}")
+
+        # 最終はIDを返すようにしてる
+        insertId = self.SQLPromptBase(sql=sql, values=values, fetch=None)
+
+        self.logger.debug(f"{tableName} の行データ: {insertId}")
         self.logger.info(f"【success】{tableName} テーブルにデータを追加に成功")
 
         # SQLiteにデータが入ったか確認
         sqlCheck = f"SELECT * FROM {tableName}"
         allData = self.SQLPromptBase(sql=sqlCheck, fetch='all')
         self.logger.debug(f"{tableName} の全データ: {allData}")
-        return rowData
+        return insertId
+
+
+# ----------------------------------------------------------------------------------
+# 既存であるデータを更新する
+
+    def updateData(self, tableName: str, updateColumnsData: dict, rowId: int):
+        setClause = ', '.join([f"{col} = ?" for col in updateColumnsData.keys()])
+        self.logger.debug(f"values: \n{setClause}")
+
+        # IDを元にアップデート→SET部分がそのColumnを指している
+        sql = f"UPDATE {tableName} SET {setClause} WHERE id = ?"
+
+        # 入れ込むデータと最後にIDを渡す
+        values = tuple(updateColumnsData.values()) + (rowId,)
+
+        self.SQLPromptBase(sql=sql, values=values, fetch=None)
+        self.logger.info(f"【success】{tableName} ID:{rowId} のデータ更新に成功 \n追加したデータ{updateColumnsData}")
 
 
 # ----------------------------------------------------------------------------------

@@ -3,10 +3,11 @@
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
-import time
+import time, os
 from selenium.webdriver.chrome.webdriver import WebDriver
 from datetime import datetime
 from typing import Dict, Any, List, Tuple
+from dotenv import load_dotenv
 
 from selenium.webdriver.remote.webelement import WebElement
 
@@ -20,11 +21,13 @@ from ..dataclass import ListPageInfo, DetailPageInfo
 from .SQLite import SQLite
 from .decorators import Decorators
 from .jumpTargetPage import JumpTargetPage
+from ..const import ChatGptPrompt, ChatgptUtils
 from ..constElementPath import ElementPath, ElementSpecify
 from ..constSqliteTable import TableName
 
 decoInstance = Decorators(debugMode=True)
 
+load_dotenv()
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # **********************************************************************************
@@ -85,39 +88,44 @@ class TextDataInSQLite:
 
             # 辞書の結合
             mergeDict = {**metaInfo, **listPageInfo, **detailPageInfo}
-            allList.append(mergeDict)  # デバッグ用
 
             # SQLiteに書込
-            self.SQLite.insertDictData(tableName=self.textTableName, inputDict=mergeDict)
+            id = self.SQLite.insertDictData(tableName=self.textTableName, inputDict=mergeDict)
             time.sleep(delay)
-
-
-            # TODO 取得したtextから整理、手直しをする
-
-
-            # SQLiteからデータを取得→取得したデータを構築
-            # 3枚目→チャッピー
-            # 4枚目→チャッピー
-
-            # TODO 画像を取得
-
 
             secondComment = self.createSecondPageComment(mergeDict=mergeDict)
 
+            # TODO 取得したtextから整理、手直しをする
+            thirdComment = self.chatGPTComment(
+                mergeDict=mergeDict,
+                startValue=5,
+                endValue=8,
+                maxlen=30
+            )
+
+            fourthPrompt = self.chatGPTComment(
+                mergeDict=mergeDict,
+                startValue=9,
+                endValue=12,
+                maxlen=30
+            )
+
+            updateColumnsData = {
+                "secondComment": secondComment,
+                "thirdComment": thirdComment,
+                "fourthPrompt": fourthPrompt
+            }
+
+            mergeDict = {**metaInfo, **listPageInfo, **detailPageInfo, **updateColumnsData}
+            allList.append(mergeDict)
+
+
             # SQLiteに書込
-            self.SQLite.insertDictData(tableName=self.textTableName, inputDict=secondComment)
-            time.sleep(delay)
-
-            thirdComment = self.createSecondPageComment(mergeDict=mergeDict)
-
-            # SQLiteに書込
-            self.SQLite.insertDictData(tableName=self.textTableName, inputDict=thirdComment)
-            time.sleep(delay)
-
-            fourthComment = self.createSecondPageComment(mergeDict=mergeDict)
-
-            # SQLiteに書込
-            self.SQLite.insertDictData(tableName=self.textTableName, inputDict=fourthComment)
+            self.SQLite.updateData(
+                tableName=self.textTableName,
+                updateColumnsData=updateColumnsData,
+                rowId=id
+            )
             time.sleep(delay)
 
 
@@ -127,65 +135,38 @@ class TextDataInSQLite:
 # ----------------------------------------------------------------------------------
 # 3ページ目のChatGPT
 
-    async def chatGPTComment(self, mergeDict: Dict, recommend: str, startValue: int, endValue: int):
-        prompt = self.ChatGPTPromptCreate(mergeDict=mergeDict, recommend=recommend, startValue=startValue, endValue=endValue)
+    async def chatGPTComment(self, mergeDict: Dict, itemStartValue: int, itemEndValue: int, maxlen: int):
+        prompt = self.ChatGPTPromptCreate(mergeDict=mergeDict, itemStartValue=itemStartValue, itemEndValue=itemEndValue, maxlen=maxlen)
         await self.chatGPT.resultOutput(
             prompt=prompt,
-            fixedPrompt="",
-            endpointUrl="",
-            model="",
-            apiKey="",
-            maxlen="",
-            maxTokens=""
+            fixedPrompt=ChatGptPrompt.fixedPrompt.value,
+            endpointUrl=ChatgptUtils.endpointUrl.value,
+            model=ChatgptUtils.model.value,
+            apiKey=os.getenv('CHATGPT_APIKEY'),
+            maxlen=maxlen,
+            maxTokens=ChatgptUtils.MaxToken.value
         )
 
 
 # ----------------------------------------------------------------------------------
 # Prompt生成
+# 文字数制限はここで入力
 
-    def ChatGPTPromptCreate(self, mergeDict: Dict, recommend: str, startValue: int, endValue: int):
-        items = [mergeDict['item'][i] for i in range(startValue, endValue + 1)]
-        items.append(recommend)
-        prompt = ', '.join(items)
+    def ChatGPTPromptCreate(self, mergeDict: Dict, itemStartValue: int, itemEndValue: int, maxlen: int):
+        items = [mergeDict['item'][i] for i in range(itemStartValue, itemEndValue + 1)]
+        prompt = ChatGptPrompt.recommend.value.format(
+            maxlen=maxlen,
+            item0=items[0],
+            item1=items[1],
+            item2=items[2],
+            item3=items[3],
+        )
+
         return prompt
 
 
 # ----------------------------------------------------------------------------------
 # 2ページ目のコメント作成
-
-    def createSecondPageComment(self, mergeDict: Dict):
-        primaryKeyValue = mergeDict.get('name')
-        if not primaryKeyValue:
-            raise ValueError("キー 'name' が見つからないか、値が不正です。")
-
-        # 2枚目コメント→つなぎ合わせたもの
-        result = self.SQLite.getSortColData(
-            tableName = self.textTableName,
-            primaryKeyCol = "name",
-            primaryKeyColValue = mergeDict.get('name'),
-        )
-
-    def ChatGPTPrompt(self, mergeDict: str):
-        # 2枚目コメント→つなぎ合わせたもの
-        items = self.SQLite.getSortColOneData(
-            tableName = self.tableName,
-            primaryKeyCol = "name",
-            primaryKeyColValue = mergeDict.get('name'),
-            cols=['item']
-        )
-
-        item5 = items[5]
-        item6 = items[6]
-        item7 = items[7]
-        item8 = items[8]
-
-
-
-        secondComment = '\n'.join(commentParts)
-        return {'secondComment': secondComment}
-
-
-# ----------------------------------------------------------------------------------
 
     def createSecondPageComment(self, mergeDict: str):
         # 2枚目コメント→つなぎ合わせたもの
