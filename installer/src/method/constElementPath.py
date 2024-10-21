@@ -3,7 +3,11 @@
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
+import os
 from enum import Enum
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
@@ -61,6 +65,22 @@ class ElementPath(Enum):
 
     MANAGEMENT_COST="//th[text()='管理費等']/following-sibling::td[1]/span"
 
+
+
+# ----------------------------------------------------------------------------------
+# ここでos.getenv("PASS")を定義してしまうと実行してしまう関係からここでは呼び出さない
+
+class LoginElement(Enum):
+    LOGIN_INFO = {
+        "idBy": "id",
+        "idValue": "username",
+        # "idText": os.getenv("ID"),
+        "passBy": "id",
+        "passValue": "password",
+        # "passText": os.getenv("PASS"),
+        "btnBy": "name",
+        "btnValue": "action",
+    }
 
 
 # ----------------------------------------------------------------------------------

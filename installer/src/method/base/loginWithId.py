@@ -51,7 +51,7 @@ class LoginID:
         self.inputPass(by=loginInfo['passBy'], value=loginInfo['passValue'], inputText=loginInfo['passText'])
         time.sleep(delay)
 
-        self.clickLoginBtn(by=loginInfo['btnBy'], value=loginInfo['btnValue'], inputText=loginInfo['btnText'])
+        self.clickLoginBtn(by=loginInfo['btnBy'], value=loginInfo['btnValue'])
         time.sleep(delay)
 
         return self.loginCheck()

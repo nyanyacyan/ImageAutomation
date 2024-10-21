@@ -235,8 +235,6 @@ class DataInSQLite:
         return listPageInfo
 
 
-
-
 # ----------------------------------------------------------------------------------
 
 
@@ -245,7 +243,6 @@ class DataInSQLite:
         metaInfo = self._metaInfo()
         detailPageInfo = self._detailPageInfo()
         return {**metaInfo, **detailPageInfo}
-
 
 
 # ----------------------------------------------------------------------------------

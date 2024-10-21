@@ -7,11 +7,15 @@
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
+import os
 from dotenv import load_dotenv
 
 # 自作モジュール
 from .base.utils import Logger
-from .
+from .base.chrome import ChromeManager
+from .base.loginWithCookie import CookieLogin
+from .const import SiteUrl
+from .constElementPath import LoginElement
 
 load_dotenv()
 
@@ -26,13 +30,24 @@ class Flow:
         self.getLogger = Logger(__name__, debugMode=debugMode)
         self.logger = self.getLogger.getLogger()
 
+        self.chrome = ChromeManager(debugMode=debugMode)
+        self.homeUrl = SiteUrl.HomeUrl.value
+
         # インスタンス
+        self.cookieLogin = CookieLogin(chrome=self.chrome, homeUrl=self.logger, debugMode=debugMode)
 
 
 
 # ----------------------------------------------------------------------------------
 
 # TODO ログイン
+    def login(self):
+        loginInfo = LoginElement.LOGIN_INFO.value
+        loginInfo['idText'] = os.getenv("ID")
+        loginInfo['passText'] = os.getenv("PASS")
+
+
+        self.cookieLogin.flowSwitchLogin(loginInfo=loginInfo)
 
 # TODO Clickなどのアクションもリファクタリング
 
