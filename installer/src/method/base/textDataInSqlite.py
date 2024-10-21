@@ -6,7 +6,7 @@
 import time, os
 from selenium.webdriver.chrome.webdriver import WebDriver
 from datetime import datetime
-from typing import Dict, Any, List, Tuple
+from typing import Dict, Any
 from dotenv import load_dotenv
 
 from selenium.webdriver.remote.webelement import WebElement
@@ -53,29 +53,69 @@ class TextDataInSQLite:
 # nameを主としたサブ辞書の作成
 
     @decoInstance.funcBase
-    def flowMoveGetElement(self, targetUrl: str ,retryCount: int = 5, delay: int = 2):
+    def flowCollectElementDataToSQLite(self, targetUrl: str ,retryCount: int = 5, delay: int = 2):
+
+        # ジャンプしてURLへ移動して検索画面を消去まで実施
+        self._navigateToTargetPage(targetUrl=targetUrl, delay=delay)
+
+        # 一覧ページにある物件詳細リンクを全て取得
+        linkList = self._getLinkList()
+        self.logger.warning(f"linkList: {linkList}: {len(linkList)}個のリンクを取得")
 
         allList = []
         insertID = []
         for i in range(retryCount):
-            # ジャンプしてURLへ移動
-            self._navigateToTargetPage(targetUrl=targetUrl, delay=delay)
-            mergeDict = self._getAllPageData()
+            # 一覧ページからスクレイピング
+            listPageInfo = self._getListPageData(tableValue=(i + 1))
 
+            # 物件詳細リンクにアクセス
+            linkList[i].click()
+            time.sleep(delay)
+
+            # 詳細からスクレイピング
+            detailPageInfo = self._getDetailPageData()
+
+            # 取得したデータをマージ
+            mergeDict = {**listPageInfo, **detailPageInfo}
+
+            # textデータをSQLiteへ入れ込む
             id = self._insertData(mergeDict=mergeDict)
 
+            # ２〜４枚目に必要なコメントを生成
             updateColumnsData = self._generateComments(mergeDict=mergeDict)
 
+            # 生成したコメントをSQLiteへ格納（アップデート）
             self._updateDataInSQlite(id=id, updateColumnsData=updateColumnsData)
 
+            # mergeDictを更新
             mergeDict.update(updateColumnsData)
+
+            # それぞれのリストに追加
             allList.append(mergeDict)
             insertID.append(id)
             time.sleep(delay)
 
+            # 一覧へ戻る
+            self.chrome.back()
+
             self.logger.info(f"{i + 1}回目実施完了")
+        self.logger.warning(f"insertID: {insertID}")
+        self.logger.warning(f"allList:\n{allList}")
+
 
         return allList, insertID
+
+
+# ----------------------------------------------------------------------------------
+# 一覧ページからすべてのリンクを取得してリストにする
+
+    @decoInstance.funcBase
+    def _getLinkList(self):
+        linkList = self.element.getElements(
+            by="xpath",
+            value="//a[contains(text(), '物件画像')]"
+        )
+        return linkList
 
 
 # ----------------------------------------------------------------------------------
@@ -102,21 +142,30 @@ class TextDataInSQLite:
 
 
 # ----------------------------------------------------------------------------------
+# tableValueは一覧の中の何個目かどうか
 
-
-    def _getAllPageData(self, tableValue: Any):
-        metaInfo = self._metaInfo()
+    @decoInstance.funcBase
+    def _getListPageData(self, tableValue: Any):
         listPageInfo = self._listPageInfo(tableValue=tableValue)
-        detailPageInfo = self._detailPageInfo()
+        return listPageInfo
 
-        margeDict = {**metaInfo, **listPageInfo, **detailPageInfo}
-        self.logger.debug(f"margeDict: \n{margeDict}")
-        return margeDict
+
 
 
 # ----------------------------------------------------------------------------------
 
 
+    @decoInstance.funcBase
+    def _getDetailPageData(self):
+        metaInfo = self._metaInfo()
+        detailPageInfo = self._detailPageInfo()
+        return {**metaInfo, **detailPageInfo}
+
+
+
+# ----------------------------------------------------------------------------------
+
+    @decoInstance.funcBase
     def _generateComments(self, mergeDict: Dict):
         # 2ページ目のコメント
         secondComment = self.createSecondPageComment(mergeDict=mergeDict)
@@ -147,13 +196,16 @@ class TextDataInSQLite:
 # ----------------------------------------------------------------------------------
 
 
+    @decoInstance.funcBase
     def _navigateToTargetPage(self, targetUrl: str, delay: int):
         self.jumpTargetPage.flowJumpTargetPage(targetUrl=targetUrl)
         time.sleep(delay)
 
+        # 念の為、Refresh
         self.chrome.refresh()
         time.sleep(delay)
 
+        # 検索画面を消去
         self.element.clickClearInput(
             by=ElementSpecify.XPATH.value,
             value=ElementPath.SEARCH_DELETE_BTN_PATH.value
@@ -165,6 +217,7 @@ class TextDataInSQLite:
 # ----------------------------------------------------------------------------------
 # 3ページ目のChatGPT
 
+    @decoInstance.funcBase
     async def chatGPTComment(self, mergeDict: Dict, itemStartValue: int, itemEndValue: int, maxlen: int):
         prompt = self.ChatGPTPromptCreate(mergeDict=mergeDict, itemStartValue=itemStartValue, itemEndValue=itemEndValue, maxlen=maxlen)
         await self.chatGPT.resultOutput(
@@ -182,6 +235,7 @@ class TextDataInSQLite:
 # Prompt生成
 # 文字数制限はここで入力
 
+    @decoInstance.funcBase
     def ChatGPTPromptCreate(self, mergeDict: Dict, itemStartValue: int, itemEndValue: int, maxlen: int):
         items = [mergeDict['item'][i] for i in range(itemStartValue, itemEndValue + 1)]
         prompt = ChatGptPrompt.recommend.value.format(
@@ -198,6 +252,7 @@ class TextDataInSQLite:
 # ----------------------------------------------------------------------------------
 # 2ページ目のコメント作成
 
+    @decoInstance.funcBase
     def createSecondPageComment(self, mergeDict: str):
         # 2枚目コメント→つなぎ合わせたもの
         result = self.SQLite.getSortColOneData(
@@ -227,6 +282,7 @@ class TextDataInSQLite:
 
 # ----------------------------------------------------------------------------------
 # # 一覧ページから取得
+# tableValueは何個目かどうか
 
     @decoInstance.funcBase
     def _listPageInfo(self, tableValue: int) -> Dict[str, WebElement]:
@@ -258,7 +314,7 @@ class TextDataInSQLite:
 
 
 # ----------------------------------------------------------------------------------
-
+# tableValueは何個目かどうか
 
     def _listPageInfoValue(self, tableValue: int):
         return ListPageInfo(

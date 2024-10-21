@@ -48,18 +48,6 @@ class DetailPageInfo:
 # **********************************************************************************
 
 
-@dataclass
-class ChatGPTInfo:
-    fixedPrompt: str
-    endpointUrl: str
-    model: str
-    apiKey: str
-    maxlen: str
-    maxToken: str
-    recommend: str
-    startValue: int
-    endValue: int
-
 
 
 # **********************************************************************************
