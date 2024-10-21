@@ -40,7 +40,11 @@ class TextDataInSQLite:
         self.logger = self.getLogger.getLogger()
 
         self.chrome = chrome
+
+        # テーブルName
         self.textTableName = TableName.TEXT_TABLE_COLUMNS
+        self.imageTableName = TableName.IMAGE_TABLE_COLUMNS
+
         self.currentDate = datetime.now().strftime('%y%m%d_%H%M%S')
         self.element = ElementManager(chrome=self.chrome, debugMode=debugMode)
         self.chatGPT = ChatGPTOrder(debugMode=debugMode)
@@ -50,7 +54,8 @@ class TextDataInSQLite:
 
 
 # ----------------------------------------------------------------------------------
-# nameを主としたサブ辞書の作成
+# flow
+# 一覧の物件リストから詳細ページへ移動して取得する
 
     @decoInstance.funcBase
     def flowCollectElementDataToSQLite(self, targetUrl: str ,retryCount: int = 5, delay: int = 2):
@@ -72,14 +77,14 @@ class TextDataInSQLite:
             linkList[i].click()
             time.sleep(delay)
 
-            # 詳細からスクレイピング
+            # 詳細からtextデータをスクレイピング
             detailPageInfo = self._getDetailPageData()
 
-            # 取得したデータをマージ
+            # 取得したtextデータをマージ
             mergeDict = {**listPageInfo, **detailPageInfo}
 
             # textデータをSQLiteへ入れ込む
-            id = self._insertData(mergeDict=mergeDict)
+            id = self._textInsertData(mergeDict=mergeDict)
 
             # ２〜４枚目に必要なコメントを生成
             updateColumnsData = self._generateComments(mergeDict=mergeDict)
@@ -89,6 +94,12 @@ class TextDataInSQLite:
 
             # mergeDictを更新
             mergeDict.update(updateColumnsData)
+
+            # 詳細ページから画像データを取得
+            imageDict = self._mergeImageTableData(id=id, mergeDict=mergeDict)
+
+            # imageデータをSQLiteへ入れ込む
+            id = self._ImageInsertData(imageDict=imageDict)
 
             # それぞれのリストに追加
             allList.append(mergeDict)
@@ -107,7 +118,72 @@ class TextDataInSQLite:
 
 
 # ----------------------------------------------------------------------------------
+# 2つの辞書データをマージさせる
+
+    def _mergeImageTableData(self, id: int, mergeDict: Dict):
+        dataInMergeDict = self._getImageTableToColInMergeData(id=id, mergeDict=mergeDict)
+        imageDict = self._imagesDict()
+
+        return {**dataInMergeDict, **imageDict}
+
+
+# ----------------------------------------------------------------------------------
+# mergeDataに有るImageDataに必要データを取得
+
+    def _getImageTableToColInMergeData(self, id: int, mergeDict: Dict):
+        name = mergeDict['name']
+        createTime = mergeDict['createTime']
+        currentUrl = mergeDict['currentUrl']
+
+        return {
+            "id": id,
+            "name": name,
+            "createTime": createTime,
+            "currentUrl": currentUrl
+        }
+
+
+# ----------------------------------------------------------------------------------
+#TODO ElementPathから取得するようにする
+
+
+    def _imagesDict(self):
+        imageElements = self._getImageList()
+
+        imageData = {}
+        for element in imageElements:
+            imageUrl = element.get_attribute("href")
+
+            imageTag = self.element.getElement(
+                by="tag",
+                value="img"
+            )
+            imageTitle = imageTag.get_attribute('title')
+
+            imageData[imageTitle] = imageUrl
+
+        self.logger.warning(f"imageData:\n{imageData}")
+
+        # image.key()は辞書のKeyオブジェクトを返すためListに変換する必要あり
+        imageKeys = [list(image.key())[0] for image in imageData]
+        self.logger.warning(f"imageDataのKey一覧:\n{imageKeys}")
+
+        return imageData
+
+
+# ----------------------------------------------------------------------------------
+#TODO ElementPathから取得するようにする
+
+    def _getImageList(self):
+        return self.element.getElements(
+            by="xpath",
+            value="//div[@id='box_main_gallery']//li//a"
+        )
+
+
+# ----------------------------------------------------------------------------------
 # 一覧ページからすべてのリンクを取得してリストにする
+#TODO ElementPathから取得するようにする
 
     @decoInstance.funcBase
     def _getLinkList(self):
@@ -122,13 +198,22 @@ class TextDataInSQLite:
 # 入力を実行。入力先のIDを返す
 
     @decoInstance.funcBase
-    def _insertData(self, mergeDict: Dict):
+    def _textInsertData(self, mergeDict: Dict):
         id = self.SQLite.insertDictData(tableName=self.textTableName, inputDict=mergeDict)
         return id
 
 
 # ----------------------------------------------------------------------------------
-# 指定のIDのcolumnを指定してアップデートする
+# 入力を実行。入力先のIDを返す
+
+    @decoInstance.funcBase
+    def _ImageInsertData(self, imageDict: Dict):
+        id = self.SQLite.insertDictData(tableName=self.imageTableName, inputDict=imageDict)
+        return id
+
+
+# ----------------------------------------------------------------------------------
+# # 指定のIDのcolumnを指定してアップデートする
 
     @decoInstance.funcBase
     def _updateDataInSQlite(self, id: int, updateColumnsData: Dict):

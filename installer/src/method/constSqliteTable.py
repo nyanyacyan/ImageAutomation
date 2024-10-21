@@ -57,15 +57,32 @@ class TableSchemas:
 # サブ辞書
 
     IMAGE_TABLE_COLUMNS = {
-        "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
+        "id": "INTEGER PRIMARY KEY",
         "name": "TEXT NOT NULL",
-        "imageData": "BLOB NOT NULL",
         "createTime": "TEXT NOT NULL",
-        "url": "TEXT NOT NULL",
-        "title": "TEXT",
-        "placement": "INTEGER CHECK (placement IN (1, 2, 3, 4))",
-        "priority": "INTEGER NOT NULL",
-        "status": "TEXT CHECK (status IN ('complete', 'Error'))",
+        "currentUrl": "TEXT NOT NULL",
+        "間取り図": "TEXT NOT NULL",
+        "外観写真": "TEXT NOT NULL",
+        "玄関": "TEXT",
+        "リビング": "TEXT",
+        "キッチン": "TEXT",
+        "ベッドルーム": "TEXT",
+        "風呂画像": "TEXT",
+        "エントランス": "TEXT",
+        "セキュリティ": "TEXT",
+        "ロビー": "TEXT",
+        "宅配BOX": "TEXT",
+        "駐輪場": "TEXT",
+        "洗面所": "TEXT",
+        "トイレ": "TEXT",
+        "ウォークインクロゼット": "TEXT",
+        "リビングルーム": "TEXT",
+        "シューズインクローゼット": "TEXT",
+        "周辺画像": "TEXT",
+        "他共有部分": "TEXT",
+        "他設備": "TEXT",
+        "その他": "TEXT",
+        "収納": "TEXT",
     }
 
 
@@ -80,7 +97,3 @@ class TableSchemas:
 
 
 # ----------------------------------------------------------------------------------
-
-
-class TableName:
-    TEXT_TABLE_COLUMNS="TEXT_TABLE_COLUMNS"
