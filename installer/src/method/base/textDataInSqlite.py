@@ -59,78 +59,107 @@ class TextDataInSQLite:
         insertID = []
         for i in range(retryCount):
             # ジャンプしてURLへ移動
-            self.jumpTargetPage.flowJumpTargetPage(targetUrl=targetUrl)
-            time.sleep(delay)
+            self._navigateToTargetPage(targetUrl=targetUrl, delay=delay)
+            mergeDict = self._getAllPageData()
 
-            # 一度更新
-            self.chrome.refresh()
-            time.sleep(delay)
+            id = self._insertData(mergeDict=mergeDict)
 
-            # 検索画面を消去
-            self.element.clickElement(
-                by=ElementSpecify.XPATH.value,
-                value=ElementPath.SEARCH_DELETE_BTN_PATH.value
-            )
-            time.sleep(delay)
-            metaInfo = self._metaInfo()
+            updateColumnsData = self._generateComments(mergeDict=mergeDict)
 
-            # 一覧ページにて要素を取得
-            listPageInfo = self._listPageInfo(tableValue={i + 1})
+            self._updateDataInSQlite(id=id, updateColumnsData=updateColumnsData)
 
-            # 詳細ページへ移動
-            self.element.clickElement(
-                by=ElementSpecify.XPATH.value,
-                value=ElementPath.DETAIL_PAGE_BTN_PATH.value.format(i + 1)
-            )
-            time.sleep(delay)
-
-            # 詳細ページでtextを取得
-            detailPageInfo = self._detailPageInfo()
-
-            # 辞書の結合
-            mergeDict = {**metaInfo, **listPageInfo, **detailPageInfo}
-
-            # SQLiteに書込
-            id = self.SQLite.insertDictData(tableName=self.textTableName, inputDict=mergeDict)
-            time.sleep(delay)
-
-            secondComment = self.createSecondPageComment(mergeDict=mergeDict)
-
-            thirdComment = self.chatGPTComment(
-                mergeDict=mergeDict,
-                startValue=5,
-                endValue=8,
-                maxlen=30
-            )
-
-            fourthPrompt = self.chatGPTComment(
-                mergeDict=mergeDict,
-                startValue=9,
-                endValue=12,
-                maxlen=30
-            )
-
-            updateColumnsData = {
-                "secondComment": secondComment,
-                "thirdComment": thirdComment,
-                "fourthPrompt": fourthPrompt
-            }
-
-            mergeDict = {**metaInfo, **listPageInfo, **detailPageInfo, **updateColumnsData}
+            mergeDict.update(updateColumnsData)
             allList.append(mergeDict)
             insertID.append(id)
-
-
-            # SQLiteに書込
-            self.SQLite.updateData(
-                tableName=self.textTableName,
-                updateColumnsData=updateColumnsData,
-                rowId=id
-            )
             time.sleep(delay)
 
+            self.logger.info(f"{i + 1}回目実施完了")
 
-        return allList
+        return allList, insertID
+
+
+# ----------------------------------------------------------------------------------
+# 入力を実行。入力先のIDを返す
+
+    @decoInstance.funcBase
+    def _insertData(self, mergeDict: Dict):
+        id = self.SQLite.insertDictData(tableName=self.textTableName, inputDict=mergeDict)
+        return id
+
+
+# ----------------------------------------------------------------------------------
+# 指定のIDのcolumnを指定してアップデートする
+
+    @decoInstance.funcBase
+    def _updateDataInSQlite(self, id: int, updateColumnsData: Dict):
+        self.SQLite.updateData(
+            tableName=self.textTableName,
+            updateColumnsData=updateColumnsData,
+            rowId=id
+        )
+        return id
+
+
+
+# ----------------------------------------------------------------------------------
+
+
+    def _getAllPageData(self, tableValue: Any):
+        metaInfo = self._metaInfo()
+        listPageInfo = self._listPageInfo(tableValue=tableValue)
+        detailPageInfo = self._detailPageInfo()
+
+        margeDict = {**metaInfo, **listPageInfo, **detailPageInfo}
+        self.logger.debug(f"margeDict: \n{margeDict}")
+        return margeDict
+
+
+# ----------------------------------------------------------------------------------
+
+
+    def _generateComments(self, mergeDict: Dict):
+        # 2ページ目のコメント
+        secondComment = self.createSecondPageComment(mergeDict=mergeDict)
+
+        # 3ページ目のコメント
+        thirdComment = self.chatGPTComment(
+            mergeDict=mergeDict,
+            startValue=5,
+            endValue=8,
+            maxlen=30
+        )
+
+        # 4ページ目のコメント
+        fourthPrompt = self.chatGPTComment(
+            mergeDict=mergeDict,
+            startValue=9,
+            endValue=12,
+            maxlen=30
+        )
+
+        return {
+            "secondComment": secondComment,
+            "thirdComment": thirdComment,
+            "fourthPrompt": fourthPrompt
+        }
+
+
+# ----------------------------------------------------------------------------------
+
+
+    def _navigateToTargetPage(self, targetUrl: str, delay: int):
+        self.jumpTargetPage.flowJumpTargetPage(targetUrl=targetUrl)
+        time.sleep(delay)
+
+        self.chrome.refresh()
+        time.sleep(delay)
+
+        self.element.clickClearInput(
+            by=ElementSpecify.XPATH.value,
+            value=ElementPath.SEARCH_DELETE_BTN_PATH.value
+        )
+        time.sleep(delay)
+        self.logger.debug(f"新しいページに移動後、Refresh完了")
 
 
 # ----------------------------------------------------------------------------------
