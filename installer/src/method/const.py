@@ -14,7 +14,7 @@ from enum import Enum
 class SiteUrl(Enum):
     LoginUrl='https://meiwa-chukai.es-b2b.com/signIn'
     HomeUrl='https://www.meiwakanzai.co.jp/'
-    TargetUrl=''
+    TargetUrl='https://meiwa-chukai.es-b2b.com/search/line'
 
 
 # ----------------------------------------------------------------------------------

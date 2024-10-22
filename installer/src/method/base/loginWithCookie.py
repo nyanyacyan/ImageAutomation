@@ -41,9 +41,8 @@ class CookieLogin:
 # ----------------------------------------------------------------------------------
 # 2段階ログイン
 
-    def flowSwitchLogin(self, loginInfo: dict):
+    def flowSwitchLogin(self, cookies: dict, loginInfo: dict):
         # pickleファイルの読込
-        cookies = self.cookieManager.cookieDataExistsInDB()
         if cookies is None:
             self.idLogin.flowLoginID(loginInfo=loginInfo)
 

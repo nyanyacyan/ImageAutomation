@@ -68,7 +68,7 @@ class DataInSQLite:
         self.logger.warning(f"linkList: {linkList}: {len(linkList)}個のリンクを取得")
 
         allList = []
-        insertID = []
+        allIDList = []
         for i in range(retryCount):
             # 一覧ページからスクレイピング
             listPageInfo = self._getListPageData(tableValue=(i + 1))
@@ -103,18 +103,18 @@ class DataInSQLite:
 
             # それぞれのリストに追加
             allList.append(mergeDict)
-            insertID.append(id)
+            allIDList.append(id)
             time.sleep(delay)
 
             # 一覧へ戻る
             self.chrome.back()
 
             self.logger.info(f"{i + 1}回目実施完了")
-        self.logger.warning(f"insertID: {insertID}")
+        self.logger.warning(f"insertID: {allIDList}")
         self.logger.warning(f"allList:\n{allList}")
 
 
-        return allList, insertID
+        return allIDList
 
 
 # ----------------------------------------------------------------------------------

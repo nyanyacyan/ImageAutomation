@@ -14,7 +14,6 @@ import asyncio
 from .utils import Logger
 from .path import BaseToPath
 from .sysCommand import SysCommand
-from ..const import ErrorMessage
 from .errorHandlers import NetworkHandler, FileWriteError, RequestRetryAction, FileReadHandler, GeneratePromptHandler, ChromeHandler, SqliteError
 from dotenv import load_dotenv
 

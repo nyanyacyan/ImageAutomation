@@ -10,7 +10,7 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 # 自作モジュール
 from .utils import Logger
 from .SQLite import SQLite
-from ..const import TableName, ColumnsName
+from const import TableName, ColumnsName
 from .decorators import Decorators
 
 decoInstance = Decorators(debugMode=True)

@@ -11,11 +11,13 @@ import os
 from dotenv import load_dotenv
 
 # 自作モジュール
-from .base.utils import Logger
-from .base.chrome import ChromeManager
-from .base.loginWithCookie import CookieLogin
-from .const import SiteUrl
-from .constElementPath import LoginElement
+from base.utils import Logger
+from base.chrome import ChromeManager
+from base.cookieManager import CookieManager
+from base.loginWithCookie import CookieLogin
+from base.dataInSqlite import DataInSQLite
+from const import SiteUrl
+from constElementPath import LoginElement
 
 load_dotenv()
 
@@ -32,46 +34,33 @@ class Flow:
 
         self.chrome = ChromeManager(debugMode=debugMode)
         self.homeUrl = SiteUrl.HomeUrl.value
+        self.targetUrl = SiteUrl.TargetUrl.value
 
         # インスタンス
+        self.cookieManager = CookieManager(chrome=self.chrome, homeUrl=self.homeUrl, debugMode=debugMode)
         self.cookieLogin = CookieLogin(chrome=self.chrome, homeUrl=self.logger, debugMode=debugMode)
-
+        self.dataInSQLite = DataInSQLite(chrome=self.chrome, debugMode=debugMode)
 
 
 # ----------------------------------------------------------------------------------
 
 # TODO ログイン
-    def login(self):
+    def flow(self):
+        # DBチェッカーから
+        cookies = self.cookieManager.startBoolFilePath()
+
+        # ログイン情報を呼び出し
         loginInfo = LoginElement.LOGIN_INFO.value
         loginInfo['idText'] = os.getenv("ID")
         loginInfo['passText'] = os.getenv("PASS")
 
+        # cookiesの出力によってログイン方法を分ける
+        self.cookieLogin.flowSwitchLogin(cookies=cookies, loginInfo=loginInfo)
 
-        self.cookieLogin.flowSwitchLogin(loginInfo=loginInfo)
+        # text, imageを取得してSQLiteに入れ込む→入れ込んだIDのリストを返す
+        allIDList = self.dataInSQLite.flowCollectElementDataToSQLite(targetUrl=self.targetUrl)
 
-# TODO Clickなどのアクションもリファクタリング
-
-# TODO 明和管財サイトへアクセス
-
-# TODO 賃貸仲介会社様はこちらをクリック
-
-# TODO ログインをクリック
-
-# TODO いい生活アカウントでアクセスをクリック
-
-# TODO 路線検索をクリック
-
-# TODO 検索画面を閉じるをクリック
-
-# TODO 詳細をクリック（上から順番に）
-
-# TODO 写真の取得（優先順位を決めて取得）
-
-# TODO 文字列の取得（優先順位を決めて取得）
-
-# TODO データ保管
-
-# TODO 一つ前の画面へ戻る
+        return allIDList
 
 # TODO batFileの作成→実行、install
 
@@ -81,3 +70,9 @@ class Flow:
 
 
 # ----------------------------------------------------------------------------------
+
+
+if __name__ == "__main__":
+    process = Flow(debugMode=True)
+
+    process.flow()
