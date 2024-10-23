@@ -304,7 +304,7 @@ class LimitFileWrite:
 # cookies→text
 
     @decoInstance.fileRetryAction(maxRetry=2, delay=2)
-    def cookiesWriteToText(self, cookies: List[Dict[str, Any]], extension: str=Extension.cookieText.value):
+    def cookiesWriteToText(self, cookies: List[Dict[str, Any]], extension: str=Extension.text.value):
         filePath = self.path.writeCookiesFileDateNamePath(extension=extension)
 
         if cookies :

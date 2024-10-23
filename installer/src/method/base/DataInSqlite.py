@@ -17,13 +17,13 @@ from .utils import Logger
 from .elementManager import ElementManager
 from .AiOrder import ChatGPTOrder
 from .textManager import TextManager
-from ..dataclass import ListPageInfo, DetailPageInfo
+from dataclass import ListPageInfo, DetailPageInfo
 from .SQLite import SQLite
 from .decorators import Decorators
 from .jumpTargetPage import JumpTargetPage
-from ..const import ChatGptPrompt, ChatgptUtils
-from ..constElementPath import ElementPath, ElementSpecify
-from ..constSqliteTable import TableName
+from const import ChatGptPrompt, ChatgptUtils
+from constElementPath import ElementPath, ElementSpecify
+from constSqliteTable import TABLE_PATTERN
 
 decoInstance = Decorators(debugMode=True)
 
@@ -42,8 +42,8 @@ class DataInSQLite:
         self.chrome = chrome
 
         # テーブルName
-        self.textTableName = TableName.TEXT_TABLE_COLUMNS
-        self.imageTableName = TableName.IMAGE_TABLE_COLUMNS
+        self.textTableName = TABLE_PATTERN.TEXT_TABLE_COLUMNS
+        self.imageTableName = TABLE_PATTERN.IMAGE_TABLE_COLUMNS
 
         self.currentDate = datetime.now().strftime('%y%m%d_%H%M%S')
         self.element = ElementManager(chrome=self.chrome, debugMode=debugMode)
