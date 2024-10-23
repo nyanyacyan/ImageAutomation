@@ -10,7 +10,7 @@ from typing import Dict, Any, List, Tuple
 
 # 自作モジュール
 from .utils import Logger
-from ..const import NGWordList, Address
+from const import NGWordList, Address
 from .decorators import Decorators
 from .textManager import TextManager
 
@@ -159,7 +159,7 @@ class ElementManager:
 # ----------------------------------------------------------------------------------
 # サブ辞書の中身を入れ込む
 
-    def updateSubDict(self, dictBox: dict[str, dict[str, Any]], name: str, inputDict: Dict[str, Any]):
+    def updateSubDict(self, dictBox: Dict[str, Dict[str, Any]], name: str, inputDict: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
         dictBox[name].update(inputDict)
         return dictBox
 

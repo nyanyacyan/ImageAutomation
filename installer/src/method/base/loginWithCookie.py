@@ -10,7 +10,7 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 # 自作モジュール
 from .utils import Logger
 from .driverWait import Wait
-from .seleniumBase import BrowserHandler
+from .seleniumBase import SeleniumBasicOperations
 from .cookieManager import CookieManager
 from .loginWithId import LoginID
 from .driverDeco import jsCompleteWaitDeco
@@ -32,7 +32,7 @@ class CookieLogin:
         self.homeUrl = homeUrl
 
         # インスタンス
-        self.browser = BrowserHandler(debugMode=debugMode)
+        self.browser = SeleniumBasicOperations(debugMode=debugMode)
         self.driverWait = Wait(chrome=self.chrome, debugMode=debugMode)
         self.cookieManager = CookieManager(chrome=chrome, debugMode=debugMode)
         self.idLogin = LoginID(chrome=chrome, debugMode=debugMode)
