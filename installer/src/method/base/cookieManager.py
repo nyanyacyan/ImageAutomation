@@ -35,7 +35,7 @@ class CookieManager:
         self.currentTime = int(time.time())
 
         # インスタンス
-        self.sqlite = SQLite(tableName=self.tableName, debugMode=debugMode)
+        self.sqlite = SQLite(debugMode=debugMode)
 
 
 # ----------------------------------------------------------------------------------

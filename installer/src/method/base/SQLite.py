@@ -27,13 +27,12 @@ decoInstance = Decorators(debugMode=True)
 # 一連の流れ
 
 class SQLite:
-    def __init__(self, tableName: str, debugMode=True):
+    def __init__(self, debugMode=True):
 
         # logger
         self.getLogger = Logger(__name__, debugMode=debugMode)
         self.logger = self.getLogger.getLogger()
 
-        self.tableName = tableName
 
         # インスタンス化
         self.networkError = NetworkHandler(debugMode=debugMode)

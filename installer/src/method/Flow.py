@@ -33,12 +33,13 @@ class Flow:
         self.logger = self.getLogger.getLogger()
 
         self.chrome = ChromeManager(debugMode=debugMode)
+        self.loginUrl = SiteUrl.LoginUrl.value
         self.homeUrl = SiteUrl.HomeUrl.value
         self.targetUrl = SiteUrl.TargetUrl.value
 
         # インスタンス
         self.cookieManager = CookieManager(chrome=self.chrome, homeUrl=self.homeUrl, debugMode=debugMode)
-        self.cookieLogin = CookieLogin(chrome=self.chrome, homeUrl=self.logger, debugMode=debugMode)
+        self.cookieLogin = CookieLogin(chrome=self.chrome, loginUrl=self.loginUrl, homeUrl=self.logger, debugMode=debugMode)
         self.dataInSQLite = DataInSQLite(chrome=self.chrome, debugMode=debugMode)
 
 

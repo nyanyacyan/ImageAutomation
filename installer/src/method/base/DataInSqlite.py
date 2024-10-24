@@ -21,9 +21,9 @@ from dataclass import ListPageInfo, DetailPageInfo
 from .SQLite import SQLite
 from .decorators import Decorators
 from .jumpTargetPage import JumpTargetPage
-from const import ChatGptPrompt, ChatgptUtils
+from const import ChatGptPrompt, ChatgptUtils, TableName
 from constElementPath import ElementPath, ElementSpecify
-from constSqliteTable import TABLE_PATTERN
+from constSqliteTable import TableSchemas
 
 decoInstance = Decorators(debugMode=True)
 
@@ -42,8 +42,8 @@ class DataInSQLite:
         self.chrome = chrome
 
         # テーブルName
-        self.textTableName = TABLE_PATTERN.TEXT_TABLE_COLUMNS
-        self.imageTableName = TABLE_PATTERN.IMAGE_TABLE_COLUMNS
+        self.textTableName = TableName.TEXT.value
+        self.imageTableName = TableName.IMAGE.value
 
         self.currentDate = datetime.now().strftime('%y%m%d_%H%M%S')
         self.element = ElementManager(chrome=self.chrome, debugMode=debugMode)

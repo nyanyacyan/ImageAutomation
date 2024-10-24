@@ -23,19 +23,20 @@ decoInstance = jsCompleteWaitDeco(debugMode=True)
 
 
 class CookieLogin:
-    def __init__(self, chrome: WebDriver, homeUrl: str, debugMode=True):
+    def __init__(self, chrome: WebDriver, loginUrl: str, homeUrl: str, debugMode=True):
         # logger
         self.getLogger = Logger(__name__, debugMode=debugMode)
         self.logger = self.getLogger.getLogger()
 
         self.chrome = chrome
+        self.loginUrl = loginUrl
         self.homeUrl = homeUrl
 
         # インスタンス
-        self.browser = SeleniumBasicOperations(debugMode=debugMode)
+        self.browser = SeleniumBasicOperations(chrome=self.chrome, homeUrl=self.homeUrl, debugMode=debugMode)
         self.driverWait = Wait(chrome=self.chrome, debugMode=debugMode)
-        self.cookieManager = CookieManager(chrome=chrome, debugMode=debugMode)
-        self.idLogin = LoginID(chrome=chrome, debugMode=debugMode)
+        self.cookieManager = CookieManager(chrome=self.chrome, homeUrl=self.homeUrl, debugMode=debugMode)
+        self.idLogin = LoginID(chrome=self.chrome, homeUrl=self.homeUrl, loginUrl=self.loginUrl, debugMode=debugMode)
 
 
 # ----------------------------------------------------------------------------------
