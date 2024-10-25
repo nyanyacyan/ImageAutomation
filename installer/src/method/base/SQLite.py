@@ -46,8 +46,12 @@ class SQLite:
 
     def boolFilePath(self, extension: str = Extension.DB.value):
         dbDirPath = self.path.getResultDBDirPath()
+        self.logger.warning(f"dbDirPath: {type(dbDirPath)}")
+        if not dbDirPath.exists():
+            self.logger.error(f"ディレクトリが存在しません{dbDirPath}")
         self.logger.debug(f"dbDirPath: {dbDirPath}")
         dbFilePath = dbDirPath / f"{self.currentDate}{extension}"
+        self.logger.warning(f"dbFilePath: {dbFilePath}")
         if dbFilePath.exists():
             self.logger.info(f"ファイルが見つかりました: {dbFilePath}")
             return True
