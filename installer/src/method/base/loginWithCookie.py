@@ -35,7 +35,7 @@ class CookieLogin:
         # インスタンス
         self.browser = SeleniumBasicOperations(chrome=self.chrome, homeUrl=self.homeUrl, debugMode=debugMode)
         self.driverWait = Wait(chrome=self.chrome, debugMode=debugMode)
-        self.cookieManager = CookieManager(chrome=self.chrome, homeUrl=self.homeUrl, debugMode=debugMode)
+        self.cookieManager = CookieManager(chrome=self.chrome, loginUrl=self.loginUrl, homeUrl=self.homeUrl, debugMode=debugMode)
         self.idLogin = LoginID(chrome=self.chrome, homeUrl=self.homeUrl, loginUrl=self.loginUrl, debugMode=debugMode)
 
 

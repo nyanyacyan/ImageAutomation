@@ -41,6 +41,7 @@ class jsCompleteWaitDeco:
                         self.logger.info(f"********** {func.__name__} start {retryCount + 1}回目 **********")
 
                         chrome = instance.chrome
+                        self.logger.warning(f"chrome: {type(chrome)}")
 
                         result = func(instance, *args, **kwargs)
 

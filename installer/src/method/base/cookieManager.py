@@ -10,6 +10,7 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 # 自作モジュール
 from .utils import Logger
 from .SQLite import SQLite
+from .loginWithId import LoginID
 from const import TableName, ColumnsName
 from .decorators import Decorators
 
@@ -21,13 +22,15 @@ decoInstance = Decorators(debugMode=True)
 
 
 class CookieManager:
-    def __init__(self, chrome: WebDriver, homeUrl: str, debugMode=True):
+    def __init__(self, chrome: WebDriver, homeUrl: str, loginUrl: str, debugMode=True):
         # logger
         self.getLogger = Logger(__name__, debugMode=debugMode)
         self.logger = self.getLogger.getLogger()
 
         self.chrome = chrome
         self.homeUrl = homeUrl
+        self.loginUrl = loginUrl
+
         self.tableName = TableName.Cookie.value
 
         self.columnsName = ColumnsName.Cookies.value
@@ -36,6 +39,7 @@ class CookieManager:
 
         # インスタンス
         self.sqlite = SQLite(debugMode=debugMode)
+        self.loginID = LoginID(chrome=self.chrome, homeUrl=self.homeUrl, loginUrl=self.loginUrl, debugMode=debugMode)
 
 
 # ----------------------------------------------------------------------------------
@@ -43,16 +47,9 @@ class CookieManager:
 # DBが存在確認
 
     @decoInstance.funcBase
-    def startBoolFilePath(self):
-        tableBool = self.sqlite.boolFilePath()
-        sqlCookieAllData = self.sqlite.getRecordsAllData(tableName=self.tableName)
-        cookieDataCount = len(sqlCookieAllData)
-        self.logger.warning(f"cookieDataCount: {cookieDataCount}")
-        if 5 < cookieDataCount:
-            self.sqlite.getSqlOldData(tableName=self.tableName, primaryKey=self.primaryKey)
-
-        if tableBool:
-            return self.cookieDataExistsInDB()
+    def startBoolFilePath(self, loginInfo: dict):
+        if self.sqlite.boolFilePath():
+            return self.cookieDataExistsInDB(loginInfo)
         else:
             self.logger.debug(f"{self.tableName} が作られてません。これよりテーブル作成開始")
             self.sqlite.isFileExists()  # ファイルを作成
@@ -65,7 +62,7 @@ class CookieManager:
 # DBにCookieの存在確認
 
     @decoInstance.funcBase
-    def cookieDataExistsInDB(self):
+    def cookieDataExistsInDB(self, loginInfo: dict):
         DBColNames = self.sqlite.columnsExists(tableName=self.tableName)
 
         self.logger.debug(f"DBColNames: {DBColNames}")
@@ -75,10 +72,10 @@ class CookieManager:
         result = all(cokName in DBColNames for cokName in self.columnsName)
         if result is True:
             self.logger.info(f"cookieデータを確認できました\n{DBColNames}")
-            return self.checkCookieLimit()
+            return self.checkCookieLimit(loginInfo)
         else:
             self.logger.warning(f"{self.tableName} のテーブルデータがありません。Cookieを取得します")
-            return self.getCookieFromAction()
+            return self.getCookieFromAction(loginInfo)
 
 
 # ----------------------------------------------------------------------------------
@@ -86,13 +83,18 @@ class CookieManager:
 # DBにあるCookieの有効期限が有効化を確認
 
     @decoInstance.funcBase
-    def checkCookieLimit(self):
+    def checkCookieLimit(self, loginInfo: dict):
         newCookieData = self.sqlite.getColMaxValueRow(tableName=self.tableName, primaryKey=self.primaryKey)
 
+        self.logger.warning(f"newCookieData: {newCookieData}")
+
         if newCookieData:
-            expiresValue = newCookieData[5]   # タプルの場合には数値で拾う
-            maxAgeValue = newCookieData[6]
-            createTimeValue = newCookieData[7]
+            expiresValue = newCookieData[0][5]   # タプルの場合には数値で拾う
+            maxAgeValue = newCookieData[0][6]
+            createTimeValue = newCookieData[0][7]
+
+            self.logger.warning(f"expiresValue: {expiresValue}\nmaxAgeValue: {maxAgeValue}\ncreateTimeValue: {createTimeValue}\n")
+
 
             if maxAgeValue:
                 return self._getMaxAgeLimit(maxAgeValue=maxAgeValue, createTimeValue=createTimeValue)
@@ -102,18 +104,23 @@ class CookieManager:
 
             else:
                 self.logger.warning("Cookieの有効期限が設定されてません")
-                return self.getCookieFromAction()
+                return self.getCookieFromAction(loginInfo)
 
         else:
             self.logger.error(f"cookieが存在しません: {newCookieData}")
-            return self.getCookieFromAction()
+            return self.getCookieFromAction(loginInfo)
 
 
 # ----------------------------------------------------------------------------------
 
 
     @decoInstance.noneRetryAction()
-    def getCookieFromAction(self):
+    def getCookieFromAction(self, loginInfo: dict):
+        # IDログイン
+        self.loginID.flowLoginID(loginInfo=loginInfo)
+
+
+        # Cookieを取得
         cookie = self.getCookie()
         Cookie = self.insertCookieData(cookie=cookie)
         return self.canValueInCookie(cookie=Cookie)
@@ -203,31 +210,31 @@ class CookieManager:
 
 
 # ----------------------------------------------------------------------------------
-# SQLiteにCookieのデータから有効期限を確認する
+# # SQLiteにCookieのデータから有効期限を確認する
 
-    @decoInstance.funcBase
-    def checkCookieLimit(self):
-        cookieAllData = self.sqlite.getColMaxValueRow(tableName=self.tableName, primaryKey=self.primaryKey)
+#     @decoInstance.funcBase
+#     def checkCookieLimit(self):
+#         cookieAllData = self.sqlite.getColMaxValueRow(tableName=self.tableName, primaryKey=self.primaryKey)
 
-        if cookieAllData:
-            cookieData = cookieAllData[0]
-            expiresValue = cookieData[5]   # タプルの場合には数値で拾う
-            maxAgeValue = cookieData[6]
-            createTimeValue = cookieData[7]
+#         if cookieAllData:
+#             cookieData = cookieAllData[0]
+#             expiresValue = cookieData[5]   # タプルの場合には数値で拾う
+#             maxAgeValue = cookieData[6]
+#             createTimeValue = cookieData[7]
 
-            if maxAgeValue:
-                return self._getMaxAgeLimit(maxAgeValue=maxAgeValue, createTimeValue=createTimeValue)
+#             if maxAgeValue:
+#                 return self._getMaxAgeLimit(maxAgeValue=maxAgeValue, createTimeValue=createTimeValue)
 
-            elif expiresValue:
-                return self._getExpiresLimit(expiresValue=expiresValue)
+#             elif expiresValue:
+#                 return self._getExpiresLimit(expiresValue=expiresValue)
 
-            else:
-                self.logger.warning("Cookieの有効期限が設定されてません")
-                return None
+#             else:
+#                 self.logger.warning("Cookieの有効期限が設定されてません")
+#                 return None
 
-        else:
-            self.logger.error(f"cookieが存在しません: {cookieData}")
-            return None
+#         else:
+#             self.logger.error(f"cookieが存在しません: {cookieData}")
+#             return None
 
 
 # ----------------------------------------------------------------------------------

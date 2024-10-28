@@ -15,7 +15,7 @@ from base.utils import Logger
 from base.chrome import ChromeManager
 from base.cookieManager import CookieManager
 from base.loginWithCookie import CookieLogin
-from base.dataInSqlite import DataInSQLite
+from base.DataInSqlite import DataInSQLite
 from const import SiteUrl
 from constElementPath import LoginElement
 
@@ -32,13 +32,16 @@ class Flow:
         self.getLogger = Logger(__name__, debugMode=debugMode)
         self.logger = self.getLogger.getLogger()
 
-        self.chrome = ChromeManager(debugMode=debugMode)
+        # chrome
+        self.chromeManager = ChromeManager(debugMode=debugMode)
+        self.chrome = self.chromeManager.flowSetupChrome()
+
         self.loginUrl = SiteUrl.LoginUrl.value
         self.homeUrl = SiteUrl.HomeUrl.value
         self.targetUrl = SiteUrl.TargetUrl.value
 
         # インスタンス
-        self.cookieManager = CookieManager(chrome=self.chrome, homeUrl=self.homeUrl, debugMode=debugMode)
+        self.cookieManager = CookieManager(chrome=self.chrome, loginUrl=self.loginUrl, homeUrl=self.homeUrl, debugMode=debugMode)
         self.cookieLogin = CookieLogin(chrome=self.chrome, loginUrl=self.loginUrl, homeUrl=self.logger, debugMode=debugMode)
         self.dataInSQLite = DataInSQLite(chrome=self.chrome, debugMode=debugMode)
 
@@ -47,13 +50,13 @@ class Flow:
 
 # TODO ログイン
     def flow(self):
-        # DBチェッカーから
-        cookies = self.cookieManager.startBoolFilePath()
-
         # ログイン情報を呼び出し
         loginInfo = LoginElement.LOGIN_INFO.value
         loginInfo['idText'] = os.getenv("ID")
         loginInfo['passText'] = os.getenv("PASS")
+
+        # DBチェッカーから
+        cookies = self.cookieManager.startBoolFilePath(loginInfo=loginInfo)
 
         # cookiesの出力によってログイン方法を分ける
         self.cookieLogin.flowSwitchLogin(cookies=cookies, loginInfo=loginInfo)

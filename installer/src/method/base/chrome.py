@@ -29,6 +29,9 @@ class ChromeManager:
         self.getLogger = Logger(__name__, debugMode=debugMode)
         self.logger = self.getLogger.getLogger()
 
+        # インスタンスをクラス内で保持
+        self.chrome = None
+
         # インスタンス
         # self.path = BaseToPath(debugMode=debugMode)
 

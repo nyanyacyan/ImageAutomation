@@ -42,21 +42,21 @@ class SQLite:
 
 
 # ----------------------------------------------------------------------------------
-# ①
+# ①DBデータの存在確認
 
     def boolFilePath(self, extension: str = Extension.DB.value):
         dbDirPath = self.path.getResultDBDirPath()
-        self.logger.warning(f"dbDirPath: {type(dbDirPath)}")
+        self.logger.debug(f"dbDirPath: {type(dbDirPath)}")
         if not dbDirPath.exists():
             self.logger.error(f"ディレクトリが存在しません{dbDirPath}")
         self.logger.debug(f"dbDirPath: {dbDirPath}")
         dbFilePath = dbDirPath / f"{self.currentDate}{extension}"
         self.logger.warning(f"dbFilePath: {dbFilePath}")
         if dbFilePath.exists():
-            self.logger.info(f"ファイルが見つかりました: {dbFilePath}")
+            self.logger.info(f"DBファイルが見つかりました: {dbFilePath}")
             return True
         else:
-            self.logger.error(f"ファイルが見つかりません: {dbFilePath}")
+            self.logger.error(f"DBファイルはまだ作成されてません: {dbFilePath}")
             return False
 
 
@@ -201,7 +201,7 @@ class SQLite:
 
         tableNames = [table[0] for table in allTables]
         tables = [tableKey for tableKey in self.tablePattern.keys()]
-        self.logger.debug(f"tableNames: {tableNames}")
+        self.logger.warning(f"tableNames: {tableNames}")
         self.logger.debug(f"tables: {tables}")
 
         if all(table in tableNames for table in tables):
