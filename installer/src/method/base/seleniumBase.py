@@ -27,8 +27,8 @@ class SeleniumBasicOperations:
 
 
     def openSite(self):
-        self.logger.debug(f"url: {self.url}")
-        return self.chrome.get(self.url)
+        self.logger.debug(f"url: {self.homeUrl}")
+        return self.chrome.get(url=self.homeUrl)
 
 
 # ----------------------------------------------------------------------------------
@@ -52,7 +52,7 @@ class SeleniumBasicOperations:
         # 開いてるWindow数を確認
         if len(self.chrome.window_handles) > 1:
             self.chrome.switch_to.window(self.chrome.window_handles[1])
-            self.chrome.get(self.url)
+            self.chrome.get(self.homeUrl)
         else:
             self.logger.error("既存のWindowがないため、新しいWindowに切替ができません")
 

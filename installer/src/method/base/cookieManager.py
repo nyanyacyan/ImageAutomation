@@ -54,7 +54,7 @@ class CookieManager:
             self.logger.debug(f"{self.tableName} が作られてません。これよりテーブル作成開始")
             self.sqlite.isFileExists()  # ファイルを作成
             self.sqlite.createAllTable()  # 全てのテーブルを作成
-            return self.getCookieFromAction()
+            return self.getCookieFromAction(loginInfo)
 
 
 # ----------------------------------------------------------------------------------

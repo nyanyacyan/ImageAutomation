@@ -15,7 +15,7 @@ from base.utils import Logger
 from base.chrome import ChromeManager
 from base.cookieManager import CookieManager
 from base.loginWithCookie import CookieLogin
-from base.DataInSqlite import DataInSQLite
+from base.dataInSqlite import DataInSQLite
 from const import SiteUrl
 from constElementPath import LoginElement
 
