@@ -89,11 +89,23 @@ class CookieManager:
         self.logger.warning(f"newCookieData: {newCookieData}")
 
         if newCookieData:
+
+            # sqlite3.Row オブジェクトの中身を確認
+            row_data = newCookieData[0]
+
+            # すべての値をリストとして取得
+            all_values = list(row_data)
+            self.logger.info(f"All values in row: {all_values}")
+
+            # キーと値のペアをループで表示
+            for key in row_data.keys():
+                self.logger.info(f"{key}: {row_data[key]}")
+
             expiresValue = newCookieData[0][5]   # タプルの場合には数値で拾う
             maxAgeValue = newCookieData[0][6]
             createTimeValue = newCookieData[0][7]
 
-            self.logger.warning(f"expiresValue: {expiresValue}\nmaxAgeValue: {maxAgeValue}\ncreateTimeValue: {createTimeValue}\n")
+            self.logger.warning(f"\nexpiresValue: {expiresValue}\nmaxAgeValue: {maxAgeValue}\ncreateTimeValue: {createTimeValue}\n")
 
 
             if maxAgeValue:
@@ -172,7 +184,7 @@ class CookieManager:
         cookieValue = cookie.get('value')
         cookieDomain = cookie.get('domain')
         cookiePath = cookie.get('path')
-        cookieExpires = cookie.get('expires')
+        cookieExpires = cookie.get('expiry')
         cookieMaxAge = cookie.get('max-age')  # expiresよりも優先される、〇〇秒間、持たせる権限
         cookieCreateTime = int(time.time())
 
@@ -201,9 +213,9 @@ class CookieManager:
             }
 
             if cookieData[6]:
-                cookie['expires'] = self.currentTime + cookieData[6]
+                cookie['expiry'] = self.currentTime + cookieData[6]
             elif cookieData[5]:
-                cookie['expires'] = cookieData[5]
+                cookie['expiry'] = cookieData[5]
             self.logger.debug(f"cookie:\n{cookie}")
 
             return cookie

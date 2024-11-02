@@ -12,6 +12,7 @@ from .utils import Logger
 from .driverWait import Wait
 from .seleniumBase import SeleniumBasicOperations
 from .cookieManager import CookieManager
+from .SQLite import SQLite
 from .loginWithId import LoginID
 from .driverDeco import jsCompleteWaitDeco
 
@@ -37,15 +38,15 @@ class CookieLogin:
         self.driverWait = Wait(chrome=self.chrome, debugMode=debugMode)
         self.cookieManager = CookieManager(chrome=self.chrome, loginUrl=self.loginUrl, homeUrl=self.homeUrl, debugMode=debugMode)
         self.idLogin = LoginID(chrome=self.chrome, homeUrl=self.homeUrl, loginUrl=self.loginUrl, debugMode=debugMode)
-
+        self.sqLite = SQLite(debugMode=debugMode)
 
 # ----------------------------------------------------------------------------------
 # 2段階ログイン
 
     def flowSwitchLogin(self, cookies: dict, loginInfo: dict):
-        # pickleファイルの読込
         if cookies is None:
             self.idLogin.flowLoginID(loginInfo=loginInfo)
+            return
 
         if self.cookieLogin(cookies=cookies):
             self.logger.info(f"Cookieログインに成功")
@@ -72,15 +73,57 @@ class CookieLogin:
 
     def cookieLogin(self, cookies):
 
+        self.logger.info(f"cookies: {cookies}")
+
         # サイトを開いてCookieを追加
         self.openSite()
-        for cookie in cookies:
-            self.browser.addCookie(cookie=cookie)
+
+        self.addCookie(cookie=cookies)
 
         # サイトをリロードしてCookieの適用を試行
         self.openSite()
 
         return self.loginCheck()
+
+
+# ----------------------------------------------------------------------------------
+
+
+
+
+
+# ----------------------------------------------------------------------------------
+
+
+    def addCookie(self, cookie: dict):
+        # クッキー情報をデバッグ
+        self.logger.debug(f"Adding cookie: {cookie}")
+        # 必須フィールドが揃っているか確認
+        required_keys = ["name", "value"]
+        for key in required_keys:
+            if key not in cookie:
+                self.logger.error(f"Cookie情報が入っていません: '{key}'")
+                raise ValueError(f"Cookie情報が入っていません: '{key}'")
+
+        # クッキーを追加
+        return self.chrome.add_cookie(cookie_dict=cookie)
+
+
+# ----------------------------------------------------------------------------------
+
+
+    def insertCookie(self, cookie: dict):
+        columns = tuple(cookie.keys())
+        values = tuple(cookie.values())
+
+        self.logger.info(f"columns: {columns}\nvalues: {values}")
+
+        # SQLiteにデータを入れ込む
+        self.sqLite.insertData(
+            tableName="",
+            col=columns,
+            values=values
+        )
 
 
 # ----------------------------------------------------------------------------------

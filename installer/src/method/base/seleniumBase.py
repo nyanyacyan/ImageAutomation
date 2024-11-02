@@ -60,20 +60,3 @@ class SeleniumBasicOperations:
 
 
 # ----------------------------------------------------------------------------------
-
-
-    def addCookie(self, cookie):
-        # クッキー情報をデバッグ
-        self.logger.debug(f"Adding cookie: {cookie}")
-        # 必須フィールドが揃っているか確認
-        required_keys = ["name", "value"]
-        for key in required_keys:
-            if key not in cookie:
-                self.logger.error(f"Cookie情報が入っていません: '{key}'")
-                raise ValueError(f"Cookie情報が入っていません: '{key}'")
-
-        # クッキーを追加
-        return self.chrome.add_cookie(cookie_dict=cookie)
-
-
-# ----------------------------------------------------------------------------------
