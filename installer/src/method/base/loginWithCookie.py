@@ -75,7 +75,7 @@ class CookieLogin:
         # サイトを開いてCookieを追加
         self.openSite()
         for cookie in cookies:
-            self.addCookie(cookie=cookie)
+            self.browser.addCookie(cookie=cookie)
 
         # サイトをリロードしてCookieの適用を試行
         self.openSite()
@@ -88,8 +88,7 @@ class CookieLogin:
 
     @decoInstance.jsCompleteWait
     def openSite(self):
-        self.browser.openSite()
-        return self.chrome.get(self.homeUrl)
+        return self.browser.openSite()
 
 
 # ----------------------------------------------------------------------------------

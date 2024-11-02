@@ -42,7 +42,7 @@ class Flow:
 
         # インスタンス
         self.cookieManager = CookieManager(chrome=self.chrome, loginUrl=self.loginUrl, homeUrl=self.homeUrl, debugMode=debugMode)
-        self.cookieLogin = CookieLogin(chrome=self.chrome, loginUrl=self.loginUrl, homeUrl=self.logger, debugMode=debugMode)
+        self.cookieLogin = CookieLogin(chrome=self.chrome, loginUrl=self.loginUrl, homeUrl=self.homeUrl, debugMode=debugMode)
         self.dataInSQLite = DataInSQLite(chrome=self.chrome, debugMode=debugMode)
 
 
