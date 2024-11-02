@@ -288,7 +288,7 @@ class DataInSQLite:
         time.sleep(delay)
 
         # 検索画面を消去
-        self.element.clickClearInput(
+        self.element.clickElement(
             by=ElementSpecify.XPATH.value,
             value=ElementPath.SEARCH_DELETE_BTN_PATH.value
         )
@@ -453,8 +453,8 @@ class DataInSQLite:
 
 
     @decoInstance.funcBase
-    def _getDetailPageElement(self, detailPageInfo: DetailPageInfo):
-        name = self.element.getElement(by=detailPageInfo.trainLineBy, value=detailPageInfo.trainLineValue)
+    def _getDetailPageElement(self, detailPageInfo: DetailPageInfo) -> Dict[str, WebElement]:
+        name = self.element.getElement(by=detailPageInfo.nameBy, value=detailPageInfo.nameValue)
         ad = self.element.getElement(by=detailPageInfo.adBy, value=detailPageInfo.adValue)
         area = self.element.getElement(by=detailPageInfo.areaBy, value=detailPageInfo.areaValue)
         item = self.element.getElement(by=detailPageInfo.itemBy, value=detailPageInfo.itemValue)

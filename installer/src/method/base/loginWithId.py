@@ -5,11 +5,12 @@
 # import
 import time
 from selenium.webdriver.chrome.webdriver import WebDriver
-
+from selenium.common.exceptions import TimeoutException
 
 # 自作モジュール
 from .utils import Logger
 from .elementManager import ElementManager
+from .driverWait import Wait
 from .driverDeco import jsCompleteWaitDeco, InputDeco, ClickDeco
 
 decoInstance = jsCompleteWaitDeco(debugMode=True)
@@ -33,17 +34,18 @@ class LoginID:
 
         # インスタンス
         self.element = ElementManager(chrome=chrome, debugMode=debugMode)
+        self.wait = Wait(chrome=self.chrome, debugMode=debugMode)
 
 
 # ----------------------------------------------------------------------------------
 # IDログイン
 # loginInfoはconstから取得
     @decoInstance.jsCompleteWaitRetry()
-    def flowLoginID(self, loginInfo: dict, delay: int=2):
+    def flowLoginID(self, url: str, loginInfo: dict, delay: int=2):
 
         # サイトを開いてCookieを追加
-        self.openSite()
-        time.sleep(delay)
+        # self.openSite(url=url)
+        # time.sleep(delay)
 
         self.inputId(by=loginInfo['idBy'], value=loginInfo['idValue'], inputText=loginInfo['idText'])
         time.sleep(delay)
@@ -54,22 +56,30 @@ class LoginID:
         self.clickLoginBtn(by=loginInfo['btnBy'], value=loginInfo['btnValue'])
         time.sleep(delay)
 
-        return self.loginCheck()
+        # ログイン後に別のサイトへアクセスしてることを考慮して
+        self.openSite(url=url)
+
+        return self.loginCheck(url)
 
 
 # ----------------------------------------------------------------------------------
 
 
     @decoInstance.jsCompleteWait
-    def openSite(self):
-        return self.chrome.get(self.loginUrl)
+    def openSite(self, url: str):
+        return self.chrome.get(url=url)
 
 
 # ----------------------------------------------------------------------------------
 
-    @property
+
     def currentUrl(self):
-        return self.chrome.current_url()
+        try:
+            currentUrl = self.chrome.current_url
+            self.logger.debug(f"currentUrl: {currentUrl}")
+        except Exception as e:
+            self.logger.error(f"なにかしらのエラー{e}")
+        return currentUrl
 
 
 # ----------------------------------------------------------------------------------
@@ -99,13 +109,50 @@ class LoginID:
 # ----------------------------------------------------------------------------------
 
 
-    def loginCheck(self):
-        if self.homeUrl == self.currentUrl:
+    def loginCheck(self, url: str):
+        self.logger.debug(f"\nurl: {url}\ncurrentUrl: {self.currentUrl()}")
+        if url == self.currentUrl():
             self.logger.info(f"{__name__}: ログインに成功")
             return True
         else:
             self.logger.error(f"{__name__}: ログインに失敗")
             return False
+
+
+# ----------------------------------------------------------------------------------
+
+
+    def actionBeforeLogin(self, url: str, inputBy: str, inputValue: str, by: str, value: str, loginInfo: dict, delay: int=2, maxRetries: int = 3):
+        # 特定のサイトにアクセス
+        self.openSite(url=url)
+
+
+        retries = 0
+        while retries < maxRetries:
+            try:
+
+                element = self.wait.canWaitInput(by=inputBy, value=inputValue)
+
+                if element:
+                    # ここから通常のIDログイン
+                    self.flowLoginID(url=url, loginInfo=loginInfo, delay=delay)
+                    break
+
+            except TimeoutException:
+                self.logger.warning(f"要素が見つからなかったため、再試行します。リトライ回数: {retries + 1}/{maxRetries}")
+                retries += 1
+                self.clickLoginBtn(by=by, value=value)
+                time.sleep(delay)  # リトライの間に少し待機して再試行する
+
+        if retries == maxRetries:
+            self.logger.error("指定回数のリトライを行いましたが、要素にアクセスできませんでした")
+
+
+# ----------------------------------------------------------------------------------
+
+
+    def bypassOpenSite(self):
+        return self.chrome.get(self.homeUrl)
 
 
 # ----------------------------------------------------------------------------------

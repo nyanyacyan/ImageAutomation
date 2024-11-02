@@ -31,7 +31,7 @@ class JumpTargetPage:
 # ----------------------------------------------------------------------------------
 
 
-    @decoInstance.jsCompleteWaitRetry
+    @decoInstance.jsCompleteWaitRetry()
     def flowJumpTargetPage(self, targetUrl: str, delay: int = 2):
         self.openNewWindow()
         time.sleep(delay)

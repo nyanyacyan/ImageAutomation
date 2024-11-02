@@ -45,7 +45,7 @@ class CookieLogin:
 
     def flowSwitchLogin(self, cookies: dict, loginInfo: dict):
         if cookies is None:
-            self.idLogin.flowLoginID(loginInfo=loginInfo)
+            self.idLogin.flowLoginID(url=url, loginInfo=loginInfo)
             return
 
         if self.cookieLogin(cookies=cookies):
@@ -89,12 +89,6 @@ class CookieLogin:
 # ----------------------------------------------------------------------------------
 
 
-
-
-
-# ----------------------------------------------------------------------------------
-
-
     def addCookie(self, cookie: dict):
         # クッキー情報をデバッグ
         self.logger.debug(f"Adding cookie: {cookie}")
@@ -107,23 +101,6 @@ class CookieLogin:
 
         # クッキーを追加
         return self.chrome.add_cookie(cookie_dict=cookie)
-
-
-# ----------------------------------------------------------------------------------
-
-
-    def insertCookie(self, cookie: dict):
-        columns = tuple(cookie.keys())
-        values = tuple(cookie.values())
-
-        self.logger.info(f"columns: {columns}\nvalues: {values}")
-
-        # SQLiteにデータを入れ込む
-        self.sqLite.insertData(
-            tableName="",
-            col=columns,
-            values=values
-        )
 
 
 # ----------------------------------------------------------------------------------

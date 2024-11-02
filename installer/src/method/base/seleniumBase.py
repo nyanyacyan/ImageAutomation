@@ -28,8 +28,6 @@ class SeleniumBasicOperations:
 
     def openSite(self):
         self.logger.debug(f"url: {self.homeUrl}")
-        self.logger.debug(f"url: {self.homeUrl}")
-        
         return self.chrome.get(url=self.homeUrl)
 
 

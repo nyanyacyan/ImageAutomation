@@ -127,9 +127,9 @@ class CookieManager:
 
 
     @decoInstance.noneRetryAction()
-    def getCookieFromAction(self, loginInfo: dict):
+    def getCookieFromAction(self, url: str, loginInfo: dict):
         # IDログイン
-        self.loginID.flowLoginID(loginInfo=loginInfo)
+        self.loginID.flowLoginID(url=url, loginInfo=loginInfo)
 
 
         # Cookieを取得
@@ -139,6 +139,21 @@ class CookieManager:
 
 
 # ----------------------------------------------------------------------------------
+# いい生活Clickを追加したバージョン
+
+    @decoInstance.noneRetryAction()
+    def getCookieFromAction2(self, url: str, inputBy: str, inputValue: str, by: str, value: str, loginInfo: dict):
+        # サイトにいってClickしてからIDログイン
+        self.loginID.actionBeforeLogin(inputBy=inputBy, inputValue=inputValue, url=url, by=by, value=value, loginInfo=loginInfo)
+
+        # Cookieを取得
+        cookie = self.getCookie()
+        Cookie = self.insertCookieData(cookie=cookie)
+        return self.canValueInCookie(cookie=Cookie)
+
+
+# ----------------------------------------------------------------------------------
+
 # ④
 # Cookieがちゃんと取得できてるかどうかを確認
 # リトライ実施

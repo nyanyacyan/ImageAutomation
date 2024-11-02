@@ -35,6 +35,15 @@ class Wait:
 
 
 # ----------------------------------------------------------------------------------
+# 入力ができるまで待機
+
+    def canWaitInput(self, by: str, value: str, timeout: int = 10):
+        element = WebDriverWait(self.chrome, timeout).until(EC.visibility_of_element_located((by, value)))
+        self.logger.info(f"insert（input）が可能になってます")
+        return element
+
+
+# ----------------------------------------------------------------------------------
 # ページが完全に開くまで待機
 
     def loadPageWait(self, by: str, value: str, timeout: int = 10):
