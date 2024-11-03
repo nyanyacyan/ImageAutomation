@@ -13,6 +13,7 @@ from .utils import Logger
 from const import NGWordList, Address
 from .decorators import Decorators
 from .textManager import TextManager
+from .driverDeco import ClickDeco
 
 
 decoInstance = Decorators(debugMode=True)
@@ -31,6 +32,8 @@ class ElementManager:
         self.chrome = chrome
         self.currentDate = datetime.now().strftime('%y%m%d_%H%M%S')
         self.textManager = TextManager(debugMode=debugMode)
+        self.clickWait = ClickDeco(debugMode=debugMode)
+
 
 
 # ----------------------------------------------------------------------------------
@@ -94,6 +97,8 @@ class ElementManager:
 
 
     def clickElement(self, by: str, value: str):
+        self.clickWait.canWaitClick(chrome=self.chrome, by=by, value=value, timeout=3)
+        self.clickWait.jsPageChecker(chrome=self.chrome)
         element = self.getElement(by=by, value=value)
         element.click()
         return
@@ -188,6 +193,16 @@ class ElementManager:
             element = self._returnNoneIfValue(value=element, ifValueList=ifValueList)
             elementList.append(element)
         return elementList
+
+
+# ----------------------------------------------------------------------------------
+# 広告、検索画面などを検知して消去する
+
+    def closePopup(self, by: str, value: str):
+        element = self.getElement(by=by, value=value)
+        if element:
+            self.clickElement(by=by, value=value)
+            self.logger.info(f"不要物を除去: {element}")
 
 
 # ----------------------------------------------------------------------------------

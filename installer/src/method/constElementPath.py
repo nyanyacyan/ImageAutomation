@@ -80,6 +80,8 @@ class LoginElement(Enum):
         "btnValue": "action",
         "bypassIdBy": "xpath",
         "bypassIdValue": "//a[text()='いい生活アカウントでログイン']",
+        "modalBy" : "xpath",
+        "modalValue": "//a[@class='w_close']",
     }
 
 

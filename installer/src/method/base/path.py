@@ -181,9 +181,7 @@ class BaseToPath:
         dirPath = resultOutputPath / subDirName
         self.isDirExists(path=dirPath)
         self.logger.debug(f"dirPath: {dirPath}")
-        # filePath = dirPath / f"{self.currentDate}{extension}"
-        # self.isFileExists(path=filePath)
-        # self.logger.debug(f"FilePath: {filePath}")
+
         return dirPath
 
 

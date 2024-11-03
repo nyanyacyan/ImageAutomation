@@ -200,14 +200,21 @@ class SQLite:
         self.logger.debug(f"allTables: {allTables}")
 
         tableNames = [table[0] for table in allTables]
-        tables = [tableKey for tableKey in self.tablePattern.keys()]
+        expectedTable = [tableKey for tableKey in self.tablePattern.keys()]
         self.logger.warning(f"tableNames: {tableNames}")
-        self.logger.debug(f"出力されるべきテーブルは: {tables}")
+        self.logger.debug(f"出力されるべきテーブルは: {expectedTable}")
 
-        if all(table in tableNames for table in tables):
+        # テーブルアンマッチリスト
+        missingTables = [table for table in expectedTable if table not in tableNames]
+
+        if not missingTables:
             self.logger.info(f"全てのテーブルの作成に成功しています。")
         else:
-            self.logger.error(f"テーブルの作成に失敗してます")
+            self.logger.error(f"期待してるテーブルが揃ってません: 存在しないtable[{missingTables}]")
+
+            # もしテーブルが作成されてなかった場合に足りてないテーブルを作成
+            self.createAllTable()
+            self.logger.info(f"{missingTables} table を作成しました。")
         return allTables
 
 

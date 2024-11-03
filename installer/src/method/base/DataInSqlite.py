@@ -74,6 +74,12 @@ class DataInSQLite:
             listPageInfo = self._getListPageData(tableValue=(i + 1))
             self.logger.warning(f"listPageInfo: {listPageInfo}")
 
+
+            self.logger.debug(f"listPageInfo: {listPageInfo['trainLine'].text}")
+            self.logger.debug(f"listPageInfo: {listPageInfo['station'].text}")
+            self.logger.debug(f"listPageInfo: {listPageInfo['walking'].text}")
+
+
             # 物件詳細リンクにアクセス
             linkList[i].click()
             time.sleep(delay)
@@ -224,7 +230,7 @@ class DataInSQLite:
 
     @decoInstance.funcBase
     def _updateDataInSQlite(self, id: int, updateColumnsData: Dict):
-        self.SQLite.checkTableExists()
+        # self.SQLite.checkTableExists()
 
         self.SQLite.updateData(
             tableName=self.textTableName,

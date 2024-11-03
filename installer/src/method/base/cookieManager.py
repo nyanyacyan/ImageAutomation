@@ -49,6 +49,7 @@ class CookieManager:
     @decoInstance.funcBase
     def startBoolFilePath(self, url: str, loginInfo: dict):
         if self.sqlite.boolFilePath():
+            self.sqlite.checkTableExists()
             return self.cookieDataExistsInDB(url=url, loginInfo=loginInfo)
         else:
             self.logger.debug(f"{self.tableName} が作られてません。これよりテーブル作成開始")
@@ -71,8 +72,8 @@ class CookieManager:
         # self.columnsNameの中にあるものがDBColNamesに全て入っているのかを確認
         result = all(cokName in DBColNames for cokName in self.columnsName)
         if result is True:
-            self.logger.info(f"cookieデータを確認できました\n{DBColNames}")
-            return self.checkCookieLimit(loginInfo)
+            self.logger.info(f"DBの中にcookieのテーブルを発見\n{DBColNames}")
+            return self.checkCookieLimit(url=url, loginInfo=loginInfo)
         else:
             self.logger.warning(f"{self.tableName} のテーブルデータがありません。Cookieを取得します")
             return self.getCookieFromAction2(url=url, loginInfo=loginInfo)
@@ -112,14 +113,14 @@ class CookieManager:
                 return self._getMaxAgeLimit(maxAgeValue=maxAgeValue, createTimeValue=createTimeValue)
 
             elif expiresValue:
-                return self._getExpiresLimit(expiresValue=expiresValue)
+                return self._getExpiresLimit(expiresValue=expiresValue, url=url, loginInfo=loginInfo)
 
             else:
                 self.logger.warning("Cookieの有効期限が設定されてません")
                 return self.getCookieFromAction2(url=url, loginInfo=loginInfo)
 
         else:
-            self.logger.error(f"cookieが存在しません: {newCookieData}")
+            self.logger.error(f"DBテーブルの中にcookieのデータが存在しません: {newCookieData}")
             return self.getCookieFromAction2(url=url, loginInfo=loginInfo)
 
 

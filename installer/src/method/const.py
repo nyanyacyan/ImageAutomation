@@ -15,6 +15,7 @@ class SiteUrl(Enum):
     LoginUrl='https://auth.es-account.com/u/login?state=hKFo2SB3QVZpdlM5eG9sR1JaTlVKTER3STFzZ1dkRWxOSmxmZ6Fur3VuaXZlcnNhbC1sb2dpbqN0aWTZIFVOMHBPX0F5eTFNdWRIdWVVNFVOOXgzX0RqbDBvSV9Po2NpZNkgYUlTZzRxQmxHWEpYZHpoZklSTnNwZFZMTkdtY3JsU2s'
     HomeUrl='https://meiwa-chukai.es-b2b.com/search/line#'
     TargetUrl='https://meiwa-chukai.es-b2b.com/search/line'
+    SIGN_IN_URL="https://meiwa-chukai.es-b2b.com/signIn"
 
 
 # ----------------------------------------------------------------------------------

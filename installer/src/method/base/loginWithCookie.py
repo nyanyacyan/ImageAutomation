@@ -3,9 +3,9 @@
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
-import requests
+import requests, time
 from selenium.webdriver.chrome.webdriver import WebDriver
-
+from selenium.common.exceptions import InvalidCookieDomainException
 
 # 自作モジュール
 from .utils import Logger
@@ -15,6 +15,7 @@ from .cookieManager import CookieManager
 from .SQLite import SQLite
 from .loginWithId import LoginID
 from .driverDeco import jsCompleteWaitDeco
+from .elementManager import ElementManager
 
 decoInstance = jsCompleteWaitDeco(debugMode=True)
 
@@ -24,7 +25,7 @@ decoInstance = jsCompleteWaitDeco(debugMode=True)
 
 
 class CookieLogin:
-    def __init__(self, chrome: WebDriver, loginUrl: str, homeUrl: str, debugMode=True):
+    def __init__(self, chrome: WebDriver, loginUrl: str, homeUrl: str, signInUrl: str, debugMode=True):
         # logger
         self.getLogger = Logger(__name__, debugMode=debugMode)
         self.logger = self.getLogger.getLogger()
@@ -32,6 +33,7 @@ class CookieLogin:
         self.chrome = chrome
         self.loginUrl = loginUrl
         self.homeUrl = homeUrl
+        self.signInUrl = signInUrl
 
         # インスタンス
         self.browser = SeleniumBasicOperations(chrome=self.chrome, homeUrl=self.homeUrl, debugMode=debugMode)
@@ -39,11 +41,12 @@ class CookieLogin:
         self.cookieManager = CookieManager(chrome=self.chrome, loginUrl=self.loginUrl, homeUrl=self.homeUrl, debugMode=debugMode)
         self.idLogin = LoginID(chrome=self.chrome, homeUrl=self.homeUrl, loginUrl=self.loginUrl, debugMode=debugMode)
         self.sqLite = SQLite(debugMode=debugMode)
+        self.element = ElementManager(chrome=self.chrome, debugMode=debugMode)
 
 # ----------------------------------------------------------------------------------
 # 2段階ログイン
 
-    def flowSwitchLogin(self, cookies: dict, loginInfo: dict):
+    def flowSwitchLogin(self, cookies: dict, url: str, loginInfo: dict, delay: int = 1):
         if self.chrome.current_url == self.homeUrl:
             return
 
@@ -51,7 +54,10 @@ class CookieLogin:
             self.idLogin.flowLoginID(url=url, loginInfo=loginInfo)
             return
 
-        if self.cookieLogin(cookies=cookies):
+        if self.cookieLogin(cookies=cookies, url=url, loginInfo=loginInfo):
+            time.sleep(delay)  # 広告などが遅れて表示されることを懸念
+            # 検索画面、広告が合った場合に消去
+            self.element.closePopup(by=loginInfo['modalBy'], value=loginInfo['modalValue'])
             self.logger.info(f"Cookieログインに成功")
         else:
             self.logger.error("Cookieログインに失敗したためセッションログインに切り替えます")
@@ -59,6 +65,7 @@ class CookieLogin:
                 self.logger.info(f"Cookieログインに成功")
             else:
                 self.logger.error(f"セッションログインにも失敗: {cookies[30:]}")
+
         return
 
 
@@ -74,19 +81,26 @@ class CookieLogin:
 # ----------------------------------------------------------------------------------
 # Cookieログイン
 
-    def cookieLogin(self, cookies):
+    def cookieLogin(self, cookies: dict, url: str, loginInfo: dict):
 
         self.logger.info(f"cookies: {cookies}")
 
         # サイトを開いてCookieを追加
         self.openSite()
 
-        self.addCookie(cookie=cookies)
+        if self.element.getElement(by=loginInfo['bypassIdBy'], value=loginInfo['bypassIdValue']):
+            self.element.clickElement(by=loginInfo['bypassIdBy'], value=loginInfo['bypassIdValue'])
 
-        # サイトをリロードしてCookieの適用を試行
-        self.openSite()
+        try:
+            self.addCookie(cookie=cookies)
+            # サイトをリロードしてCookieの適用を試行
+            self.openSite()
 
-        return self.loginCheck()
+        except InvalidCookieDomainException as e:
+            self.logger.error(f"ドメインが変わるサイトのためIDログインに切り替えます。{e}")
+            self.idLogin.flowLoginID(url=url, loginInfo=loginInfo)
+
+        return self.loginCheck(url=url)
 
 
 # ----------------------------------------------------------------------------------
@@ -116,11 +130,6 @@ class CookieLogin:
 
 # ----------------------------------------------------------------------------------
 
-    @property
-    def currentUrl(self):
-        return self.browser.currentUrl()
-
-# ----------------------------------------------------------------------------------
 
     @property
     def session(self):
@@ -152,8 +161,8 @@ class CookieLogin:
 # ----------------------------------------------------------------------------------
 
 
-    def loginCheck(self):
-        if self.url == self.currentUrl:
+    def loginCheck(self, url: str):
+        if url == self.chrome.current_url:
             self.logger.info(f"{__name__}: ログインに成功")
             return True
         else:

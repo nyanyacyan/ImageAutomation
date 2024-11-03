@@ -40,10 +40,11 @@ class Flow:
         self.loginUrl = SiteUrl.LoginUrl.value
         self.homeUrl = SiteUrl.HomeUrl.value
         self.targetUrl = SiteUrl.TargetUrl.value
+        self.signInUrl = SiteUrl.SIGN_IN_URL.value
 
         # インスタンス
         self.cookieManager = CookieManager(chrome=self.chrome, loginUrl=self.loginUrl, homeUrl=self.homeUrl, debugMode=debugMode)
-        self.cookieLogin = CookieLogin(chrome=self.chrome, loginUrl=self.loginUrl, homeUrl=self.homeUrl, debugMode=debugMode)
+        self.cookieLogin = CookieLogin(chrome=self.chrome, loginUrl=self.loginUrl, homeUrl=self.homeUrl, signInUrl=self.signInUrl, debugMode=debugMode)
         self.dataInSQLite = DataInSQLite(chrome=self.chrome, debugMode=debugMode)
 
 
@@ -60,13 +61,9 @@ class Flow:
         cookies = self.cookieManager.startBoolFilePath(url=self.homeUrl, loginInfo=loginInfo)
 
         # cookiesの出力によってログイン方法を分ける
-        self.cookieLogin.flowSwitchLogin(cookies=cookies, loginInfo=loginInfo)
+        self.cookieLogin.flowSwitchLogin(cookies=cookies, url=self.homeUrl, loginInfo=loginInfo)
 
-        # サイトにアクセス → いい生活Click
-        # self.cookieManager.getCookieFromAction2(
-        #     url=self.homeUrl,
-        #     loginInfo=loginInfo
-        # )
+
 
         # text, imageを取得してSQLiteに入れ込む→入れ込んだIDのリストを返す
         allIDList = self.dataInSQLite.flowCollectElementDataToSQLite()
