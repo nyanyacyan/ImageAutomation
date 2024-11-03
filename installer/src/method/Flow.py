@@ -56,26 +56,20 @@ class Flow:
         loginInfo['idText'] = os.getenv("ID")
         loginInfo['passText'] = os.getenv("PASS")
 
-        bypassInfo = LoginElement.BYPASS_SITE_INFO.value
-
         # DBチェッカーから
-        # cookies = self.cookieManager.startBoolFilePath(loginInfo=loginInfo)
+        cookies = self.cookieManager.startBoolFilePath(url=self.homeUrl, loginInfo=loginInfo)
 
         # cookiesの出力によってログイン方法を分ける
-        # self.cookieLogin.flowSwitchLogin(cookies=cookies, loginInfo=loginInfo)
+        self.cookieLogin.flowSwitchLogin(cookies=cookies, loginInfo=loginInfo)
 
         # サイトにアクセス → いい生活Click
-        self.cookieManager.getCookieFromAction2(
-            url=self.homeUrl,
-            inputBy=loginInfo['idBy'],
-            inputValue=loginInfo['idValue'],
-            by=bypassInfo['by'],
-            value=bypassInfo['value'],
-            loginInfo=loginInfo
-        )
+        # self.cookieManager.getCookieFromAction2(
+        #     url=self.homeUrl,
+        #     loginInfo=loginInfo
+        # )
 
         # text, imageを取得してSQLiteに入れ込む→入れ込んだIDのリストを返す
-        allIDList = self.dataInSQLite.flowCollectElementDataToSQLite(targetUrl=self.targetUrl)
+        allIDList = self.dataInSQLite.flowCollectElementDataToSQLite()
 
         return allIDList
 

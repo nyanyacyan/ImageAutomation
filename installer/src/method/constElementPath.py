@@ -74,12 +74,12 @@ class LoginElement(Enum):
     LOGIN_INFO = {
         "idBy": "id",
         "idValue": "username",
-        # "idText": os.getenv("ID"),
         "passBy": "id",
         "passValue": "password",
-        # "passText": os.getenv("PASS"),
         "btnBy": "name",
         "btnValue": "action",
+        "bypassIdBy": "xpath",
+        "bypassIdValue": "//a[text()='いい生活アカウントでログイン']",
     }
 
 

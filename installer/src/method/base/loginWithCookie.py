@@ -44,6 +44,9 @@ class CookieLogin:
 # 2段階ログイン
 
     def flowSwitchLogin(self, cookies: dict, loginInfo: dict):
+        if self.chrome.current_url == self.homeUrl:
+            return
+
         if cookies is None:
             self.idLogin.flowLoginID(url=url, loginInfo=loginInfo)
             return

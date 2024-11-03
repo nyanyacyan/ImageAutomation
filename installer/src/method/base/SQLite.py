@@ -202,7 +202,7 @@ class SQLite:
         tableNames = [table[0] for table in allTables]
         tables = [tableKey for tableKey in self.tablePattern.keys()]
         self.logger.warning(f"tableNames: {tableNames}")
-        self.logger.debug(f"tables: {tables}")
+        self.logger.debug(f"出力されるべきテーブルは: {tables}")
 
         if all(table in tableNames for table in tables):
             self.logger.info(f"全てのテーブルの作成に成功しています。")

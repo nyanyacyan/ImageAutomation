@@ -58,10 +58,10 @@ class DataInSQLite:
 # 一覧の物件リストから詳細ページへ移動して取得する
 
     @decoInstance.funcBase
-    def flowCollectElementDataToSQLite(self, targetUrl: str ,retryCount: int = 5, delay: int = 2):
+    def flowCollectElementDataToSQLite(self,retryCount: int = 5, delay: int = 2):
 
         # ジャンプしてURLへ移動して検索画面を消去まで実施
-        self._navigateToTargetPage(targetUrl=targetUrl, delay=delay)
+        self._navigateToTargetPage(delay=delay)
 
         # 一覧ページにある物件詳細リンクを全て取得
         linkList = self._getLinkList()
@@ -72,10 +72,15 @@ class DataInSQLite:
         for i in range(retryCount):
             # 一覧ページからスクレイピング
             listPageInfo = self._getListPageData(tableValue=(i + 1))
+            self.logger.warning(f"listPageInfo: {listPageInfo}")
 
             # 物件詳細リンクにアクセス
             linkList[i].click()
             time.sleep(delay)
+
+            # すべてのタブ（ウィンドウ）ハンドルを取得
+            all_handles = self.chrome.window_handles
+            self.chrome.switch_to.window(all_handles[-1])
 
             # 詳細からtextデータをスクレイピング
             detailPageInfo = self._getDetailPageData()
@@ -199,6 +204,8 @@ class DataInSQLite:
 
     @decoInstance.funcBase
     def _textInsertData(self, mergeDict: Dict):
+        self.SQLite.checkTableExists()
+
         id = self.SQLite.insertDictData(tableName=self.textTableName, inputDict=mergeDict)
         return id
 
@@ -217,6 +224,8 @@ class DataInSQLite:
 
     @decoInstance.funcBase
     def _updateDataInSQlite(self, id: int, updateColumnsData: Dict):
+        self.SQLite.checkTableExists()
+
         self.SQLite.updateData(
             tableName=self.textTableName,
             updateColumnsData=updateColumnsData,
@@ -279,9 +288,9 @@ class DataInSQLite:
 
 
     @decoInstance.funcBase
-    def _navigateToTargetPage(self, targetUrl: str, delay: int):
-        self.jumpTargetPage.flowJumpTargetPage(targetUrl=targetUrl)
-        time.sleep(delay)
+    def _navigateToTargetPage(self, delay: int):
+        # self.jumpTargetPage.flowJumpTargetPage(targetUrl=targetUrl)
+        # time.sleep(delay)
 
         # 念の為、Refresh
         self.chrome.refresh()
@@ -338,8 +347,9 @@ class DataInSQLite:
     def createSecondPageComment(self, mergeDict: str):
         # 2枚目コメント→つなぎ合わせたもの
         result = self.SQLite.getSortColOneData(
-            tableName = self.tableName,
+            tableName = self.textTableName,
             primaryKeyCol = "name",
+            sortCol = 'createTime',
             primaryKeyColValue = mergeDict.get('name'),
             cols=['trainLine', 'station', 'walking', 'rent', 'managementCost']
         )
@@ -454,6 +464,9 @@ class DataInSQLite:
 
     @decoInstance.funcBase
     def _getDetailPageElement(self, detailPageInfo: DetailPageInfo) -> Dict[str, WebElement]:
+        # html = self.chrome.page_source
+        # self.logger.info(f"html: \n{html}")
+
         name = self.element.getElement(by=detailPageInfo.nameBy, value=detailPageInfo.nameValue)
         ad = self.element.getElement(by=detailPageInfo.adBy, value=detailPageInfo.adValue)
         area = self.element.getElement(by=detailPageInfo.areaBy, value=detailPageInfo.areaValue)

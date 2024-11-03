@@ -122,7 +122,7 @@ class LoginID:
 # ----------------------------------------------------------------------------------
 
 
-    def actionBeforeLogin(self, url: str, inputBy: str, inputValue: str, by: str, value: str, loginInfo: dict, delay: int=2, maxRetries: int = 3):
+    def actionBeforeLogin(self, url: str, loginInfo: dict, delay: int=2, maxRetries: int = 3):
         # 特定のサイトにアクセス
         self.openSite(url=url)
 
@@ -130,8 +130,9 @@ class LoginID:
         retries = 0
         while retries < maxRetries:
             try:
-
-                element = self.wait.canWaitInput(by=inputBy, value=inputValue)
+                self.clickLoginBtn(by=loginInfo['bypassIdBy'], value=loginInfo['bypassIdValue'])
+                element = self.wait.canWaitInput(by=loginInfo['idBy'], value=loginInfo['idValue'])
+                time.sleep(delay)
 
                 if element:
                     # ここから通常のIDログイン
@@ -141,7 +142,7 @@ class LoginID:
             except TimeoutException:
                 self.logger.warning(f"要素が見つからなかったため、再試行します。リトライ回数: {retries + 1}/{maxRetries}")
                 retries += 1
-                self.clickLoginBtn(by=by, value=value)
+                # self.clickLoginBtn(by=loginInfo['bypassIdBy'], value=loginInfo['bypassIdValue'])
                 time.sleep(delay)  # リトライの間に少し待機して再試行する
 
         if retries == maxRetries:
