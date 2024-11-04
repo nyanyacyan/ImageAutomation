@@ -72,13 +72,10 @@ class DataInSQLite:
         for i in range(retryCount):
             # 一覧ページからスクレイピング
             listPageInfo = self._getListPageData(tableValue=(i + 1))
-            self.logger.warning(f"listPageInfo: {listPageInfo}")
 
-
-            self.logger.debug(f"listPageInfo: {listPageInfo['trainLine'].text}")
-            self.logger.debug(f"listPageInfo: {listPageInfo['station'].text}")
-            self.logger.debug(f"listPageInfo: {listPageInfo['walking'].text}")
-
+            # webElementをtext化
+            fixedListPageInfo = self.webElementToText(webElementData=listPageInfo)
+            self.logger.warning(f"listPageInfo: {fixedListPageInfo}")
 
             # 物件詳細リンクにアクセス
             linkList[i].click()
@@ -91,8 +88,12 @@ class DataInSQLite:
             # 詳細からtextデータをスクレイピング
             detailPageInfo = self._getDetailPageData()
 
+            # webElementをtext化
+            fixedDetailPageInfo = self.webElementToText(webElementData=detailPageInfo)
+            self.logger.warning(f"fixedDetailPageInfo: {fixedDetailPageInfo}")
+
             # 取得したtextデータをマージ
-            mergeDict = {**listPageInfo, **detailPageInfo}
+            mergeDict = {**fixedListPageInfo, **fixedDetailPageInfo}
 
             # textデータをSQLiteへ入れ込む
             id = self._textInsertData(mergeDict=mergeDict)
@@ -126,6 +127,14 @@ class DataInSQLite:
 
 
         return allIDList
+
+
+# ----------------------------------------------------------------------------------
+# webElementのTextを抽出して辞書に組み替える
+# 値がwebElementだったら[element.text]をかける
+
+    def webElementToText(self, webElementData: dict):
+        return {key: element.text if isinstance(element, WebElement) else element for key, element in webElementData.items()}
 
 
 # ----------------------------------------------------------------------------------

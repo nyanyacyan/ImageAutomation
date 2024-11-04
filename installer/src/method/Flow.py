@@ -63,8 +63,6 @@ class Flow:
         # cookiesの出力によってログイン方法を分ける
         self.cookieLogin.flowSwitchLogin(cookies=cookies, url=self.homeUrl, loginInfo=loginInfo)
 
-
-
         # text, imageを取得してSQLiteに入れ込む→入れ込んだIDのリストを返す
         allIDList = self.dataInSQLite.flowCollectElementDataToSQLite()
 

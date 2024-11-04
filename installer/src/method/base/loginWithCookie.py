@@ -6,6 +6,7 @@
 import requests, time
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.common.exceptions import InvalidCookieDomainException
+from selenium.common.exceptions import TimeoutException
 
 # 自作モジュール
 from .utils import Logger
@@ -61,21 +62,50 @@ class CookieLogin:
             self.logger.info(f"Cookieログインに成功")
         else:
             self.logger.error("Cookieログインに失敗したためセッションログインに切り替えます")
-            if self.sessionLogin(cookies=cookies):
-                self.logger.info(f"Cookieログインに成功")
-            else:
-                self.logger.error(f"セッションログインにも失敗: {cookies[30:]}")
+            result = self.sessionBeforeAction(cookies=cookies, url=url, loginInfo=loginInfo)
 
-        return
+            if result is None:
+                self.logger.warning(f"Sessionログインに゙失敗したためIDログインを実施: {result}")
+                self.idLogin.flowLoginID(url=url, loginInfo=loginInfo)
 
 
 # ----------------------------------------------------------------------------------
 # sessionログイン
 
-    def sessionLogin(self, cookies):
+    def sessionLogin(self, cookies: dict, url: str):
         session = self.sessionSetting(cookies=cookies)
-        session.get(self.url)
-        return self.loginCheck()
+        session.get(self.homeUrl)
+        return self.loginCheck(url=url)
+
+
+
+# ----------------------------------------------------------------------------------
+# Session前にクリックが必要なケース
+# いい部屋生活ボタンがなければSessionに進む
+
+    def sessionBeforeAction(self, cookies: dict, url: str, loginInfo: dict, delay: int=2, maxRetries: int = 3):
+
+        retries = 0
+        while retries < maxRetries:
+            try:
+                self.element.clickElement(by=loginInfo['bypassIdBy'], value=loginInfo['bypassIdValue'])
+                time.sleep(delay)
+
+                # ここから通常のIDログイン
+                if self.sessionLogin(cookies=cookies, url=url):
+                    self.logger.info(f"Cookieログインに成功")
+                    return None
+                else:
+                    self.logger.error(f"セッションログインにも失敗: {cookies}")
+                    return None
+
+            except TimeoutException:
+                self.logger.warning(f"要素が見つからなかったため、再試行します。リトライ回数: {retries + 1}/{maxRetries}")
+                retries += 1
+                time.sleep(delay)  # リトライの間に少し待機して再試行する
+
+        if retries == maxRetries:
+            self.logger.error("指定回数のリトライを行いましたが、要素にアクセスできませんでした")
 
 
 # ----------------------------------------------------------------------------------
@@ -142,16 +172,16 @@ class CookieLogin:
 
     @decoInstance.jsCompleteWait
     def sessionSetting(self, cookies):
+        self.logger.warning(f"cookies: {cookies}")
         if cookies:
             session = self.session
-            cookie = cookies[0]
             session.cookies.set(
-                name=cookie['name'],
-                value=cookie['value'],
-                domain=cookie['domain'],
-                path=cookie['path'],
+                name=cookies['name'],
+                value=cookies['value'],
+                domain=cookies['domain'],
+                path=cookies['path'],
             )
-            self.logger.debug(f"Cookieの中身:\nname{cookie['name']},{cookie['value']},{cookie['domain']},{cookie['path']}")
+            self.logger.debug(f"Cookieの中身:\nname={cookies['name']}\nvalue={cookies['value']}\ndomain={cookies['domain']}, path={cookies['path']}")
             return session
         else:
             self.logger.error(f"cookiesがありません")
