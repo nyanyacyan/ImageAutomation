@@ -199,10 +199,23 @@ class ElementManager:
 # 広告、検索画面などを検知して消去する
 
     def closePopup(self, by: str, value: str):
-        element = self.getElement(by=by, value=value)
+        element = self.clickWait.canWaitClick(chrome=self.chrome, by=by, value=value)
         if element:
             self.clickElement(by=by, value=value)
             self.logger.info(f"不要物を除去: {element}")
+        else:
+            self.logger.info(f"modalは出力されませんでした。")
+            return
+
+
+# ----------------------------------------------------------------------------------
+# クリックした新しいページに切り替え
+
+    def clickMove(self, by: str, value: str):
+        self.clickElement(by=by, value=value)
+        allHandles = self.chrome.window_handles  # すべてのWindowハンドルを取得
+        self.chrome.switch_to.window(allHandles[-1])  # 元々のWindowはallHandles[0]
+        return self.logger.info(f"クリックした新しいページタイトル「{self.chrome.title}」")
 
 
 # ----------------------------------------------------------------------------------
