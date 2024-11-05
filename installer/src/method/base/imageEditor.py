@@ -3,14 +3,14 @@
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
-import os, requests
+import os, requests, json
 from selenium.webdriver.chrome.webdriver import WebDriver
 from PIL import Image, ImageDraw, ImageFont
 from typing import Tuple
-
+import json
 
 # 自作モジュール
-from .utils import Logger
+from utils import Logger
 from installer.src.method.constElementPath import ImageInfo
 
 
@@ -27,9 +27,9 @@ class ImageEditor:
         self.pattern = pattern
         self.data = data[pattern]
 
-        self.baseImagePath = ImageInfo.IMAGE_PATH.value[{pattern}]
-        self.fontSize = ImageInfo.FONT_SIZES.value[{pattern}]
-        self.imageNum = ImageInfo.IMAGE_NUM.value[{pattern}]
+        self.baseImagePath = ImageInfo.IMAGE_PATH.value[pattern]
+        self.fontSize = ImageInfo.FONT_SIZES.value[pattern]
+        self.imageNum = ImageInfo.IMAGE_NUM.value[pattern]
 
         self.imageSize = (1080, 1080)
 
@@ -37,7 +37,7 @@ class ImageEditor:
 # ----------------------------------------------------------------------------------
 
 
-    def execute_pattern_editors(self, data: dict, fontPath: str, outputFolder: str):
+    def execute_pattern_editors(self, fontPath: str, outputFolder: str):
         patterns = ['A', 'B', 'C', 'D']
         pattern_classes = {
             'A': PatternAEditor,
@@ -47,18 +47,18 @@ class ImageEditor:
         }
 
         for pattern in patterns:
-            if pattern not in data:
+            if pattern not in self.data:
                 self.logger.error(f"{pattern} パターンのデータが欠けているため、{pattern} とそれ以降のすべてのパターンをスキップします。")
                 break
 
+            # クラスのインスタンスを作成して処理を開始
             editor_class = pattern_classes[pattern]
-            editor = editor_class(pattern, data)
+            editor = editor_class(pattern, self.data)
             if not editor.createImage(fontPath, outputFolder):
                 self.logger.error(f"パターン {pattern} の画像データが揃ってないため、以降のパターンをスキップします。")
                 break
 
         self.logger.info(f"画像処理が完了しました。")
-
 
 
 # ----------------------------------------------------------------------------------
@@ -124,7 +124,16 @@ class ImageEditor:
         if not self.checkImageUrl():
             return False
 
-        baseImage = Image.open(self.baseImagePath).resize(self.imageSize).convert("RGBA")
+        # 画像URLから画像を取得し、Pillowで読み込む
+        # stream=Trueはストリーミングの意味→少しづつデータを受け取る
+        response = requests.get(self.data[0]['imageUrl'], stream=True)
+        if response.status_code != 200:
+            self.logger.error(f"画像の取得に失敗しました: {self.data[0]['imageUrl']}")
+            return False
+
+        # Image.open(response.raw) により、URLから直接取得した画像をPillowで読み込む
+        baseImage = Image.open(response.raw).resize(self.imageSize).convert("RGBA")
+
         width, height = baseImage.size
         draw = ImageDraw.Draw(baseImage)
         font = ImageFont.truetype(fontPath, self.fontSize)
@@ -190,17 +199,22 @@ class ImageEditor:
     def drawImageWithMode(
             self,
             baseImage: Image.Image,
-            imagePath: str,
+            imageUrl: str,
             maxWidth: int,
             maxHeight: int,
             startPosition: Tuple[int, int],
             mode: str = "wrap"
     ):
 
+        response = requests.get(imageUrl, stream=True)
+        if response.status_code != 200:
+            self.logger.error(f"画像の取得に失敗しました: {imageUrl}")
+            return
+
+        insertImage = Image.open(response.raw).convert("RGBA")
+
         if mode == "wrap":
             self.logger.info(f"指定した場所に配置: {startPosition}")
-
-            insertImage = Image.open(imagePath).convert("RGBA")
             x, y = startPosition
 
         elif mode == "center":
@@ -473,3 +487,45 @@ class PatternDEditor(ImageEditor):
         )
 
 # **********************************************************************************
+
+
+# サンプルのデータファイルとして使うため、test_data.json ファイルを作成します
+
+
+# ---------------------------------------------------------
+
+if __name__ == "__main__":
+    # スクリプトの実行を開始する
+    print("実行を開始します...")
+
+    data = {
+        'A': [
+            {'imageUrl': 'https://property.es-img.jp/rent/img/100000000000000000000008972046/0100000000000000000000008972046_10.jpg?iid=3090815223', 'text': 'テキストA1'},  # 1つ目の画像とテキスト
+            {'text': 'テキストA2'},  # 2つ目のテキスト
+            {'text': 'テキストA3'}   # 3つ目のテキスト
+        ],
+        'B': [
+            {'imageUrl': 'https://property.es-img.jp/rent/img/100000000000000000000008972046/0100000000000000000000008972046_1.jpg?iid=1876367453', 'text': 'テキストB1'},
+            {'imageUrl': 'https://property.es-img.jp/rent/img/100000000000000000000008972046/0100000000000000000000008972046_2.jpg?iid=2229606505', 'text': 'テキストB2'}
+        ],
+        'C': [
+            {'imageUrl': 'https://property.es-img.jp/rent/img/100000000000000000000008972046/0100000000000000000000008972046_3.jpg?iid=2650937517', 'text': 'テキストC1'},
+            {'imageUrl': 'https://property.es-img.jp/rent/img/100000000000000000000008972046/0100000000000000000000008972046_19.jpg?iid=2286688419', 'text': 'テキストC2'}
+        ],
+        'D': [
+            {'imageUrl': 'https://property.es-img.jp/rent/img/100000000000000000000008972046/0100000000000000000000008972046_5.jpg?iid=1835735112', 'text': 'テキストD1'},
+            {'imageUrl': 'https://property.es-img.jp/rent/img/100000000000000000000008972046/0100000000000000000000008972046_6.jpg?iid=2654214310', 'text': 'テキストD2'}
+        ]
+    }
+
+    # データ、フォントファイルパス、出力フォルダを指定します
+    fontPath = '/Users/nyanyacyan/Desktop/project_file/ImageAutomation/installer/src/method/inputData/DejaVuSans.ttf'
+    outputFolder = '/Users/nyanyacyan/Desktop/project_file/ImageAutomation/installer/resultOutput'
+
+    # インスタンス化して実行
+    editor = ImageEditor(data, debugMode=True)
+    editor.execute_pattern_editors(fontPath, outputFolder)
+
+    print("画像編集が完了しました。出力先: ", outputFolder)
+
+
