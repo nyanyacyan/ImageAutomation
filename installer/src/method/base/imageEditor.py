@@ -6,10 +6,12 @@
 import os, requests
 from selenium.webdriver.chrome.webdriver import WebDriver
 from PIL import Image, ImageDraw, ImageFont
+from typing import Tuple
+
 
 # 自作モジュール
 from .utils import Logger
-from constElementPath import ImageInfo
+from installer.src.method.constElementPath import ImageInfo
 
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
@@ -145,9 +147,9 @@ class ImageEditor:
         text: str,
         font: str,
         maxWidth: int,
-        startPosition: tuple[int, int],
+        startPosition: Tuple[int, int],
         lineHeight: int,
-        fill: tuple[int, int, int] = (0, 0, 0),
+        fill: Tuple[int, int, int] = (0, 0, 0),
         mode: str = "wrap"
     ):
 
@@ -191,7 +193,7 @@ class ImageEditor:
             imagePath: str,
             maxWidth: int,
             maxHeight: int,
-            startPosition: tuple[int, int],
+            startPosition: Tuple[int, int],
             mode: str = "wrap"
     ):
 
