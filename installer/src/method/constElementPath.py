@@ -102,21 +102,57 @@ class ImageInfo(Enum):
     }
 
     FONT_SIZES = {
-        "A": "",
-        "B": "",
-        "C": "",
-        "D": "",
+        "A": "24",
+        "B": "24",
+        "C": "24",
+        "D": "26",
     }
 
     IMAGE_NUM = {
-        "A": "",
-        "B": "",
-        "C": "",
-        "D": "",
+        "A": "1",
+        "B": "2",
+        "C": "2",
+        "D": "2",
     }
 
+    START_POSITIONS = {
+        "A": {
+            "TEXT_LEFT": (10, 'height // 3'),
+            "TEXT_BOTTOM": ('width // 2', 'height - 40'),
+            "TEXT_RIGHT": ('width - 150', 'height // 3'),
+            "IMAGE_CENTER": ('width // 2 - 150', 'height // 2 - 150')
+        },
+        "B": {
+            "IMAGE_TOP_LEFT": (10, 10),
+            "IMAGE_BOTTOM_LEFT": (10, 'height - 160'),
+            "TEXT_TOP_RIGHT": ('width - 310', 10),
+            "TEXT_BOTTOM_RIGHT": ('width - 310', 'height - 100')
+        },
+        "C": {
+            "IMAGE_TOP_LEFT": (10, 10),
+            "IMAGE_BOTTOM_LEFT": (10, 'height - 160'),
+            "TEXT_TOP_RIGHT": ('width - 310', 10),
+            "TEXT_BOTTOM_RIGHT": ('width - 310', 'height - 100')
+        },
+        "D": {
+            "IMAGE_TOP_LEFT": (10, 10),
+            "IMAGE_BOTTOM_LEFT": (10, 'height - 160'),
+            "TEXT_TOP_RIGHT": ('width - 310', 10),
+            "TEXT_BOTTOM_RIGHT": ('width - 310', 'height - 100')
+        }
+    }
+
+    MAX_WIDTH = 300
+    LINE_HEIGHT = 30
 
 
+    FILL_COLOR_BLACK = (0, 0, 0)
+    FILL_COLOR_GREEN = (0, 255, 0)
+    FILL_COLOR_WHITE = (255, 255, 255)
+
+
+    IMAGE_SIZE = (300, 300)
+    IMAGE_SIZE_SMALL = (150, 150)
 
 
 
