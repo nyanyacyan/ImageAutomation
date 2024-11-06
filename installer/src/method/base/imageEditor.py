@@ -3,14 +3,14 @@
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
-import os, requests, json
+import os, requests
 from selenium.webdriver.chrome.webdriver import WebDriver
 from PIL import Image, ImageDraw, ImageFont
-from typing import Tuple
-import json
+from typing import Tuple, List
+
 
 # 自作モジュール
-from utils import Logger
+from .utils import Logger
 from installer.src.method.constElementPath import ImageInfo
 
 
@@ -19,17 +19,10 @@ from installer.src.method.constElementPath import ImageInfo
 
 
 class ImageEditor:
-    def __init__(self, pattern: str, data: list, debugMode=True):
+    def __init__(self, debugMode=True):
         # logger
         self.getLogger = Logger(__name__, debugMode=debugMode)
         self.logger = self.getLogger.getLogger()
-
-        self.pattern = pattern
-        self.data = data[pattern]
-
-        self.baseImagePath = ImageInfo.IMAGE_PATH.value[pattern]
-        self.fontSize = ImageInfo.FONT_SIZES.value[pattern]
-        self.imageNum = ImageInfo.IMAGE_NUM.value[pattern]
 
         self.imageSize = (1080, 1080)
 
@@ -37,7 +30,7 @@ class ImageEditor:
 # ----------------------------------------------------------------------------------
 
 
-    def execute_pattern_editors(self, fontPath: str, outputFolder: str):
+    def executePatternEditors(self, data: dict, fontPath: str, outputFolder: str):
         patterns = ['A', 'B', 'C', 'D']
         pattern_classes = {
             'A': PatternAEditor,
@@ -47,33 +40,42 @@ class ImageEditor:
         }
 
         for pattern in patterns:
-            if pattern not in self.data:
+            if pattern not in data:
                 self.logger.error(f"{pattern} パターンのデータが欠けているため、{pattern} とそれ以降のすべてのパターンをスキップします。")
                 break
 
+            # パターン固有のデータを取得
+            pattern_data = data[pattern]
+            baseImagePath = ImageInfo.IMAGE_PATH.value[pattern]
+            fontSize = ImageInfo.FONT_SIZES.value[pattern]
+            imageNum = ImageInfo.IMAGE_NUM.value[pattern]
+
             # クラスのインスタンスを作成して処理を開始
             editor_class = pattern_classes[pattern]
-            editor = editor_class(pattern, self.data)
-            if not editor.createImage(fontPath, outputFolder):
+            editor = editor_class()
+
+            # 画像作成メソッドにパターン固有の情報を渡す
+            if not editor.create_image(pattern_data, pattern, fontPath, outputFolder, baseImagePath, fontSize, imageNum):
                 self.logger.error(f"パターン {pattern} の画像データが揃ってないため、以降のパターンをスキップします。")
                 break
 
         self.logger.info(f"画像処理が完了しました。")
 
 
+
 # ----------------------------------------------------------------------------------
 # 画像が揃っているかチェック
 
-    def checkImageUrl(self):
-        for item in self.data:
+    def checkImageUrl(self, data: List, pattern: str):
+        for item in data:
             try:
                 # allow_redirects=Trueは短縮URLなどリダイレクトされてることがあること自動許可する
                 response = requests.head(item['imagePath'], allow_redirects=True)
                 if response.status_code < 200 or response.status_code >= 400:
-                    self.logger.error(f"{self.pattern} の画像が見つかりません: \n{item['imagePath']}")
+                    self.logger.error(f"{pattern} の画像が見つかりません: \n{item['imagePath']}")
                     return False
             except requests.RequestException as e:
-                self.logger.error(f"{self.pattern} の画像データにアクセスできません。: \n{item['imagePath']}\nエラー: {e}")
+                self.logger.error(f"{pattern} の画像データにアクセスできません。: \n{item['imagePath']}\nエラー: {e}")
                 return False
 
         return True
@@ -82,9 +84,9 @@ class ImageEditor:
 # ----------------------------------------------------------------------------------
 
 
-    def checkImageCount(self):
-        if len(self.data) < self.imageNum[self.pattern]:
-            self.logger.error(f"{self.pattern} に必要な画像枚数が不足しています。\n必要: {self.imageNum}\n実際: {len(self.data)}")
+    def checkImageCount(self, data: List, imageNum: int, pattern: str):
+        if len(data) < imageNum:
+            self.logger.error(f"{pattern} に必要な画像枚数が不足しています。\n必要: {self.imageNum}\n実際: {len(data)}")
             return False
         return True
 
@@ -101,49 +103,34 @@ class ImageEditor:
 # NotImplementedError の意図はeditImage が基底クラス内で使われる場面で、サブクラスがこのメソッドをオーバーライドしていないとエラーが発生します。これにより、サブクラスにこのメソッドの実装を忘れないように促してる
 
     def editImage(
-            self,
-            base_image: Image.Image,
-            draw: ImageDraw.ImageDraw,
-            font: ImageFont.FreeTypeFont,
-            width: int,
-            height: int
+        self,
+        data: list,
+        base_image: Image.Image,
+        draw: ImageDraw.ImageDraw,
+        font: ImageFont.FreeTypeFont,
+        pattern: str,
+        width: int,
+        height: int
     ):
-
-        raise NotImplementedError("サブクラスとして実装されてません。サブクラスにてこのメソッドを実装する必要があります。")
+        raise NotImplementedError("サブクラスにてこのメソッドを実装する必要があります。")
 
 
 # ----------------------------------------------------------------------------------
 
 
-    def createImage(self, fontPath: str, outputFolder: str):
+    def createImage(self, data: list, fontPath: str, baseImagePath: str, fontSize: int, outputFolder: str, pattern: str):
         '''
         fontPath→使用したいフォントを指定する
         '''
-        if not self.checkImageCount():
-            return False
-        if not self.checkImageUrl():
-            return False
-
-        # 画像URLから画像を取得し、Pillowで読み込む
-        # stream=Trueはストリーミングの意味→少しづつデータを受け取る
-        response = requests.get(self.data[0]['imageUrl'], stream=True)
-        if response.status_code != 200:
-            self.logger.error(f"画像の取得に失敗しました: {self.data[0]['imageUrl']}")
-            return False
-
-        # Image.open(response.raw) により、URLから直接取得した画像をPillowで読み込む
-        baseImage = Image.open(response.raw).resize(self.imageSize).convert("RGBA")
-
-        width, height = baseImage.size
-        draw = ImageDraw.Draw(baseImage)
-        font = ImageFont.truetype(fontPath, self.fontSize)
-
-        self.editImage(baseImage, draw, font, width, height)
-
-        outputFilePath = os.path.join(outputFolder, f"output_{self.pattern}.png")
-
-        baseImage.save(outputFilePath, format="PNG")
-        self.logger.info(f"保存完了: {outputFilePath}")
+        for item in data:
+            try:
+                response = requests.head(item['imagePath'], allow_redirects=True)
+                if response.status_code < 200 or response.status_code >= 400:
+                    self.logger.error(f"{pattern} の画像が見つかりません: \n{item['imagePath']}")
+                    return False
+            except requests.RequestException as e:
+                self.logger.error(f"{pattern} の画像データにアクセスできません。: \n{item['imagePath']}\nエラー: {e}")
+                return False
         return True
 
 
@@ -199,22 +186,17 @@ class ImageEditor:
     def drawImageWithMode(
             self,
             baseImage: Image.Image,
-            imageUrl: str,
+            imagePath: str,
             maxWidth: int,
             maxHeight: int,
             startPosition: Tuple[int, int],
             mode: str = "wrap"
     ):
 
-        response = requests.get(imageUrl, stream=True)
-        if response.status_code != 200:
-            self.logger.error(f"画像の取得に失敗しました: {imageUrl}")
-            return
-
-        insertImage = Image.open(response.raw).convert("RGBA")
-
         if mode == "wrap":
             self.logger.info(f"指定した場所に配置: {startPosition}")
+
+            insertImage = Image.open(imagePath).convert("RGBA")
             x, y = startPosition
 
         elif mode == "center":
@@ -253,12 +235,12 @@ class ImageEditor:
 
 
 class PatternAEditor(ImageEditor):
-    def editImage(self, baseImage, draw, font, baseWidth, baseHeight):
+    def editImage(self, data: List, baseImage, draw, font, pattern: str, baseWidth, baseHeight):
         '''
         親クラスにはなにも定義されてないのでオーバーライドの最後の部分は不要
         imagePath→は後で入れ込むdataのkeyによって変更書ける
         .resize(self.image_size)は画像のサイズを編集
-        Image.open(self.data[0]['imagePath'])→画像を呼び出している
+        Image.open(data[0]['imagePath'])→画像を呼び出している
         .convert("RGBA")画像の色を変更するための準備
 
         draw.textは画像に文字を挿入する命令
@@ -273,13 +255,13 @@ class PatternAEditor(ImageEditor):
         fillColor = ImageInfo.FILL_COLOR_BLACK.value
 
         # START_POSITIONS を使用して位置を取得
-        startPositions = ImageInfo.START_POSITIONS.value[self.pattern]
+        startPositions = ImageInfo.START_POSITIONS.value[pattern]
 
         # 画像の配置
         centerPosition = startPositions['IMAGE_CENTER']
         self.drawImageWithMode(
             baseImage=baseImage,
-            imagePath=self.data[0]['imagePath'],
+            imagePath=data[0]['imagePath'],
             maxWidth=ImageInfo.IMAGE_SIZE.value,
             maxHeight=centerPosition,
             startPosition=startPositions,
@@ -288,7 +270,7 @@ class PatternAEditor(ImageEditor):
         # テキストを左側、下側、右側に配置
         self.drawTextWithWrapping(
             draw=draw,
-            text=self.data[0]['text'],
+            text=data[0]['text'],
             font=font,
             maxWidth=maxWidth,
             startPosition=startPositions['TEXT_LEFT'],
@@ -299,7 +281,7 @@ class PatternAEditor(ImageEditor):
 
         self.drawTextWithWrapping(
             draw=draw,
-            text=self.data[1]['text'],
+            text=data[1]['text'],
             font=font,
             maxWidth=maxWidth,
             startPosition=startPositions['TEXT_BOTTOM'],
@@ -310,7 +292,7 @@ class PatternAEditor(ImageEditor):
 
         self.drawTextWithWrapping(
             draw=draw,
-            text=self.data[2]['text'],
+            text=data[2]['text'],
             font=font,
             maxWidth=maxWidth,
             startPosition=startPositions['TEXT_RIGHT'],
@@ -324,19 +306,19 @@ class PatternAEditor(ImageEditor):
 
 
 class PatternBEditor(ImageEditor):
-    def editImage(self, baseImage, draw, font, baseWidth, baseHeight):
+    def editImage(self, data: List, baseImage, draw, font, pattern: str, baseWidth, baseHeight):
         # 画像の配置
         maxWidth = ImageInfo.MAX_WIDTH.value
         lineHeight = ImageInfo.LINE_HEIGHT.value
         fillColor = ImageInfo.FILL_COLOR_BLACK.value
 
         # START_POSITIONS を使用して位置を取得
-        startPositions = ImageInfo.START_POSITIONS.value[self.pattern]
+        startPositions = ImageInfo.START_POSITIONS.value[pattern]
 
         # 画像を2枚配置
         self.drawImageWithMode(
             baseImage=baseImage,
-            imagePath=self.data[0]['imagePath'],
+            imagePath=data[0]['imagePath'],
             maxWidth=ImageInfo.IMAGE_SIZE_SMALL.value[0],
             maxHeight=ImageInfo.IMAGE_SIZE_SMALL.value[1],
             startPosition=startPositions['IMAGE_TOP_LEFT'],
@@ -345,7 +327,7 @@ class PatternBEditor(ImageEditor):
 
         self.drawImageWithMode(
             baseImage=baseImage,
-            imagePath=self.data[1]['imagePath'],
+            imagePath=data[1]['imagePath'],
             maxWidth=ImageInfo.IMAGE_SIZE_SMALL.value[0],
             maxHeight=ImageInfo.IMAGE_SIZE_SMALL.value[1],
             startPosition=startPositions['IMAGE_BOTTOM_LEFT'],
@@ -355,7 +337,7 @@ class PatternBEditor(ImageEditor):
         # テキストを右上と右下に配置
         self.drawTextWithWrapping(
             draw=draw,
-            text=self.data[0]['text'],
+            text=data[0]['text'],
             font=font,
             maxWidth=maxWidth,
             startPosition=startPositions['TEXT_TOP_RIGHT'],
@@ -366,7 +348,7 @@ class PatternBEditor(ImageEditor):
 
         self.drawTextWithWrapping(
             draw=draw,
-            text=self.data[1]['text'],
+            text=data[1]['text'],
             font=font,
             maxWidth=maxWidth,
             startPosition=startPositions['TEXT_BOTTOM_RIGHT'],
@@ -380,19 +362,19 @@ class PatternBEditor(ImageEditor):
 
 
 class PatternCEditor(ImageEditor):
-    def editImage(self, baseImage, draw, font, baseWidth, baseHeight):
+    def editImage(self, data: List, baseImage, draw, font, pattern: str, baseWidth, baseHeight):
         # 画像の配置
         maxWidth = ImageInfo.MAX_WIDTH.value
         lineHeight = ImageInfo.LINE_HEIGHT.value
         fillColor = ImageInfo.FILL_COLOR_BLACK.value
 
         # START_POSITIONS を使用して位置を取得
-        startPositions = ImageInfo.START_POSITIONS.value[self.pattern]
+        startPositions = ImageInfo.START_POSITIONS.value[pattern]
 
         # 画像を2枚配置
         self.drawImageWithMode(
             baseImage=baseImage,
-            imagePath=self.data[0]['imagePath'],
+            imagePath=data[0]['imagePath'],
             maxWidth=ImageInfo.IMAGE_SIZE_SMALL.value[0],
             maxHeight=ImageInfo.IMAGE_SIZE_SMALL.value[1],
             startPosition=startPositions['IMAGE_TOP_LEFT'],
@@ -401,7 +383,7 @@ class PatternCEditor(ImageEditor):
 
         self.drawImageWithMode(
             baseImage=baseImage,
-            imagePath=self.data[1]['imagePath'],
+            imagePath=data[1]['imagePath'],
             maxWidth=ImageInfo.IMAGE_SIZE_SMALL.value[0],
             maxHeight=ImageInfo.IMAGE_SIZE_SMALL.value[1],
             startPosition=startPositions['IMAGE_BOTTOM_LEFT'],
@@ -411,7 +393,7 @@ class PatternCEditor(ImageEditor):
         # テキストを右上と右下に配置
         self.drawTextWithWrapping(
             draw=draw,
-            text=self.data[0]['text'],
+            text=data[0]['text'],
             font=font,
             maxWidth=maxWidth,
             startPosition=startPositions['TEXT_TOP_RIGHT'],
@@ -422,7 +404,7 @@ class PatternCEditor(ImageEditor):
 
         self.drawTextWithWrapping(
             draw=draw,
-            text=self.data[1]['text'],
+            text=data[1]['text'],
             font=font,
             maxWidth=maxWidth,
             startPosition=startPositions['TEXT_BOTTOM_RIGHT'],
@@ -435,19 +417,19 @@ class PatternCEditor(ImageEditor):
 
 
 class PatternDEditor(ImageEditor):
-    def editImage(self, baseImage, draw, font, baseWidth, baseHeight):
+    def editImage(self, data: List, baseImage, draw, font, pattern: str, baseWidth, baseHeight):
         # 画像の配置
         maxWidth = ImageInfo.MAX_WIDTH.value
         lineHeight = ImageInfo.LINE_HEIGHT.value
         fillColor = ImageInfo.FILL_COLOR_BLACK.value
 
         # START_POSITIONS を使用して位置を取得
-        startPositions = ImageInfo.START_POSITIONS.value[self.pattern]
+        startPositions = ImageInfo.START_POSITIONS.value[pattern]
 
         # 画像を2枚配置
         self.drawImageWithMode(
             baseImage=baseImage,
-            imagePath=self.data[0]['imagePath'],
+            imagePath=data[0]['imagePath'],
             maxWidth=ImageInfo.IMAGE_SIZE_SMALL.value[0],
             maxHeight=ImageInfo.IMAGE_SIZE_SMALL.value[1],
             startPosition=startPositions['IMAGE_TOP_LEFT'],
@@ -456,7 +438,7 @@ class PatternDEditor(ImageEditor):
 
         self.drawImageWithMode(
             baseImage=baseImage,
-            imagePath=self.data[1]['imagePath'],
+            imagePath=data[1]['imagePath'],
             maxWidth=ImageInfo.IMAGE_SIZE_SMALL.value[0],
             maxHeight=ImageInfo.IMAGE_SIZE_SMALL.value[1],
             startPosition=startPositions['IMAGE_BOTTOM_LEFT'],
@@ -466,7 +448,7 @@ class PatternDEditor(ImageEditor):
         # テキストを右上と右下に配置
         self.drawTextWithWrapping(
             draw=draw,
-            text=self.data[0]['text'],
+            text=data[0]['text'],
             font=font,
             maxWidth=maxWidth,
             startPosition=startPositions['TEXT_TOP_RIGHT'],
@@ -477,7 +459,7 @@ class PatternDEditor(ImageEditor):
 
         self.drawTextWithWrapping(
             draw=draw,
-            text=self.data[1]['text'],
+            text=data[1]['text'],
             font=font,
             maxWidth=maxWidth,
             startPosition=startPositions['TEXT_BOTTOM_RIGHT'],
@@ -487,45 +469,3 @@ class PatternDEditor(ImageEditor):
         )
 
 # **********************************************************************************
-
-
-# サンプルのデータファイルとして使うため、test_data.json ファイルを作成します
-
-
-# ---------------------------------------------------------
-
-if __name__ == "__main__":
-    # スクリプトの実行を開始する
-    print("実行を開始します...")
-
-    data = {
-        'A': [
-            {'imageUrl': 'https://property.es-img.jp/rent/img/100000000000000000000008972046/0100000000000000000000008972046_10.jpg?iid=3090815223', 'text': 'テキストA1'},  # 1つ目の画像とテキスト
-            {'text': 'テキストA2'},  # 2つ目のテキスト
-            {'text': 'テキストA3'}   # 3つ目のテキスト
-        ],
-        'B': [
-            {'imageUrl': 'https://property.es-img.jp/rent/img/100000000000000000000008972046/0100000000000000000000008972046_1.jpg?iid=1876367453', 'text': 'テキストB1'},
-            {'imageUrl': 'https://property.es-img.jp/rent/img/100000000000000000000008972046/0100000000000000000000008972046_2.jpg?iid=2229606505', 'text': 'テキストB2'}
-        ],
-        'C': [
-            {'imageUrl': 'https://property.es-img.jp/rent/img/100000000000000000000008972046/0100000000000000000000008972046_3.jpg?iid=2650937517', 'text': 'テキストC1'},
-            {'imageUrl': 'https://property.es-img.jp/rent/img/100000000000000000000008972046/0100000000000000000000008972046_19.jpg?iid=2286688419', 'text': 'テキストC2'}
-        ],
-        'D': [
-            {'imageUrl': 'https://property.es-img.jp/rent/img/100000000000000000000008972046/0100000000000000000000008972046_5.jpg?iid=1835735112', 'text': 'テキストD1'},
-            {'imageUrl': 'https://property.es-img.jp/rent/img/100000000000000000000008972046/0100000000000000000000008972046_6.jpg?iid=2654214310', 'text': 'テキストD2'}
-        ]
-    }
-
-    # データ、フォントファイルパス、出力フォルダを指定します
-    fontPath = '/Users/nyanyacyan/Desktop/project_file/ImageAutomation/installer/src/method/inputData/DejaVuSans.ttf'
-    outputFolder = '/Users/nyanyacyan/Desktop/project_file/ImageAutomation/installer/resultOutput'
-
-    # インスタンス化して実行
-    editor = ImageEditor(data, debugMode=True)
-    editor.execute_pattern_editors(fontPath, outputFolder)
-
-    print("画像編集が完了しました。出力先: ", outputFolder)
-
-
