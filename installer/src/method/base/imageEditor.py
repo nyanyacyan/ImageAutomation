@@ -46,7 +46,7 @@ class ImageEditor:
 
             # パターン固有のデータを取得
             pattern_data = data[pattern]
-            baseImagePath = ImageInfo.IMAGE_PATH.value[pattern]
+            baseImagePath = ImageInfo.BASE_IMAGE_PATH.value[pattern]
             fontSize = ImageInfo.FONT_SIZES.value[pattern]
             imageNum = ImageInfo.IMAGE_NUM.value[pattern]
 
@@ -121,16 +121,26 @@ class ImageEditor:
     def createImage(self, data: list, fontPath: str, baseImagePath: str, fontSize: int, outputFolder: str, pattern: str):
         '''
         fontPath→使用したいフォントを指定する
+        baseImagePath→ベース画像を指定する
         '''
-        for item in data:
-            try:
-                response = requests.head(item['imagePath'], allow_redirects=True)
-                if response.status_code < 200 or response.status_code >= 400:
-                    self.logger.error(f"{pattern} の画像が見つかりません: \n{item['imagePath']}")
-                    return False
-            except requests.RequestException as e:
-                self.logger.error(f"{pattern} の画像データにアクセスできません。: \n{item['imagePath']}\nエラー: {e}")
-                return False
+        if not self.checkImageCount(data, len(data), pattern):
+            return False
+        if not self.checkImageUrl(data, pattern):
+            return False
+
+        # ベース画像の読み込み
+        baseImage = Image.open(baseImagePath).resize(self.imageSize).convert("RGBA")
+        width, height = baseImage.size
+        draw = ImageDraw.Draw(baseImage)
+        font = ImageFont.truetype(fontPath, fontSize)
+
+        # サブクラスで実装されたeditImageメソッドを呼び出し
+        self.editImage(data, baseImage, draw, font, pattern, width, height)
+
+        outputFilePath = os.path.join(outputFolder, f"output_{pattern}.png")
+        baseImage.save(outputFilePath, format="PNG")
+        self.logger.info(f"保存完了: {outputFilePath}")
+
         return True
 
 
@@ -141,7 +151,7 @@ class ImageEditor:
         self,
         draw: ImageDraw.ImageDraw,
         text: str,
-        font: str,
+        font: ImageFont.FreeTypeFont,
         maxWidth: int,
         startPosition: Tuple[int, int],
         lineHeight: int,
@@ -469,3 +479,36 @@ class PatternDEditor(ImageEditor):
         )
 
 # **********************************************************************************
+
+
+data = {
+    'A': [
+        {'imagePath': 'path/to/imageA1.png', 'text': 'テキストA1'},  # 1つ目の画像とテキスト
+        {'text': 'テキストA2'},  # 2つ目のテキスト
+        {'text': 'テキストA3'}   # 3つ目のテキスト
+    ],
+    'B': [
+        {'imagePath': 'path/to/imageB1.png', 'text': 'テキストB1'},
+        {'imagePath': 'path/to/imageB2.png', 'text': 'テキストB2'}
+    ],
+    'C': [
+        {'imagePath': 'path/to/imageC1.png', 'text': 'テキストC1'},
+        {'imagePath': 'path/to/imageC2.png', 'text': 'テキストC2'}
+    ],
+    'D': [
+        {'imagePath': 'path/to/imageD1.png', 'text': 'テキストD1'},
+        {'imagePath': 'path/to/imageD2.png', 'text': 'テキストD2'}
+    ]
+}
+
+fontPath = "path/to/font.ttf"  # 使用したいフォントへのパス
+outputFolder = "output"  # 画像を保存するフォルダ
+
+# Create the output folder if it doesn't exist
+if not os.path.exists(outputFolder):
+    os.makedirs(outputFolder)
+
+# Instantiate the main ImageEditor class and execute pattern editors
+if __name__ == "__main__":
+    image_editor = ImageEditor(debugMode=True)
+    image_editor.executePatternEditors(data, fontPath, outputFolder)

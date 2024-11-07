@@ -94,11 +94,11 @@ class LoginElement(Enum):
 
 
 class ImageInfo(Enum):
-    IMAGE_PATH = {
-        "A": "",
-        "B": "",
-        "C": "",
-        "D": "",
+    BASE_IMAGE_PATH = {
+        "A": "/Users/nyanyacyan/Desktop/Project_file/ImageAutomation/installer/src/method/inputData/A.png",
+        "B": "/Users/nyanyacyan/Desktop/Project_file/ImageAutomation/installer/src/method/inputData/B.png",
+        "C": "/Users/nyanyacyan/Desktop/Project_file/ImageAutomation/installer/src/method/inputData/C.png",
+        "D": "/Users/nyanyacyan/Desktop/Project_file/ImageAutomation/installer/src/method/inputData/D.png",
     }
 
     FONT_SIZES = {
