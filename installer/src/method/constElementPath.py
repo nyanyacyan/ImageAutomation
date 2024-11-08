@@ -94,6 +94,7 @@ class LoginElement(Enum):
 
 
 class ImageInfo(Enum):
+    #! 修正必要
     BASE_IMAGE_PATH = {
         "A": "/Users/nyanyacyan/Desktop/Project_file/ImageAutomation/installer/src/method/inputData/A.png",
         "B": "/Users/nyanyacyan/Desktop/Project_file/ImageAutomation/installer/src/method/inputData/B.png",
@@ -102,11 +103,18 @@ class ImageInfo(Enum):
     }
 
     FONT_SIZES = {
-        "A": "24",
-        "B": "24",
-        "C": "24",
-        "D": "26",
+        "A": 24,
+        "B": 24,
+        "C": 24,
+        "D": 26,
     }
+
+    #! 修正必要
+    FONT_PATH = "/Users/nyanyacyan/Desktop/project_file/ImageAutomation/installer/src/method/inputData/DejaVuSans.ttf"
+
+    #! 修正必要
+    OUTPUT_PATH = "/Users/nyanyacyan/Desktop/project_file/ImageAutomation/installer/resultOutput"
+
 
     IMAGE_NUM = {
         "A": "1",
