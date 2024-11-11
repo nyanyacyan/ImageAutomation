@@ -102,15 +102,17 @@ class ImageInfo(Enum):
         "D": "/Users/nyanyacyan/Desktop/Project_file/ImageAutomation/installer/src/method/inputData/D.png",
     }
 
+    BASE_IMAGE_SIZE = (1080, 1080)
+
     FONT_SIZES = {
-        "A": 24,
-        "B": 24,
-        "C": 24,
-        "D": 26,
+        "A": 100,
+        "B": 50,
+        "C": 50,
+        "D": 50,
     }
 
     #! 修正必要
-    FONT_PATH = "/Users/nyanyacyan/Desktop/project_file/ImageAutomation/installer/src/method/inputData/DejaVuSans.ttf"
+    FONT_PATH = "/Users/nyanyacyan/Desktop/project_file/ImageAutomation/installer/src/method/inputData/NotoSansJP-VariableFont_wght.ttf"
 
     #! 修正必要
     OUTPUT_PATH = "/Users/nyanyacyan/Desktop/project_file/ImageAutomation/installer/resultOutput"
@@ -123,33 +125,38 @@ class ImageInfo(Enum):
         "D": "2",
     }
 
-    START_POSITIONS = {
+    POSITIONS = {
         "A": {
-            "TEXT_LEFT": (10, 'height // 3'),
-            "TEXT_BOTTOM": ('width // 2', 'height - 40'),
-            "TEXT_RIGHT": ('width - 150', 'height // 3'),
-            "IMAGE_CENTER": ('width // 2 - 150', 'height // 2 - 150')
+            "IMAGE_CENTER": (0, 83, 1080, 998),
+            "TEXT_RIGHT_TOP": (920, 150, 1020, 550),
+            "TEXT_RIGHT_BOTTOM": (920, 600, 1020, 950),
+            "TEXT_BOTTOM": (150, 870, 550, 950),
         },
         "B": {
-            "IMAGE_TOP_LEFT": (10, 10),
-            "IMAGE_BOTTOM_LEFT": (10, 'height - 160'),
-            "TEXT_TOP_RIGHT": ('width - 310', 10),
-            "TEXT_BOTTOM_RIGHT": ('width - 310', 'height - 100')
+            "IMAGE_TOP_LEFT": (0, 180, 550, 500),
+            "IMAGE_BOTTOM_LEFT": (0, 550, 450, 950),
+            "TEXT_TOP_RIGHT": (570, 180, 1080, 500),
+            "TEXT_BOTTOM_RIGHT": (745, 620, 975, 850)
         },
         "C": {
-            "IMAGE_TOP_LEFT": (10, 10),
-            "IMAGE_BOTTOM_LEFT": (10, 'height - 160'),
-            "TEXT_TOP_RIGHT": ('width - 310', 10),
-            "TEXT_BOTTOM_RIGHT": ('width - 310', 'height - 100')
+            "IMAGE_TOP_LEFT": (0, 175, 550, 500),
+            "IMAGE_BOTTOM_LEFT": (0, 550, 450, 950),
+            "TEXT_TOP_RIGHT": (570, 175, 1080, 440),
+            "TEXT_BOTTOM_RIGHT": (800, 550, 1010, 760)
         },
         "D": {
-            "IMAGE_TOP_LEFT": (10, 10),
-            "IMAGE_BOTTOM_LEFT": (10, 'height - 160'),
-            "TEXT_TOP_RIGHT": ('width - 310', 10),
-            "TEXT_BOTTOM_RIGHT": ('width - 310', 'height - 100')
+            "IMAGE_TOP_LEFT": (0, 175, 550, 550),
+            "IMAGE_BOTTOM_LEFT": (0, 580, 500, 988),
+            "TEXT_TOP_RIGHT": (570, 175, 1080, 440),
+            "TEXT_BOTTOM_RIGHT": (765, 530, 995, 760)
         }
     }
 
+
+
+
+    TOP_MAX_WIDTH = 120
+    TOP_LINE_HEIGHT = 200
     MAX_WIDTH = 300
     LINE_HEIGHT = 30
 
@@ -159,6 +166,7 @@ class ImageInfo(Enum):
     FILL_COLOR_WHITE = (255, 255, 255)
 
 
+    TOP_IMAGE_SIZE = (700, 1300)
     IMAGE_SIZE = (300, 300)
     IMAGE_SIZE_SMALL = (150, 150)
 
