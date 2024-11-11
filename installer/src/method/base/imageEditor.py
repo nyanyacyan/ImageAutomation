@@ -4,7 +4,6 @@
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
 import os, requests
-from selenium.webdriver.chrome.webdriver import WebDriver
 from PIL import Image, ImageDraw, ImageFont
 from typing import Tuple, List
 from io import BytesIO
@@ -14,6 +13,7 @@ from io import BytesIO
 # 自作モジュール
 from utils import Logger
 from installer.src.method.constElementPath import ImageInfo
+
 
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$

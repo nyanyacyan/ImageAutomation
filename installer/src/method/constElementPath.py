@@ -110,7 +110,7 @@ class ImageInfo(Enum):
     }
 
     #! 修正必要
-    FONT_PATH = "/Users/nyanyacyan/Desktop/project_file/ImageAutomation/installer/src/method/inputData/DejaVuSans.ttf"
+    FONT_PATH = "/Users/nyanyacyan/Desktop/Project_file/ImageAutomation/installer/src/method/inputData/NotoSansJP-VariableFont_wght.ttf"
 
     #! 修正必要
     OUTPUT_PATH = "/Users/nyanyacyan/Desktop/project_file/ImageAutomation/installer/resultOutput"
