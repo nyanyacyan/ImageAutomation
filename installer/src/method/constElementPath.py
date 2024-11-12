@@ -112,11 +112,9 @@ class ImageInfo(Enum):
     }
 
     #! 修正必要
-<<<<<<< HEAD
+
     FONT_PATH = "/Users/nyanyacyan/Desktop/project_file/ImageAutomation/installer/src/method/inputData/NotoSansJP-VariableFont_wght.ttf"
-=======
-    FONT_PATH = "/Users/nyanyacyan/Desktop/Project_file/ImageAutomation/installer/src/method/inputData/NotoSansJP-VariableFont_wght.ttf"
->>>>>>> c8ff4d76aced5d9055401a07398a07d530bf6496
+
 
     #! 修正必要
     OUTPUT_PATH = "/Users/nyanyacyan/Desktop/project_file/ImageAutomation/installer/resultOutput"

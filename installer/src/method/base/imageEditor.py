@@ -116,7 +116,7 @@ class ImageEditor:
         self.logger.info(f"createImage 呼び出し時の {pattern} の data の内容: {data}")
 
         # 画像データが揃っているかをチェック
-        if not self.checkImageAndTextCount(data, pattern):  # ここで pattern 引数を追加
+        if not self.checkImageAndTextCount(data, pattern):
             return False
 
         # ベース画像の読み込み
@@ -130,26 +130,36 @@ class ImageEditor:
 
         # 画像の配置
         if pattern == 'A':
+            # Pattern A の場合
             if 'imagePath_1' in data:
-                if 'IMAGE_CENTER' in positions:
-                    self.drawImageWithMode(baseImage, data['imagePath_1'], positions['IMAGE_CENTER'])
-        elif pattern in ['B', 'C', 'D']:
+                self.drawImageWithMode(baseImage, data['imagePath_1'], positions['IMAGE_CENTER'])
+
+            # フォントサイズを自動調整して text_1, text_2 を縦書きで描画
+            if 'text_1' in data and 'TEXT_RIGHT_TOP' in positions:
+                self.drawVerticalTextWithOutline(draw, data['text_1'], font, positions['TEXT_RIGHT_TOP'], center=True)
+
+
+            if 'text_2' in data and 'TEXT_RIGHT_BOTTOM' in positions:
+                self.drawVerticalTextWithOutline(draw, data['text_2'], font, positions['TEXT_RIGHT_BOTTOM'], center=True)
+
+            # text_3 は通常の横書き
+            if 'text_3' in data and 'TEXT_BOTTOM' in positions:
+                self.drawTextWithOutline(draw, data['text_3'], positions['TEXT_BOTTOM'], font, lineHeight=40)
+
+        else:
+            # Pattern B, C, D の場合
             if 'imagePath_1' in data:
-                if 'IMAGE_TOP_LEFT' in positions:
-                    self.drawImageWithMode(baseImage, data['imagePath_1'], positions['IMAGE_TOP_LEFT'])
+                self.drawImageWithMode(baseImage, data['imagePath_1'], positions['IMAGE_TOP_LEFT'])
+
             if 'imagePath_2' in data:
-                if 'IMAGE_BOTTOM_LEFT' in positions:
-                    self.drawImageWithMode(baseImage, data['imagePath_2'], positions['IMAGE_BOTTOM_LEFT'])
+                self.drawImageWithMode(baseImage, data['imagePath_2'], positions['IMAGE_BOTTOM_LEFT'])
 
-        # テキストの配置
-        if 'text_1' in data and 'TEXT_RIGHT_TOP' in positions:
-            self.drawTextWithWrapping(draw, data['text_1'], font, positions['TEXT_RIGHT_TOP'], 40)
+            # テキストの配置
+            if 'text_1' in data and 'TEXT_TOP_RIGHT' in positions:
+                self.drawTextWithOutline(draw, data['text_1'], positions['TEXT_TOP_RIGHT'], font, lineHeight=40)
 
-        if 'text_2' in data and 'TEXT_RIGHT_BOTTOM' in positions:
-            self.drawTextWithWrapping(draw, data['text_2'], font, positions['TEXT_RIGHT_BOTTOM'], 40)
-
-        if 'text_3' in data and 'TEXT_BOTTOM' in positions:
-            self.drawTextWithWrapping(draw, data['text_3'], font, positions['TEXT_BOTTOM'], 40)
+            if 'text_2' in data and 'TEXT_BOTTOM_RIGHT' in positions:
+                self.drawTextWithOutline(draw, data['text_2'], positions['TEXT_BOTTOM_RIGHT'], font, lineHeight=40)
 
         # 画像の保存
         outputFilePath = os.path.join(outputFolder, f"output_{pattern}.png")
@@ -157,6 +167,133 @@ class ImageEditor:
         self.logger.info(f"保存完了: {outputFilePath}")
 
         return True
+
+
+# ----------------------------------------------------------------------------------
+
+
+    def drawTextWithOutline(
+            self,
+            draw: ImageDraw.ImageDraw,
+            text: str,
+            boundingBox: Tuple[int, int, int, int],
+            font: ImageFont.FreeTypeFont,
+            lineHeight: int,
+            fill: Tuple[int, int, int] = (0, 0, 0),
+            outline_fill: Tuple[int, int, int] = (255, 255, 255),
+            outline_width: int = 2
+        ):
+        """
+        アウトライン付きのテキストを描画します。
+        """
+        # バウンディングボックスの幅と高さを取得
+        box_width = boundingBox[2] - boundingBox[0]
+        box_height = boundingBox[3] - boundingBox[1]
+
+        # 初期位置をバウンディングボックスの上側に設定
+        x = boundingBox[0]
+        y = boundingBox[1]
+
+        # テキストのアウトラインを描画
+        for offset_x in range(-outline_width, outline_width + 1):
+            for offset_y in range(-outline_width, outline_width + 1):
+                if offset_x == 0 and offset_y == 0:
+                    continue
+                draw.text((x + offset_x, y + offset_y), text, font=font, fill=outline_fill)
+
+        # テキスト本体を描画
+        draw.text((x, y), text, font=font, fill=fill)
+
+
+# ----------------------------------------------------------------------------------
+
+
+    def drawVerticalTextWithOutline(
+            self,
+            draw: ImageDraw.ImageDraw,
+            text: str,
+            font: ImageFont.FreeTypeFont,
+            boundingBox: Tuple[int, int, int, int],
+            fill: Tuple[int, int, int] = (0, 0, 0),
+            outline_fill: Tuple[int, int, int] = (255, 255, 255),
+            outline_width: int = 2,
+            center: bool = False
+        ):
+        """
+        縦書きのテキストをアウトライン付きで描画します。
+        """
+        # バウンディングボックスの幅と高さを取得
+        box_width = boundingBox[2] - boundingBox[0]
+        box_height = boundingBox[3] - boundingBox[1]
+
+        # 初期位置をバウンディングボックスの上側に設定
+        x = boundingBox[0]
+        y = boundingBox[1]
+
+        # テキストを改行するために文字ごとに分割
+        text_lines = [char for char in text]
+
+        # テキストの中央揃えを行う
+        if center:
+            total_text_height = len(text_lines) * font.size
+            y += (box_height - total_text_height) // 2
+
+        # 各行を描画
+        for index, line in enumerate(text_lines):
+            char_x = x
+            char_y = y + index * font.size
+
+            # バウンディングボックスの高さを超えないように描画する
+            if char_y + font.size > boundingBox[3]:
+                break
+
+            # アウトラインの描画
+            for offset_x in range(-outline_width, outline_width + 1):
+                for offset_y in range(-outline_width, outline_width + 1):
+                    if offset_x == 0 and offset_y == 0:
+                        continue
+                    draw.text((char_x + offset_x, char_y + offset_y), line, font=font, fill=outline_fill, direction='ttb')
+
+            # テキスト本体を描画
+            draw.text((char_x, char_y), line, font=font, fill=fill, direction='ttb')
+
+
+
+# ----------------------------------------------------------------------------------
+
+
+    def drawVerticalText(self, draw: ImageDraw.ImageDraw, text: str, font: ImageFont.FreeTypeFont, boundingBox: Tuple[int, int, int, int], lineHeight: int, fill: Tuple[int, int, int] = (0, 0, 0), center: bool = False):
+        """
+        縦書きのテキストを描画します。
+        """
+        # バウンディングボックスの幅と高さを取得
+        box_width = boundingBox[2] - boundingBox[0]
+        box_height = boundingBox[3] - boundingBox[1]
+
+        # 初期位置をバウンディングボックスの上側に設定
+        x = boundingBox[0]
+        y = boundingBox[1]
+
+        # 縦書きのため、文字ごとに描画
+        total_text_height = len(text) * lineHeight
+
+        # テキストの中央揃えを行う
+        if center:
+            y += (box_height - total_text_height) // 2
+
+        for char in text:
+            char_bbox = font.getbbox(char)
+            char_width = char_bbox[2] - char_bbox[0]
+            char_height = char_bbox[3] - char_bbox[1]
+
+            if center:
+                centered_x = x + (box_width - char_width) // 2
+            else:
+                centered_x = x
+
+            if y + char_height <= boundingBox[1] + box_height:  # ボックスの下限を超えない場合のみ描画
+                draw.text((centered_x, y), char, font=font, fill=fill)
+                y += lineHeight
 
 
 
@@ -168,7 +305,7 @@ class ImageEditor:
             draw: ImageDraw.ImageDraw,
             text: str,
             font: ImageFont.FreeTypeFont,
-            boundingBox: Tuple[int, int, int, int],  # 新しいパラメータ、(x1, y1, x2, y2) のタプル
+            boundingBox: Tuple[int, int, int, int],  # (x1, y1, x2, y2) のタプル
             lineHeight: int,
             fill: Tuple[int, int, int] = (0, 0, 0),
             mode: str = "wrap"
@@ -177,42 +314,36 @@ class ImageEditor:
         box_width = boundingBox[2] - boundingBox[0]
         box_height = boundingBox[3] - boundingBox[1]
 
-        # 初期位置をバウンディングボックスの上側に設定
-        x = boundingBox[0]
+        # テキスト全体の高さを計算し、枠に収まるようにフォントサイズを調整
         y = boundingBox[1]
-
         lines = []
+        current_line = ""
 
-        if mode == "center":
-            self.log(f"textを中央に合わせて配置(改行で区切る): {text}")
-            # 手動改行に基づいて行を分割し、各行を中央揃え
-            lines = text.split('\n')
-            for line in lines:
-                lineWidth = draw.textlength(line, font=font)
-                centered_x = x + (box_width - lineWidth) // 2
-                if y + lineHeight <= boundingBox[1] + box_height:  # ボックスの下限を超えない場合のみ描画
-                    draw.text((centered_x, y), line, font=font, fill=fill)
-                    y += lineHeight
+        for char in text:
+            # 1文字ずつ追加して高さを計算
+            if draw.textbbox((0, 0), current_line + char, font=font)[3] + lineHeight <= box_height:
+                current_line += char
+            else:
+                # 枠の高さを超える場合は新しい行を追加
+                lines.append(current_line)
+                current_line = char
 
-        elif mode == "wrap":
-            self.logger.info(f"文字を埋めていく(区切りなし): {text}")
+        if current_line:
+            lines.append(current_line)
 
-            line = ""
-            # テキストを1文字ずつ追加し、最大幅を超えたら改行
-            for char in text:
-                # 現在の行に文字を追加して幅をチェック
-                if draw.textlength(line + char, font=font) <= box_width:
-                    line += char
-                else:
-                    # 最大幅を超えた場合、行を確定して次の行に移る
-                    if y + lineHeight <= boundingBox[1] + box_height:  # ボックスの下限を超えない場合のみ描画
-                        draw.text((x, y), line, font=font, fill=fill)
-                        y += lineHeight
-                    line = char  # 次の行の最初の文字として設定
-            # 最後の行を描画
-            if line:
-                if y + lineHeight <= boundingBox[1] + box_height:  # ボックスの下限を超えない場合のみ描画
-                    draw.text((x, y), line, font=font, fill=fill)
+        # テキストの中央揃えを行うための初期位置の計算
+        total_text_height = len(lines) * lineHeight
+        y = boundingBox[1] + (box_height - total_text_height) // 2  # 縦の中央揃え
+
+        # 各行を描画
+        for line in lines:
+            # 各行を横に中央揃え
+            line_width = draw.textlength(line, font=font)
+            x = boundingBox[0] + (box_width - line_width) // 2
+
+            draw.text((x, y), line, font=font, fill=fill)
+            y += lineHeight
+
 
 
 # ----------------------------------------------------------------------------------
@@ -274,9 +405,9 @@ class ImageEditor:
 
 data_A = {
     'imagePath_1': 'https://property.es-img.jp/rent/img/100000000000000000000009940467/0100000000000000000000009940467_10.jpg?iid=2297698464',
-    'text_1': '京王線',
+    'text_1': '調布駅',
     'text_2': '徒歩3分',
-    'text_3': '調布駅'
+    'text_3': '京王線'
 }
 
 data_B = {
