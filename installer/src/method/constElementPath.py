@@ -105,10 +105,10 @@ class ImageInfo(Enum):
     BASE_IMAGE_SIZE = (1080, 1080)
 
     FONT_SIZES = {
-        "A": 100,
-        "B": 50,
-        "C": 50,
-        "D": 50,
+        "A": 75,
+        "B": 30,
+        "C": 30,
+        "D": 30,
     }
 
     #! 修正必要
@@ -131,7 +131,7 @@ class ImageInfo(Enum):
         "A": {
             "IMAGE_CENTER": (0, 83, 1080, 998),
             "TEXT_RIGHT_TOP": (920, 150, 1020, 550),
-            "TEXT_RIGHT_BOTTOM": (920, 600, 1020, 950),
+            "TEXT_RIGHT_BOTTOM": (920, 600, 1020, 1000),
             "TEXT_BOTTOM": (150, 870, 550, 950),
         },
         "B": {

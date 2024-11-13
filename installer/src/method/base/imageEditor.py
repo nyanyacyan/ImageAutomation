@@ -9,11 +9,9 @@ from typing import Tuple, List
 from io import BytesIO
 
 
-
 # 自作モジュール
 from utils import Logger
 from installer.src.method.constElementPath import ImageInfo
-
 
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
@@ -137,7 +135,6 @@ class ImageEditor:
             # フォントサイズを自動調整して text_1, text_2 を縦書きで描画
             if 'text_1' in data and 'TEXT_RIGHT_TOP' in positions:
                 self.drawVerticalTextWithOutline(draw, data['text_1'], font, positions['TEXT_RIGHT_TOP'], center=True)
-
 
             if 'text_2' in data and 'TEXT_RIGHT_BOTTOM' in positions:
                 self.drawVerticalTextWithOutline(draw, data['text_2'], font, positions['TEXT_RIGHT_BOTTOM'], center=True)
@@ -413,22 +410,22 @@ data_A = {
 data_B = {
     'imagePath_1': 'https://property.es-img.jp/rent/img/100000000000000000000009940467/0100000000000000000000009940467_1.jpg?iid=2733185228',
     'imagePath_2': 'https://property.es-img.jp/rent/img/100000000000000000000009940467/0100000000000000000000009940467_21.jpg?iid=1891244155',
-    'text_1': 'テキストB1',
-    'text_2': 'テキストB2'
+    'text_1': '••　モニタ付インターホン\n•　システムキッチン\n•　2口コンロ\n•　ガスコンロ',
+    'text_2': 'モニターが付いていることで、訪問者を事前に確認でき、不審者を防ぐことができます。特に賃貸物件では、他人と共有する空間が多いため、安心感が増します。'
 }
 
 data_C = {
     'imagePath_1': 'https://property.es-img.jp/rent/img/100000000000000000000009940467/0100000000000000000000009940467_3.jpg?iid=2321422476',
     'imagePath_2': 'https://property.es-img.jp/rent/img/100000000000000000000009940467/0100000000000000000000009940467_15.jpg?iid=2672302265',
-    'text_1': 'テキストC1',
-    'text_2': 'テキストC2'
+    'text_1': '•　モニタ付インターホン\n•　システムキッチン\n•　2口コンロ\n•　ガスコンロ',
+    'text_2': 'モニターが付いていることで、訪問者を事前に確認でき、不審者を防ぐことができます。特に賃貸物件では、他人と共有する空間が多いため、安心感が増します。'
 }
 
 data_D = {
     'imagePath_1': 'https://property.es-img.jp/rent/img/100000000000000000000009940467/0100000000000000000000009940467_14.jpg?iid=3087538415',
     'imagePath_2': 'https://property.es-img.jp/rent/img/100000000000000000000009940467/0100000000000000000000009940467_4.jpg?iid=2328631444',
-    'text_1': 'テキストD1',
-    'text_2': 'テキストD2'
+    'text_1': '••　モニタ付インターホン\n•　システムキッチン\n•　2口コンロ\n•　ガスコンロ',
+    'text_2': 'モニターが付いていることで、訪問者を事前に確認でき、不審者を防ぐことができます。特に賃貸物件では、他人と共有する空間が多いため、安心感が増します。'
 }
 
 # 各データをパターンごとにまとめる辞書
