@@ -33,14 +33,6 @@ class ImageEditor:
     def executePatternEditors(self, data: dict):
         patterns = ['A', 'B', 'C', 'D']
 
-        # パターンごとの必要な画像とテキストの数を定義
-        pattern_requirements = {
-            'A': {'images': 1, 'texts': 3},
-            'B': {'images': 2, 'texts': 2},
-            'C': {'images': 2, 'texts': 2},
-            'D': {'images': 2, 'texts': 2}
-        }
-
         for pattern in patterns:
             if pattern not in data:
                 self.logger.error(f"{pattern} パターンのデータが欠けているため、{pattern} とそれ以降のすべてのパターンをスキップします。")
@@ -52,20 +44,14 @@ class ImageEditor:
             fontSize = ImageInfo.FONT_SIZES.value[pattern]
             fontPath = ImageInfo.FONT_PATH.value
             outputFolder = ImageInfo.OUTPUT_PATH.value
-
-            # パターンごとの画像とテキストの数を確認
-            # requirements = pattern_requirements[pattern]
-            # if not self.checkImageCount(pattern_data, pattern):
-            #     self.logger.error(f"{pattern} のデータが不足しているため、スキップします。")
-            #     continue
+            fontColor = ImageInfo.FONT_COLORS.value[pattern]  # パターンに対応するフォントカラーを取得
 
             # 画像作成メソッドにパターン固有の情報を渡す
-            if not self.createImage(pattern_data, fontPath, baseImagePath, fontSize, outputFolder, pattern):
+            if not self.createImage(pattern_data, fontPath, baseImagePath, fontSize, outputFolder, pattern, fontColor):
                 self.logger.error(f"パターン {pattern} の画像データが揃ってないため、以降のパターンをスキップします。")
                 break
 
         self.logger.info(f"画像処理が完了しました。")
-
 
 
 # ----------------------------------------------------------------------------------
@@ -105,7 +91,7 @@ class ImageEditor:
 # ----------------------------------------------------------------------------------
 
 
-    def createImage(self, data: dict, fontPath: str, baseImagePath: str, fontSize: int, outputFolder: str, pattern: str):
+    def createImage(self, data: dict, fontPath: str, baseImagePath: str, fontSize: int, outputFolder: str, pattern: str, fontColor: Tuple[int, int, int]):
         '''
         fontPath→使用したいフォントを指定する
         baseImagePath→ベース画像を指定する
@@ -118,7 +104,6 @@ class ImageEditor:
             return False
 
         # ベース画像の読み込み
-        print(f"baseImagePath: {baseImagePath}")
         baseImage = Image.open(baseImagePath).resize(self.imageSize).convert("RGBA")
         draw = ImageDraw.Draw(baseImage)
         font = ImageFont.truetype(fontPath, fontSize)
@@ -134,14 +119,14 @@ class ImageEditor:
 
             # フォントサイズを自動調整して text_1, text_2 を縦書きで描画
             if 'text_1' in data and 'TEXT_RIGHT_TOP' in positions:
-                self.drawVerticalTextWithOutline(draw, data['text_1'], font, positions['TEXT_RIGHT_TOP'], center=True)
+                self.drawVerticalTextWithOutline(draw, data['text_1'], font, positions['TEXT_RIGHT_TOP'], fill=fontColor, center=True)
 
             if 'text_2' in data and 'TEXT_RIGHT_BOTTOM' in positions:
-                self.drawVerticalTextWithOutline(draw, data['text_2'], font, positions['TEXT_RIGHT_BOTTOM'], center=True)
+                self.drawVerticalTextWithOutline(draw, data['text_2'], font, positions['TEXT_RIGHT_BOTTOM'], fill=fontColor, center=True)
 
             # text_3 は通常の横書き
             if 'text_3' in data and 'TEXT_BOTTOM' in positions:
-                self.drawTextWithOutline(draw, data['text_3'], positions['TEXT_BOTTOM'], font, lineHeight=40)
+                self.drawTextWithOutline(draw, data['text_3'], positions['TEXT_BOTTOM'], font, fill=fontColor, lineHeight=40)
 
         else:
             # Pattern B, C, D の場合
@@ -153,10 +138,10 @@ class ImageEditor:
 
             # テキストの配置
             if 'text_1' in data and 'TEXT_TOP_RIGHT' in positions:
-                self.drawTextWithOutline(draw, data['text_1'], positions['TEXT_TOP_RIGHT'], font, lineHeight=40)
+                self.drawTextWithOutline(draw, data['text_1'], positions['TEXT_TOP_RIGHT'], font, fill=fontColor, lineHeight=40)
 
             if 'text_2' in data and 'TEXT_BOTTOM_RIGHT' in positions:
-                self.drawTextWithOutline(draw, data['text_2'], positions['TEXT_BOTTOM_RIGHT'], font, lineHeight=40)
+                self.drawTextWithOutline(draw, data['text_2'], positions['TEXT_BOTTOM_RIGHT'], font, fill=fontColor, lineHeight=40)
 
         # 画像の保存
         outputFilePath = os.path.join(outputFolder, f"output_{pattern}.png")
@@ -164,6 +149,7 @@ class ImageEditor:
         self.logger.info(f"保存完了: {outputFilePath}")
 
         return True
+
 
 
 # ----------------------------------------------------------------------------------
@@ -176,7 +162,7 @@ class ImageEditor:
             boundingBox: Tuple[int, int, int, int],
             font: ImageFont.FreeTypeFont,
             lineHeight: int,
-            fill: Tuple[int, int, int] = (0, 0, 0),
+            fill: Tuple[int, int, int] = ImageInfo.FILL_COLOR_BLACK.value,
             outline_fill: Tuple[int, int, int] = (255, 255, 255),
             outline_width: int = 2
         ):
@@ -401,10 +387,10 @@ class ImageEditor:
 
 
 data_A = {
-    'imagePath_1': 'https://property.es-img.jp/rent/img/100000000000000000000009940467/0100000000000000000000009940467_10.jpg?iid=2297698464',
-    'text_1': '調布駅',
+    'imagePath_1': 'https://property.es-img.jp/rent/img/1136293183700000023966/0000000001136293183700000023966_10.jpg?iid=509482932',
+    'text_1': '千歳烏山駅',
     'text_2': '徒歩3分',
-    'text_3': '京王線'
+    'text_3': '京王電鉄 高速高尾線'
 }
 
 data_B = {
