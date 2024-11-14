@@ -233,29 +233,47 @@ class ImageEditor:
         # テキストを改行するために文字ごとに分割
         text_lines = [char for char in text]
 
+        # 各文字の高さを取得し、文字間を詰めるために倍率を調整
+        char_height = font.getbbox('あ')[3]  # 任意の文字で高さを取得
+        line_spacing = char_height * 0.9  # 文字間を詰める（0.9倍の間隔）
+
+        # テキスト全体の高さを計算
+        total_text_height = len(text_lines) * line_spacing
+
         # テキストの中央揃えを行う
         if center:
-            total_text_height = len(text_lines) * font.size
-            y += (box_height - total_text_height) // 2
+            y += int((box_height - total_text_height) // 2)
 
         # 各行を描画
         for index, line in enumerate(text_lines):
             char_x = x
-            char_y = y + index * font.size
+            char_y = y + int(index * line_spacing)
 
             # バウンディングボックスの高さを超えないように描画する
-            if char_y + font.size > boundingBox[3]:
+            if char_y + char_height > boundingBox[3]:
                 break
+
+            # 文字の幅を取得して、中央に揃えるための調整を行う
+            char_width = font.getbbox(line)[2]
+            
+            # 数字などの特定の文字に対して、少し中央に寄せる補正を行う
+            if line.isdigit():
+                adjusted_x = char_x + (box_width - char_width) // 2 - 5  # 数字の位置を微調整（-5など適宜調整）
+            else:
+                adjusted_x = char_x + (box_width - char_width) // 2
 
             # アウトラインの描画
             for offset_x in range(-outline_width, outline_width + 1):
                 for offset_y in range(-outline_width, outline_width + 1):
                     if offset_x == 0 and offset_y == 0:
                         continue
-                    draw.text((char_x + offset_x, char_y + offset_y), line, font=font, fill=outline_fill, direction='ttb')
+                    draw.text((adjusted_x + offset_x, char_y + offset_y), line, font=font, fill=outline_fill, direction='ttb')
 
             # テキスト本体を描画
-            draw.text((char_x, char_y), line, font=font, fill=fill, direction='ttb')
+            draw.text((adjusted_x, char_y), line, font=font, fill=fill, direction='ttb')
+
+
+
 
 
 
@@ -406,7 +424,7 @@ class ImageEditor:
 data_A = {
     'imagePath_1': 'https://property.es-img.jp/rent/img/100000000000000000000009940467/0100000000000000000000009940467_10.jpg?iid=2297698464',
     'text_1': '調布駅',
-    'text_2': '徒歩3分',
+    'text_2': '徒歩３分',
     'text_3': '京王線'
 }
 
