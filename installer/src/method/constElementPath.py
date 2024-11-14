@@ -106,15 +106,28 @@ class ImageInfo(Enum):
 
     FONT_SIZES = {
         "A": 75,
+<<<<<<< HEAD
         "B": 50,
         "C": 50,
         "D": 50,
+=======
+        "B": 30,
+        "C": 30,
+        "D": 30,
+>>>>>>> 84645406972675e2ff439587110f8854038d9e16
     }
 
+    FONT_COLORS = {
+        'A': (255, 0, 0),    # 赤
+        'B': (0, 255, 0),    # 緑
+        'C': (0, 0, 255),    # 青
+        'D': (255, 165, 0)   # オレンジ
+    }
+
+
     #! 修正必要
-
-    FONT_PATH = "/Users/nyanyacyan/Desktop/project_file/ImageAutomation/installer/src/method/inputData/NotoSansJP-VariableFont_wght.ttf"
-
+    FONT_PATH = "/Users/nyanyacyan/Desktop/Project_file/ImageAutomation/installer/src/method/inputData/MPLUSRounded1c-ExtraBold.ttf"
+    # /Users/nyanyacyan/Library/Mobile Documents/com~apple~CloudDocs/Downloads/MPLUSRounded1c-ExtraBold.ttf
 
     #! 修正必要
     OUTPUT_PATH = "/Users/nyanyacyan/Desktop/project_file/ImageAutomation/installer/resultOutput"
@@ -132,7 +145,11 @@ class ImageInfo(Enum):
             "IMAGE_CENTER": (0, 83, 1080, 998),
             "TEXT_RIGHT_TOP": (920, 150, 1020, 550),
             "TEXT_RIGHT_BOTTOM": (920, 600, 1020, 1000),
+<<<<<<< HEAD
             "TEXT_BOTTOM": (150, 870, 550, 950),
+=======
+            "TEXT_BOTTOM": (120, 870, 550, 950),
+>>>>>>> 84645406972675e2ff439587110f8854038d9e16
         },
         "B": {
             "IMAGE_TOP_LEFT": (0, 180, 550, 500),
