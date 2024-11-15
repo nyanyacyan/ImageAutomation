@@ -11,9 +11,9 @@ from datetime import datetime
 
 # 自作モジュール
 # import const
-from .utils import Logger
-from const import Dir, SubDir, Extension
-from .errorHandlers import AccessFileNotFoundError
+from utils import Logger
+from method.const import Dir, SubDir, Extension
+from errorHandlers import AccessFileNotFoundError
 
 
 
@@ -95,7 +95,7 @@ class BaseToPath:
 # inputDataへの大元の定義
 #! ディレクトリの変更があった場合にはレベルを調整
 
-    def getInputDataPath(self, levelsUp: int = 2, dirName: str=Dir.result.value):
+    def getInputDataPath(self, levelsUp: int = 2, dirName: str=Dir.input.value):
         currentDirPath = self.currentDir
 
         # スタートが0で1つ上の階層にするため→levelsUpに１をいれたら１個上の階層にするため

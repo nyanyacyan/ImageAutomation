@@ -15,9 +15,9 @@ from googleapiclient import errors
 from typing import Callable, Optional, Any
 
 # 自作モジュール
-from .utils import Logger
-from .sysCommand import SysCommand
-from .popup import Popup
+from utils import Logger
+from sysCommand import SysCommand
+from popup import Popup
 
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$

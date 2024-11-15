@@ -11,7 +11,8 @@ from io import BytesIO
 
 # 自作モジュール
 from utils import Logger
-from installer.src.method.constElementPath import ImageInfo
+from path import BaseToPath
+from method.constElementPath import ImageInfo
 
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
@@ -23,6 +24,8 @@ class ImageEditor:
         # logger
         self.getLogger = Logger(__name__, debugMode=debugMode)
         self.logger = self.getLogger.getLogger()
+
+        self.path = BaseToPath(debugMode=debugMode)
 
         self.imageSize = (1080, 1080)
 
@@ -42,8 +45,9 @@ class ImageEditor:
             pattern_data = data[pattern]
             baseImagePath = ImageInfo.BASE_IMAGE_PATH.value[pattern]
             fontSize = ImageInfo.FONT_SIZES.value[pattern]
-            fontPath = ImageInfo.FONT_PATH.value
-            outputFolder = ImageInfo.OUTPUT_PATH.value
+            fontFileName = ImageInfo.FONT_NAME.value
+            fontPath = self.inputDataFolderPath(fileName=fontFileName)
+            outputFolder = self.resultOutputFilePath
             fontColor = ImageInfo.FONT_COLORS.value[pattern]  # パターンに対応するフォントカラーを取得
 
             # 画像作成メソッドにパターン固有の情報を渡す
@@ -98,6 +102,7 @@ class ImageEditor:
         '''
         self.logger.info(f"createImage 呼び出し時の {pattern} の data の型: {type(data)}")
         self.logger.info(f"createImage 呼び出し時の {pattern} の data の内容: {data}")
+
 
         # 画像データが揃っているかをチェック
         if not self.checkImageAndTextCount(data, pattern):
@@ -399,6 +404,20 @@ class ImageEditor:
         # 画像の貼り付け
         baseImage.paste(insertImage, (x_offset, y_offset), insertImage)
 
+
+# ----------------------------------------------------------------------------------
+# resultOutput
+
+    @property
+    def resultOutputFilePath(self):
+        return self.path.getResultOutputPath()
+
+
+# ----------------------------------------------------------------------------------
+
+
+    def inputDataFolderPath(self, fileName: str):
+        return self.path.getInputDataFilePath(fileName=fileName)
 
 
 # ----------------------------------------------------------------------------------

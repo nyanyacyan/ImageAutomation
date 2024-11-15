@@ -122,9 +122,7 @@ class ImageInfo(Enum):
     #! 修正必要
     FONT_PATH = "/Users/nyanyacyan/Desktop/Project_file/ImageAutomation/installer/src/method/inputData/MPLUSRounded1c-ExtraBold.ttf"
     # /Users/nyanyacyan/Library/Mobile Documents/com~apple~CloudDocs/Downloads/MPLUSRounded1c-ExtraBold.ttf
-
-    #! 修正必要
-    OUTPUT_PATH = "/Users/nyanyacyan/Desktop/project_file/ImageAutomation/installer/resultOutput"
+    FONT_NAME = "MPLUSRounded1c-ExtraBold.ttf"
 
 
     IMAGE_NUM = {
