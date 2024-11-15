@@ -148,11 +148,11 @@ class ImageInfo(Enum):
         "C": {
             "IMAGE_TOP_LEFT": (0, 175, 550, 500),
             "IMAGE_BOTTOM_LEFT": (0, 550, 450, 950),
-            "TEXT_TOP_RIGHT": (570, 175, 1080, 440),
+            "TEXT_TOP_RIGHT": (570, 173, 1080, 440),
             "TEXT_BOTTOM_RIGHT": (800, 550, 1010, 760)
         },
         "D": {
-            "IMAGE_TOP_LEFT": (0, 175, 550, 550),
+            "IMAGE_TOP_LEFT": (0, 173, 550, 550),
             "IMAGE_BOTTOM_LEFT": (0, 580, 500, 988),
             "TEXT_TOP_RIGHT": (570, 175, 1080, 440),
             "TEXT_BOTTOM_RIGHT": (765, 530, 995, 760)

@@ -3,7 +3,7 @@
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
-import os, requests
+import os, requests, traceback
 from PIL import Image, ImageDraw, ImageFont
 from typing import Tuple, List
 from io import BytesIO
@@ -131,7 +131,8 @@ class ImageEditor:
 
             # text_3 は通常の横書き
             if 'text_3' in data and 'TEXT_BOTTOM' in positions:
-                self.drawTextWithOutline(draw, data['text_3'], positions['TEXT_BOTTOM'], font, fill=fontColor, lineHeight=40)
+                self.drawTextWithOutline(draw, data['text_3'], positions['TEXT_BOTTOM'], fontPath, initialFontSize=fontSize, lineHeight=40, fill=fontColor)
+
 
         else:
             # Pattern B, C, D の場合
@@ -143,10 +144,10 @@ class ImageEditor:
 
             # テキストの配置
             if 'text_1' in data and 'TEXT_TOP_RIGHT' in positions:
-                self.drawTextWithOutline(draw, data['text_1'], positions['TEXT_TOP_RIGHT'], font, fill=fontColor, lineHeight=40)
+                self.drawTextWithOutline(draw, data['text_1'], positions['TEXT_TOP_RIGHT'], fontPath, initialFontSize=fontSize, fill=fontColor, lineHeight=40)
 
             if 'text_2' in data and 'TEXT_BOTTOM_RIGHT' in positions:
-                self.drawTextWithOutline(draw, data['text_2'], positions['TEXT_BOTTOM_RIGHT'], font, fill=fontColor, lineHeight=40)
+                self.drawTextWithOutline(draw, data['text_2'], positions['TEXT_BOTTOM_RIGHT'], fontPath, initialFontSize=fontSize, fill=fontColor, lineHeight=40)
 
         # 画像の保存
         outputFilePath = os.path.join(outputFolder, f"output_{pattern}.png")
@@ -165,18 +166,40 @@ class ImageEditor:
             draw: ImageDraw.ImageDraw,
             text: str,
             boundingBox: Tuple[int, int, int, int],
-            font: ImageFont.FreeTypeFont,
+            font_file_path: str,
+            initialFontSize: int,
             lineHeight: int,
-            fill: Tuple[int, int, int] = ImageInfo.FILL_COLOR_BLACK.value,
+            fill: Tuple[int, int, int] = (0, 0, 0),
             outline_fill: Tuple[int, int, int] = (255, 255, 255),
             outline_width: int = 2
         ):
         """
-        アウトライン付きのテキストを描画します。
+        アウトライン付きのテキストを描画し、必要であればフォントサイズを小さくして枠に収まるように調整します。
         """
-        # バウンディングボックスの幅と高さを取得
         box_width = boundingBox[2] - boundingBox[0]
         box_height = boundingBox[3] - boundingBox[1]
+
+        # 初期フォントサイズから開始
+        font_size = initialFontSize
+        font_path_str = str(font_file_path)
+        font = ImageFont.truetype(font_path_str, font_size)
+
+        # フォントサイズを調整してテキストが枠に収まるまで縮小
+        while True:
+            text_bbox = draw.textbbox((0, 0), text, font=font)
+            text_width = text_bbox[2] - text_bbox[0]
+            text_height = text_bbox[3] - text_bbox[1]
+
+            # テキスト全体の幅と高さがバウンディングボックスに収まるかチェック
+            if text_width <= box_width and text_height <= box_height:
+                break
+
+            # フォントサイズを縮小
+            font_size -= 2
+            if font_size <= 10:  # 最小フォントサイズの制限を設定
+                font_size = 10
+                break
+            font = ImageFont.truetype(font_path_str, font_size)
 
         # 初期位置をバウンディングボックスの上側に設定
         x = boundingBox[0]
@@ -191,6 +214,10 @@ class ImageEditor:
 
         # テキスト本体を描画
         draw.text((x, y), text, font=font, fill=fill)
+
+
+
+
 
 
 # ----------------------------------------------------------------------------------
@@ -208,47 +235,53 @@ class ImageEditor:
             center: bool = False
         ):
         """
-        縦書きのテキストをアウトライン付きで描画します。
+        縦書きのテキストをアウトライン付きで描画し、必要に応じてフォントサイズを調整します。
         """
         # バウンディングボックスの幅と高さを取得
         box_width = boundingBox[2] - boundingBox[0]
         box_height = boundingBox[3] - boundingBox[1]
 
+        # 初期フォントサイズ
+        font_size = font.size
+
+        # 各文字の高さを取得し、文字間を詰めるために倍率を調整
+        line_spacing = font.getbbox('あ')[3] * 0.9  # 任意の文字で高さを取得し、間隔を少し詰める
+        total_text_height = len(text) * line_spacing
+
+        # 枠内に収まるようにフォントサイズを調整
+        while total_text_height > box_height and font_size > 10:
+            font_size -= 2
+            font = ImageFont.truetype(font.path, font_size)  # フォントサイズを更新
+            line_spacing = font.getbbox('あ')[3] * 0.9
+            total_text_height = len(text) * line_spacing
+
         # 初期位置をバウンディングボックスの上側に設定
         x = boundingBox[0]
         y = boundingBox[1]
-
-        # テキストを改行するために文字ごとに分割
-        text_lines = [char for char in text]
-
-        # 各文字の高さを取得し、文字間を詰めるために倍率を調整
-        char_height = font.getbbox('あ')[3]  # 任意の文字で高さを取得
-        line_spacing = char_height * 0.9  # 文字間を詰める（0.9倍の間隔）
-
-        # テキスト全体の高さを計算
-        total_text_height = len(text_lines) * line_spacing
 
         # テキストの中央揃えを行う
         if center:
             y += int((box_height - total_text_height) // 2)
 
         # 各行を描画
-        for index, line in enumerate(text_lines):
+        for index, line in enumerate(text):
             char_x = x
             char_y = y + int(index * line_spacing)
 
             # バウンディングボックスの高さを超えないように描画する
-            if char_y + char_height > boundingBox[3]:
+            if char_y + line_spacing > boundingBox[3]:
                 break
 
-            # 文字の幅を取得して、中央に揃えるための調整を行う
-            char_width = font.getbbox(line)[2]
+            # 文字の幅と高さを取得して、中央に揃えるための調整を行う
+            char_bbox = font.getbbox(line)
+            char_width = char_bbox[2] - char_bbox[0]
+            char_height = char_bbox[3] - char_bbox[1]
 
-            # 数字などの特定の文字に対して、少し中央に寄せる補正を行う
-            if line.isdigit():
-                adjusted_x = char_x + (box_width - char_width) // 2 - 5  # 数字の位置を微調整（-5など適宜調整）
-            else:
-                adjusted_x = char_x + (box_width - char_width) // 2
+            # 記号や数字など、特定の文字に対しては位置を微調整
+            adjusted_x = x + (box_width - char_width) // 2
+            if line in "・ー−〜、。":
+                # 記号の場合、横の中央に揃うように調整
+                adjusted_x += 2  # 適宜調整
 
             # アウトラインの描画
             for offset_x in range(-outline_width, outline_width + 1):
@@ -259,10 +292,6 @@ class ImageEditor:
 
             # テキスト本体を描画
             draw.text((adjusted_x, char_y), line, font=font, fill=fill, direction='ttb')
-
-
-
-
 
 
 # ----------------------------------------------------------------------------------
@@ -425,29 +454,29 @@ class ImageEditor:
 
 data_A = {
     'imagePath_1': 'https://property.es-img.jp/rent/img/1136293183700000023966/0000000001136293183700000023966_10.jpg?iid=509482932',
-    'text_1': '千歳烏山駅',
-    'text_2': '徒歩3分',
-    'text_3': '京王電鉄 高速高尾線'
+    'text_1': '東京ディズニーランド・ステーション駅',
+    'text_2': '徒歩30分',
+    'text_3': '東京臨海高速鉄道りんかい線'
 }
 
 data_B = {
-    'imagePath_1': 'https://property.es-img.jp/rent/img/100000000000000000000009940467/0100000000000000000000009940467_1.jpg?iid=2733185228',
-    'imagePath_2': 'https://property.es-img.jp/rent/img/100000000000000000000009940467/0100000000000000000000009940467_21.jpg?iid=1891244155',
-    'text_1': '••　モニタ付インターホン\n•　システムキッチン\n•　2口コンロ\n•　ガスコンロ',
+    'imagePath_1': 'https://property.es-img.jp/rent/img/1136293183700000019925/0000000001136293183700000019925_1.jpg?iid=4032567125',
+    'imagePath_2': 'https://property.es-img.jp/rent/img/1136293183700000019925/0000000001136293183700000019925_23.jpg?iid=3611105031',
+    'text_1': '•　モニタ付インターホン\n•　システムキッチン\n•　2口コンロ\n•　ガスコンロ',
     'text_2': 'モニターが付いていることで、訪問者を事前に確認でき、不審者を防ぐことができます。特に賃貸物件では、他人と共有する空間が多いため、安心感が増します。'
 }
 
 data_C = {
-    'imagePath_1': 'https://property.es-img.jp/rent/img/100000000000000000000009940467/0100000000000000000000009940467_3.jpg?iid=2321422476',
-    'imagePath_2': 'https://property.es-img.jp/rent/img/100000000000000000000009940467/0100000000000000000000009940467_15.jpg?iid=2672302265',
+    'imagePath_1': 'https://property.es-img.jp/rent/img/1136293183700000019925/0000000001136293183700000019925_6.jpg?iid=3655407388',
+    'imagePath_2': 'https://property.es-img.jp/rent/img/1136293183700000019925/0000000001136293183700000019925_13.jpg?iid=119543694',
     'text_1': '•　モニタ付インターホン\n•　システムキッチン\n•　2口コンロ\n•　ガスコンロ',
     'text_2': 'モニターが付いていることで、訪問者を事前に確認でき、不審者を防ぐことができます。特に賃貸物件では、他人と共有する空間が多いため、安心感が増します。'
 }
 
 data_D = {
-    'imagePath_1': 'https://property.es-img.jp/rent/img/100000000000000000000009940467/0100000000000000000000009940467_14.jpg?iid=3087538415',
-    'imagePath_2': 'https://property.es-img.jp/rent/img/100000000000000000000009940467/0100000000000000000000009940467_4.jpg?iid=2328631444',
-    'text_1': '••　モニタ付インターホン\n•　システムキッチン\n•　2口コンロ\n•　ガスコンロ',
+    'imagePath_1': 'https://property.es-img.jp/rent/img/1136293183700000019925/0000000001136293183700000019925_3.jpg?iid=3660388147',
+    'imagePath_2': 'https://property.es-img.jp/rent/img/1136293183700000019925/0000000001136293183700000019925_5.jpg?iid=147986314',
+    'text_1': '•　モニタ付インターホン\n•　システムキッチン\n•　2口コンロ\n•　ガスコンロ',
     'text_2': 'モニターが付いていることで、訪問者を事前に確認でき、不審者を防ぐことができます。特に賃貸物件では、他人と共有する空間が多いため、安心感が増します。'
 }
 
