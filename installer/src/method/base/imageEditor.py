@@ -238,7 +238,7 @@ class ImageEditor:
 
             # 文字の幅を取得して、中央に揃えるための調整を行う
             char_width = font.getbbox(line)[2]
-            
+
             # 数字などの特定の文字に対して、少し中央に寄せる補正を行う
             if line.isdigit():
                 adjusted_x = char_x + (box_width - char_width) // 2 - 5  # 数字の位置を微調整（-5など適宜調整）
@@ -405,17 +405,10 @@ class ImageEditor:
 
 
 data_A = {
-<<<<<<< HEAD
-    'imagePath_1': 'https://property.es-img.jp/rent/img/100000000000000000000009940467/0100000000000000000000009940467_10.jpg?iid=2297698464',
-    'text_1': '調布駅',
-    'text_2': '徒歩３分',
-    'text_3': '京王線'
-=======
     'imagePath_1': 'https://property.es-img.jp/rent/img/1136293183700000023966/0000000001136293183700000023966_10.jpg?iid=509482932',
     'text_1': '千歳烏山駅',
     'text_2': '徒歩3分',
     'text_3': '京王電鉄 高速高尾線'
->>>>>>> 84645406972675e2ff439587110f8854038d9e16
 }
 
 data_B = {

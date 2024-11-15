@@ -105,16 +105,10 @@ class ImageInfo(Enum):
     BASE_IMAGE_SIZE = (1080, 1080)
 
     FONT_SIZES = {
-        "A": 75,
-<<<<<<< HEAD
-        "B": 50,
-        "C": 50,
-        "D": 50,
-=======
+        "A": 65,
         "B": 30,
         "C": 30,
         "D": 30,
->>>>>>> 84645406972675e2ff439587110f8854038d9e16
     }
 
     FONT_COLORS = {
@@ -143,13 +137,9 @@ class ImageInfo(Enum):
     POSITIONS = {
         "A": {
             "IMAGE_CENTER": (0, 83, 1080, 998),
-            "TEXT_RIGHT_TOP": (920, 150, 1020, 550),
+            "TEXT_RIGHT_TOP": (920, 100, 1020, 550),
             "TEXT_RIGHT_BOTTOM": (920, 600, 1020, 1000),
-<<<<<<< HEAD
-            "TEXT_BOTTOM": (150, 870, 550, 950),
-=======
             "TEXT_BOTTOM": (120, 870, 550, 950),
->>>>>>> 84645406972675e2ff439587110f8854038d9e16
         },
         "B": {
             "IMAGE_TOP_LEFT": (0, 180, 550, 500),
@@ -170,7 +160,6 @@ class ImageInfo(Enum):
             "TEXT_BOTTOM_RIGHT": (765, 530, 995, 760)
         }
     }
-
 
 
 
