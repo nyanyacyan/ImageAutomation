@@ -111,6 +111,10 @@ class ImageInfo(Enum):
         "D": 30,
     }
 
+    COMMENT_SIZE = 20
+    UNDER_BOTTOM_SIZE = 20
+
+
 # 白 (255, 255, 255), 黒 (0, 0, 0),赤 (255, 0, 0)
 # 緑 (0, 255, 0), 青 (0, 0, 255), オレンジ (255, 165, 0)
     FONT_COLORS = {
@@ -120,6 +124,7 @@ class ImageInfo(Enum):
         'D': (0, 0, 0),
     }
 
+    UNDER_BOTTOM_COLOR = (200, 200, 200)
 
     #! 修正必要
     FONT_PATH = "/Users/nyanyacyan/Desktop/Project_file/ImageAutomation/installer/src/method/inputData/MPLUSRounded1c-ExtraBold.ttf"
@@ -143,22 +148,23 @@ class ImageInfo(Enum):
             "BACK_BOTTOM": (0, 850, 1200, 980),
         },
         "B": {
-            "IMAGE_TOP_LEFT": (20, 180, 550, 500),
-            "IMAGE_BOTTOM_LEFT": (20, 550, 450, 950),
+            "IMAGE_TOP_LEFT": (20, 190, 550, 500),
+            "IMAGE_BOTTOM_LEFT": (20, 550, 450, 970),
             "TEXT_TOP_RIGHT": (600, 200, 1080, 500),
-            "TEXT_BOTTOM_RIGHT": (745, 620, 975, 850)
+            "TEXT_BOTTOM_RIGHT": (725, 620, 995, 850),
+            "TEXT_UNDER_BOTTOM": (460, 1020, 700, 1050)
         },
         "C": {
-            "IMAGE_TOP_LEFT": (20, 175, 550, 500),
-            "IMAGE_BOTTOM_LEFT": (20, 550, 480, 950),
+            "IMAGE_TOP_LEFT": (20, 190, 550, 500),
+            "IMAGE_BOTTOM_LEFT": (20, 550, 480, 970),
             "TEXT_TOP_RIGHT": (600, 200, 1080, 440),
-            "TEXT_BOTTOM_RIGHT": (800, 550, 1010, 760)
+            "TEXT_BOTTOM_RIGHT": (790, 600, 1030, 750)
         },
         "D": {
-            "IMAGE_TOP_LEFT": (20, 185, 550, 550),
-            "IMAGE_BOTTOM_LEFT": (20, 580, 480, 988),
+            "IMAGE_TOP_LEFT": (20, 190, 550, 550),
+            "IMAGE_BOTTOM_LEFT": (20, 550, 480, 970),
             "TEXT_TOP_RIGHT": (600, 200, 1080, 440),
-            "TEXT_BOTTOM_RIGHT": (765, 530, 995, 760)
+            "TEXT_BOTTOM_RIGHT": (745, 530, 1015, 760)
         }
     }
 

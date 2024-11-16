@@ -5,7 +5,7 @@
 # import
 import os, requests, traceback
 from PIL import Image, ImageDraw, ImageFont
-from typing import Tuple, List
+from typing import Tuple, Union
 from io import BytesIO
 
 
@@ -45,13 +45,16 @@ class ImageEditor:
             pattern_data = data[pattern]
             baseImagePath = ImageInfo.BASE_IMAGE_PATH.value[pattern]
             fontSize = ImageInfo.FONT_SIZES.value[pattern]
+            commentSize = ImageInfo.COMMENT_SIZE.value
             fontFileName = ImageInfo.FONT_NAME.value
             fontPath = self.inputDataFolderPath(fileName=fontFileName)
             outputFolder = self.resultOutputFilePath
             fontColor = ImageInfo.FONT_COLORS.value[pattern]  # パターンに対応するフォントカラーを取得
+            underBottomSize = ImageInfo.UNDER_BOTTOM_SIZE.value
+            underBottomColor = ImageInfo.UNDER_BOTTOM_COLOR.value
 
             # 画像作成メソッドにパターン固有の情報を渡す
-            if not self.createImage(pattern_data, fontPath, baseImagePath, fontSize, outputFolder, pattern, fontColor):
+            if not self.createImage(pattern_data, fontPath, baseImagePath, fontSize, commentSize, outputFolder, pattern, fontColor, underBottomSize, underBottomColor):
                 self.logger.error(f"パターン {pattern} の画像データが揃ってないため、以降のパターンをスキップします。")
                 break
 
@@ -65,7 +68,7 @@ class ImageEditor:
         # 必要な項目をパターンごとに定義
         required_keys = {
             'A': ['imagePath_1', 'text_1', 'text_2'],
-            'B': ['imagePath_1', 'imagePath_2', 'text_1', 'text_2'],
+            'B': ['imagePath_1', 'imagePath_2', 'text_1', 'text_2', 'text_3'],
             'C': ['imagePath_1', 'imagePath_2', 'text_1', 'text_2'],
             'D': ['imagePath_1', 'imagePath_2', 'text_1', 'text_2']
         }
@@ -95,7 +98,7 @@ class ImageEditor:
 # ----------------------------------------------------------------------------------
 
 
-    def createImage(self, data: dict, fontPath: str, baseImagePath: str, fontSize: int, outputFolder: str, pattern: str, fontColor: Tuple[int, int, int]):
+    def createImage(self, data: dict, fontPath: str, baseImagePath: str, fontSize: int, commentSize, outputFolder: str, pattern: str, fontColor: Tuple[int, int, int], underBottomSize: int, underBottomColor: Tuple[int, int, int]):
         '''
         fontPath→使用したいフォントを指定する
         baseImagePath→ベース画像を指定する
@@ -136,7 +139,9 @@ class ImageEditor:
 
             # 3. テキストの配置
             draw = ImageDraw.Draw(base_image)
-            font = ImageFont.truetype(fontPath, fontSize)
+            font = ImageFont.truetype(str(fontPath), fontSize)
+
+            print(f"font: {font}, type:{type(font)}")
 
             # テキスト1を右揃えで配置（アウトライン付き）
             if 'text_1' in data and 'TEXT_RIGHT_TOP' in positions:
@@ -164,7 +169,10 @@ class ImageEditor:
                 self.drawTextWithOutline(draw, data['text_1'], positions['TEXT_TOP_RIGHT'], fontPath, initialFontSize=fontSize, fill=fontColor, lineHeight=40, outline_fill=(255, 255, 255), outline_width=2)
 
             if 'text_2' in data and 'TEXT_BOTTOM_RIGHT' in positions:
-                self.drawTextWithOutline(draw, data['text_2'], positions['TEXT_BOTTOM_RIGHT'], fontPath, initialFontSize=fontSize, fill=fontColor, lineHeight=40, outline_fill=(255, 255, 255), outline_width=2)
+                self.drawTextWithWrapping(draw, data['text_2'], fontPath, positions['TEXT_BOTTOM_RIGHT'], initialFontSize=commentSize, lineHeight=fontSize, fill=fontColor)
+
+            if 'text_3' in data and 'TEXT_UNDER_BOTTOM' in positions:
+                self.drawTextWithOutline(draw, data['text_3'], positions['TEXT_UNDER_BOTTOM'], fontPath, initialFontSize=underBottomSize, fill=underBottomColor, lineHeight=40, outline_fill=(255, 255, 255), outline_width=2)
 
         # 画像の保存
         outputFilePath = os.path.join(outputFolder, f"output_{pattern}.png")
@@ -209,7 +217,7 @@ class ImageEditor:
             draw: ImageDraw.ImageDraw,
             text: str,
             boundingBox: Tuple[int, int, int, int],
-            font_file_path: str,
+            fontPath: str,
             initialFontSize: int,
             lineHeight: int,
             fill: Tuple[int, int, int] = (0, 0, 0),
@@ -226,7 +234,7 @@ class ImageEditor:
 
         # 初期フォントサイズから開始
         font_size = initialFontSize
-        font_path_str = str(font_file_path)
+        font_path_str = str(fontPath)
         font = ImageFont.truetype(font_path_str, font_size)
 
         # フォントサイズを調整して枠に収める
@@ -384,36 +392,48 @@ class ImageEditor:
             self,
             draw: ImageDraw.ImageDraw,
             text: str,
-            font: ImageFont.FreeTypeFont,
-            boundingBox: Tuple[int, int, int, int],  # (x1, y1, x2, y2) のタプル
+            fontPath: str,
+            boundingBox: Tuple[int, int, int, int],
+            initialFontSize: int,
             lineHeight: int,
-            fill: Tuple[int, int, int] = (0, 0, 0),
-            mode: str = "wrap"
+            fill: Tuple[int, int, int] = (0, 0, 0)
         ):
+        """
+        指定されたバウンディングボックス内にテキストを描画し、必要であれば改行します。
+        """
         # バウンディングボックスの幅と高さを取得
         box_width = boundingBox[2] - boundingBox[0]
         box_height = boundingBox[3] - boundingBox[1]
 
-        # テキスト全体の高さを計算し、枠に収まるようにフォントサイズを調整
+        # フォントの生成
+        font_size = initialFontSize
+        font_path_str = str(fontPath)
+        font = ImageFont.truetype(font_path_str, font_size)
+
+        # 初期位置を設定
+        x = boundingBox[0]
         y = boundingBox[1]
+
+        # テキスト全体の高さを計算し、枠に収まるようにフォントサイズを調整
         lines = []
         current_line = ""
 
         for char in text:
-            # 1文字ずつ追加して高さを計算
-            if draw.textbbox((0, 0), current_line + char, font=font)[3] + lineHeight <= box_height:
+            # 1文字ずつ追加して幅を計算
+            if draw.textlength(current_line + char, font=font) <= box_width:
                 current_line += char
             else:
-                # 枠の高さを超える場合は新しい行を追加
+                # 枠の幅を超える場合は新しい行を追加
                 lines.append(current_line)
                 current_line = char
 
+        # 最後の行を追加
         if current_line:
             lines.append(current_line)
 
-        # テキストの中央揃えを行うための初期位置の計算
+        # テキストの中央揃えを行うための初期位置の計算（縦方向の中央揃え）
         total_text_height = len(lines) * lineHeight
-        y = boundingBox[1] + (box_height - total_text_height) // 2  # 縦の中央揃え
+        y = boundingBox[1] + (box_height - total_text_height) // 2
 
         # 各行を描画
         for line in lines:
@@ -423,6 +443,8 @@ class ImageEditor:
 
             draw.text((x, y), line, font=font, fill=fill)
             y += lineHeight
+
+
 
 
 
@@ -509,8 +531,9 @@ data_A = {
 data_B = {
     'imagePath_1': 'https://property.es-img.jp/rent/img/1136293183700000019925/0000000001136293183700000019925_1.jpg?iid=4032567125',
     'imagePath_2': 'https://property.es-img.jp/rent/img/1136293183700000019925/0000000001136293183700000019925_23.jpg?iid=3611105031',
-    'text_1': '•　モニタ付インターホン\n\n•　システムキッチン\n\n•　2口コンロ\n\n•　ガスコンロ',
-    'text_2': 'モニターが付いていることで、訪問者を事前に確認でき、不審者を防ぐことができます。特に賃貸物件では、他人と共有する空間が多いため、安心感が増します。'
+    'text_1': '•　専有面積 22㎡\n\n•　モニタ付インターホン\n\n•　システムキッチン\n\n•　2口コンロ\n\n•　ガスコンロ',
+    'text_2': 'モニターが付いていることで、訪問者を事前に確認でき、不審者を防ぐことができます。特に賃貸物件では、他人と共有する空間が多いため、安心感が増します。',
+    'text_3': '敷金 1ヶ月  礼金 1ヶ月'
 }
 
 data_C = {
