@@ -64,7 +64,7 @@ class ImageEditor:
     def checkImageAndTextCount(self, data: dict, pattern: str):
         # 必要な項目をパターンごとに定義
         required_keys = {
-            'A': ['imagePath_1', 'text_1', 'text_2', 'text_3'],
+            'A': ['imagePath_1', 'text_1', 'text_2'],
             'B': ['imagePath_1', 'imagePath_2', 'text_1', 'text_2'],
             'C': ['imagePath_1', 'imagePath_2', 'text_1', 'text_2'],
             'D': ['imagePath_1', 'imagePath_2', 'text_1', 'text_2']
@@ -103,15 +103,12 @@ class ImageEditor:
         self.logger.info(f"createImage 呼び出し時の {pattern} の data の型: {type(data)}")
         self.logger.info(f"createImage 呼び出し時の {pattern} の data の内容: {data}")
 
-
         # 画像データが揃っているかをチェック
         if not self.checkImageAndTextCount(data, pattern):
             return False
 
         # ベース画像の読み込み
-        baseImage = Image.open(baseImagePath).resize(self.imageSize).convert("RGBA")
-        draw = ImageDraw.Draw(baseImage)
-        font = ImageFont.truetype(fontPath, fontSize)
+        base_image = Image.open(baseImagePath).resize(self.imageSize).convert("RGBA")
 
         # 各パターンの配置情報を取得
         positions = ImageInfo.POSITIONS.value[pattern]
@@ -120,42 +117,88 @@ class ImageEditor:
         if pattern == 'A':
             # Pattern A の場合
             if 'imagePath_1' in data:
-                self.drawImageWithMode(baseImage, data['imagePath_1'], positions['IMAGE_CENTER'])
+                # 1. Image1 の配置
+                self.drawImageWithMode(base_image, data['imagePath_1'], positions['IMAGE_CENTER'])
 
-            # フォントサイズを自動調整して text_1, text_2 を縦書きで描画
+            # 2. 半透明のラインの描画（BACK_BOTTOM）
+            if "BACK_BOTTOM" in positions:
+                back_bottom_box = positions["BACK_BOTTOM"]
+
+                # ライン用の新しい透明なレイヤーを作成
+                overlay = Image.new('RGBA', base_image.size, (255, 255, 255, 0))
+                overlay_draw = ImageDraw.Draw(overlay)
+
+                # 半透明のラインを描画
+                overlay_draw.rectangle(back_bottom_box, fill=(255, 255, 255, 150))
+
+                # ベース画像とラインを合成
+                base_image = Image.alpha_composite(base_image, overlay)
+
+            # 3. テキストの配置
+            draw = ImageDraw.Draw(base_image)
+            font = ImageFont.truetype(fontPath, fontSize)
+
+            # テキスト1を右揃えで配置（アウトライン付き）
             if 'text_1' in data and 'TEXT_RIGHT_TOP' in positions:
-                self.drawVerticalTextWithOutline(draw, data['text_1'], font, positions['TEXT_RIGHT_TOP'], fill=fontColor, center=True)
+                self.drawTextWithOutlineRightAligned(draw, data['text_1'], positions['TEXT_RIGHT_TOP'], font, fill=fontColor, outline_fill=(255, 255, 255), outline_width=2)
 
-            if 'text_2' in data and 'TEXT_RIGHT_BOTTOM' in positions:
-                self.drawVerticalTextWithOutline(draw, data['text_2'], font, positions['TEXT_RIGHT_BOTTOM'], fill=fontColor, center=True)
+            # テキスト2を枠の中央に配置（アウトライン付き）
+            if 'text_2' in data and 'TEXT_BOTTOM_LEFT' in positions:
+                self.drawTextWithOutline(draw, data['text_2'], positions['TEXT_BOTTOM_LEFT'], fontPath, initialFontSize=fontSize, lineHeight=fontSize, fill=fontColor, outline_fill=(255, 255, 255), outline_width=2, center=False)
 
-            # text_3 は通常の横書き
-            if 'text_3' in data and 'TEXT_BOTTOM' in positions:
-                self.drawTextWithOutline(draw, data['text_3'], positions['TEXT_BOTTOM'], fontPath, initialFontSize=fontSize, lineHeight=40, fill=fontColor)
-
+            # テキスト3は通常の横書き（アウトライン付き）
+            if 'text_3' in data and 'TEXT_BOTTOM_RIGHT' in positions:
+                self.drawTextWithOutline(draw, data['text_3'], positions['TEXT_BOTTOM_RIGHT'], fontPath, initialFontSize=fontSize, lineHeight=40, fill=fontColor, outline_fill=(255, 255, 255), outline_width=2)
 
         else:
             # Pattern B, C, D の場合
             if 'imagePath_1' in data:
-                self.drawImageWithMode(baseImage, data['imagePath_1'], positions['IMAGE_TOP_LEFT'])
+                self.drawImageWithMode(base_image, data['imagePath_1'], positions['IMAGE_TOP_LEFT'])
 
             if 'imagePath_2' in data:
-                self.drawImageWithMode(baseImage, data['imagePath_2'], positions['IMAGE_BOTTOM_LEFT'])
+                self.drawImageWithMode(base_image, data['imagePath_2'], positions['IMAGE_BOTTOM_LEFT'])
 
             # テキストの配置
+            draw = ImageDraw.Draw(base_image)
             if 'text_1' in data and 'TEXT_TOP_RIGHT' in positions:
-                self.drawTextWithOutline(draw, data['text_1'], positions['TEXT_TOP_RIGHT'], fontPath, initialFontSize=fontSize, fill=fontColor, lineHeight=40)
+                self.drawTextWithOutline(draw, data['text_1'], positions['TEXT_TOP_RIGHT'], fontPath, initialFontSize=fontSize, fill=fontColor, lineHeight=40, outline_fill=(255, 255, 255), outline_width=2)
 
             if 'text_2' in data and 'TEXT_BOTTOM_RIGHT' in positions:
-                self.drawTextWithOutline(draw, data['text_2'], positions['TEXT_BOTTOM_RIGHT'], fontPath, initialFontSize=fontSize, fill=fontColor, lineHeight=40)
+                self.drawTextWithOutline(draw, data['text_2'], positions['TEXT_BOTTOM_RIGHT'], fontPath, initialFontSize=fontSize, fill=fontColor, lineHeight=40, outline_fill=(255, 255, 255), outline_width=2)
 
         # 画像の保存
         outputFilePath = os.path.join(outputFolder, f"output_{pattern}.png")
-        baseImage.save(outputFilePath, format="PNG")
+        base_image.save(outputFilePath, format="PNG")
         self.logger.info(f"保存完了: {outputFilePath}")
 
         return True
 
+
+# ----------------------------------------------------------------------------------
+
+
+    def drawTextWithOutlineRightAligned(self, draw: ImageDraw.ImageDraw, text: str, boundingBox: Tuple[int, int, int, int], font: ImageFont.FreeTypeFont, fill: Tuple[int, int, int], outline_fill: Tuple[int, int, int] = (0, 0, 0), outline_width: int = 2):
+        """
+        テキストを右揃えにしてアウトライン付きで描画します。
+        """
+        # バウンディングボックスの幅と高さを取得
+        box_width = boundingBox[2] - boundingBox[0]
+        box_height = boundingBox[3] - boundingBox[1]
+
+        # テキストの幅を取得し、右揃えの位置を計算
+        text_width = draw.textlength(text, font=font)
+        x = boundingBox[2] - text_width
+        y = boundingBox[1]
+
+        # アウトラインの描画
+        for offset_x in range(-outline_width, outline_width + 1):
+            for offset_y in range(-outline_width, outline_width + 1):
+                if offset_x == 0 and offset_y == 0:
+                    continue
+                draw.text((x + offset_x, y + offset_y), text, font=font, fill=outline_fill)
+
+        # テキスト本体を描画
+        draw.text((x, y), text, font=font, fill=fill)
 
 
 # ----------------------------------------------------------------------------------
@@ -171,11 +214,13 @@ class ImageEditor:
             lineHeight: int,
             fill: Tuple[int, int, int] = (0, 0, 0),
             outline_fill: Tuple[int, int, int] = (255, 255, 255),
-            outline_width: int = 2
+            outline_width: int = 2,
+            center: bool = False  # この行を追加
         ):
         """
         アウトライン付きのテキストを描画し、必要であればフォントサイズを小さくして枠に収まるように調整します。
         """
+        # バウンディングボックスの幅と高さを取得
         box_width = boundingBox[2] - boundingBox[0]
         box_height = boundingBox[3] - boundingBox[1]
 
@@ -184,28 +229,27 @@ class ImageEditor:
         font_path_str = str(font_file_path)
         font = ImageFont.truetype(font_path_str, font_size)
 
-        # フォントサイズを調整してテキストが枠に収まるまで縮小
+        # フォントサイズを調整して枠に収める
         while True:
-            text_bbox = draw.textbbox((0, 0), text, font=font)
-            text_width = text_bbox[2] - text_bbox[0]
-            text_height = text_bbox[3] - text_bbox[1]
-
-            # テキスト全体の幅と高さがバウンディングボックスに収まるかチェック
+            text_width, text_height = draw.textbbox((0, 0), text, font=font)[2:4]
             if text_width <= box_width and text_height <= box_height:
                 break
-
-            # フォントサイズを縮小
             font_size -= 2
-            if font_size <= 10:  # 最小フォントサイズの制限を設定
-                font_size = 10
-                break
+            if font_size <= 0:  # 最小フォントサイズを超えた場合
+                self.logger.error(f"テキスト '{text}' を枠に収めるのに十分なフォントサイズが見つかりません。")
+                return
             font = ImageFont.truetype(font_path_str, font_size)
 
-        # 初期位置をバウンディングボックスの上側に設定
+        # 初期位置を設定
         x = boundingBox[0]
         y = boundingBox[1]
 
-        # テキストのアウトラインを描画
+        # 中央揃えオプション
+        if center:
+            x += (box_width - text_width) // 2
+            y += (box_height - text_height) // 2
+
+        # アウトラインの描画
         for offset_x in range(-outline_width, outline_width + 1):
             for offset_y in range(-outline_width, outline_width + 1):
                 if offset_x == 0 and offset_y == 0:
@@ -214,6 +258,7 @@ class ImageEditor:
 
         # テキスト本体を描画
         draw.text((x, y), text, font=font, fill=fill)
+
 
 
 
@@ -434,6 +479,8 @@ class ImageEditor:
         baseImage.paste(insertImage, (x_offset, y_offset), insertImage)
 
 
+
+
 # ----------------------------------------------------------------------------------
 # resultOutput
 
@@ -454,29 +501,29 @@ class ImageEditor:
 
 data_A = {
     'imagePath_1': 'https://property.es-img.jp/rent/img/1136293183700000023966/0000000001136293183700000023966_10.jpg?iid=509482932',
-    'text_1': '東京ディズニーランド・ステーション駅',
-    'text_2': '徒歩30分',
-    'text_3': '東京臨海高速鉄道りんかい線'
+    'text_1': '東京臨海高速鉄道りんかい線',
+    'text_2': '江田駅    徒歩30分',
+    'text_3': ''
 }
 
 data_B = {
     'imagePath_1': 'https://property.es-img.jp/rent/img/1136293183700000019925/0000000001136293183700000019925_1.jpg?iid=4032567125',
     'imagePath_2': 'https://property.es-img.jp/rent/img/1136293183700000019925/0000000001136293183700000019925_23.jpg?iid=3611105031',
-    'text_1': '•　モニタ付インターホン\n•　システムキッチン\n•　2口コンロ\n•　ガスコンロ',
+    'text_1': '•　モニタ付インターホン\n\n•　システムキッチン\n\n•　2口コンロ\n\n•　ガスコンロ',
     'text_2': 'モニターが付いていることで、訪問者を事前に確認でき、不審者を防ぐことができます。特に賃貸物件では、他人と共有する空間が多いため、安心感が増します。'
 }
 
 data_C = {
     'imagePath_1': 'https://property.es-img.jp/rent/img/1136293183700000019925/0000000001136293183700000019925_6.jpg?iid=3655407388',
     'imagePath_2': 'https://property.es-img.jp/rent/img/1136293183700000019925/0000000001136293183700000019925_13.jpg?iid=119543694',
-    'text_1': '•　モニタ付インターホン\n•　システムキッチン\n•　2口コンロ\n•　ガスコンロ',
+    'text_1': '•　モニタ付インターホン\n\n•　システムキッチン\n\n•　2口コンロ\n\n•　ガスコンロ',
     'text_2': 'モニターが付いていることで、訪問者を事前に確認でき、不審者を防ぐことができます。特に賃貸物件では、他人と共有する空間が多いため、安心感が増します。'
 }
 
 data_D = {
     'imagePath_1': 'https://property.es-img.jp/rent/img/1136293183700000019925/0000000001136293183700000019925_3.jpg?iid=3660388147',
     'imagePath_2': 'https://property.es-img.jp/rent/img/1136293183700000019925/0000000001136293183700000019925_5.jpg?iid=147986314',
-    'text_1': '•　モニタ付インターホン\n•　システムキッチン\n•　2口コンロ\n•　ガスコンロ',
+    'text_1': '•　モニタ付インターホン\n\n•　システムキッチン\n\n•　2口コンロ\n\n•　ガスコンロ',
     'text_2': 'モニターが付いていることで、訪問者を事前に確認でき、不審者を防ぐことができます。特に賃貸物件では、他人と共有する空間が多いため、安心感が増します。'
 }
 

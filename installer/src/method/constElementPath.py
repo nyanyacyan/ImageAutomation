@@ -105,17 +105,19 @@ class ImageInfo(Enum):
     BASE_IMAGE_SIZE = (1080, 1080)
 
     FONT_SIZES = {
-        "A": 65,
+        "A": 50,
         "B": 30,
         "C": 30,
         "D": 30,
     }
 
+# 白 (255, 255, 255), 黒 (0, 0, 0),赤 (255, 0, 0)
+# 緑 (0, 255, 0), 青 (0, 0, 255), オレンジ (255, 165, 0)
     FONT_COLORS = {
-        'A': (255, 0, 0),    # 赤
-        'B': (0, 255, 0),    # 緑
-        'C': (0, 0, 255),    # 青
-        'D': (255, 165, 0)   # オレンジ
+        'A': (0, 200, 0),
+        'B': (0, 0, 0),
+        'C': (0, 0, 0),
+        'D': (0, 0, 0),
     }
 
 
@@ -135,26 +137,27 @@ class ImageInfo(Enum):
     POSITIONS = {
         "A": {
             "IMAGE_CENTER": (0, 83, 1080, 998),
-            "TEXT_RIGHT_TOP": (920, 100, 1020, 550),
-            "TEXT_RIGHT_BOTTOM": (920, 600, 1020, 1000),
-            "TEXT_BOTTOM": (120, 870, 550, 950),
+            "TEXT_RIGHT_TOP": (500, 93, 1000, 183),
+            "TEXT_BOTTOM_LEFT": (50, 880, 1000, 970),
+            "TEXT_BOTTOM_RIGHT": (830, 880, 1080, 970),
+            "BACK_BOTTOM": (0, 850, 1200, 980),
         },
         "B": {
-            "IMAGE_TOP_LEFT": (0, 180, 550, 500),
-            "IMAGE_BOTTOM_LEFT": (0, 550, 450, 950),
-            "TEXT_TOP_RIGHT": (570, 180, 1080, 500),
+            "IMAGE_TOP_LEFT": (20, 180, 550, 500),
+            "IMAGE_BOTTOM_LEFT": (20, 550, 450, 950),
+            "TEXT_TOP_RIGHT": (600, 200, 1080, 500),
             "TEXT_BOTTOM_RIGHT": (745, 620, 975, 850)
         },
         "C": {
-            "IMAGE_TOP_LEFT": (0, 175, 550, 500),
-            "IMAGE_BOTTOM_LEFT": (0, 550, 450, 950),
-            "TEXT_TOP_RIGHT": (570, 173, 1080, 440),
+            "IMAGE_TOP_LEFT": (20, 175, 550, 500),
+            "IMAGE_BOTTOM_LEFT": (20, 550, 480, 950),
+            "TEXT_TOP_RIGHT": (600, 200, 1080, 440),
             "TEXT_BOTTOM_RIGHT": (800, 550, 1010, 760)
         },
         "D": {
-            "IMAGE_TOP_LEFT": (0, 173, 550, 550),
-            "IMAGE_BOTTOM_LEFT": (0, 580, 500, 988),
-            "TEXT_TOP_RIGHT": (570, 175, 1080, 440),
+            "IMAGE_TOP_LEFT": (20, 185, 550, 550),
+            "IMAGE_BOTTOM_LEFT": (20, 580, 480, 988),
+            "TEXT_TOP_RIGHT": (600, 200, 1080, 440),
             "TEXT_BOTTOM_RIGHT": (765, 530, 995, 760)
         }
     }
