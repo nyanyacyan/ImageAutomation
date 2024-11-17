@@ -3,9 +3,9 @@
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
-import os, requests, traceback
+import os, requests
 from PIL import Image, ImageDraw, ImageFont
-from typing import Tuple, Union
+from typing import Tuple
 from io import BytesIO
 
 
@@ -67,7 +67,7 @@ class ImageEditor:
     def checkImageAndTextCount(self, data: dict, pattern: str):
         # 必要な項目をパターンごとに定義
         required_keys = {
-            'A': ['imagePath_1', 'text_1', 'text_2'],
+            'A': ['imagePath_1', 'text_1', 'text_2', 'text_3'],
             'B': ['imagePath_1', 'imagePath_2', 'text_1', 'text_2', 'text_3'],
             'C': ['imagePath_1', 'imagePath_2', 'text_1', 'text_2'],
             'D': ['imagePath_1', 'imagePath_2', 'text_1', 'text_2']
@@ -124,6 +124,20 @@ class ImageEditor:
                 self.drawImageWithMode(base_image, data['imagePath_1'], positions['IMAGE_CENTER'])
 
             # 2. 半透明のラインの描画（BACK_BOTTOM）
+            if "BACK_TOP" in positions:
+                back_bottom_box = positions["BACK_TOP"]
+
+                # ライン用の新しい透明なレイヤーを作成
+                overlay = Image.new('RGBA', base_image.size, (255, 255, 255, 0))
+                overlay_draw = ImageDraw.Draw(overlay)
+
+                # 半透明のラインを描画
+                overlay_draw.rectangle(back_bottom_box, fill=(255, 255, 255, 150))
+
+                # ベース画像とラインを合成
+                base_image = Image.alpha_composite(base_image, overlay)
+
+            # 2. 半透明のラインの描画（BACK_BOTTOM）
             if "BACK_BOTTOM" in positions:
                 back_bottom_box = positions["BACK_BOTTOM"]
 
@@ -144,16 +158,16 @@ class ImageEditor:
             print(f"font: {font}, type:{type(font)}")
 
             # テキスト1を右揃えで配置（アウトライン付き）
-            if 'text_1' in data and 'TEXT_RIGHT_TOP' in positions:
-                self.drawTextWithOutlineRightAligned(draw, data['text_1'], positions['TEXT_RIGHT_TOP'], font, fill=fontColor, outline_fill=(255, 255, 255), outline_width=2)
+            if 'text_1' in data and 'TEXT_LEFT_TOP' in positions:
+                self.drawTextWithOutline(draw, data['text_1'], positions['TEXT_LEFT_TOP'], fontPath, initialFontSize=fontSize, lineHeight=fontSize, fill=fontColor, outline_fill=(255, 255, 255), outline_width=2, center=False)
 
             # テキスト2を枠の中央に配置（アウトライン付き）
-            if 'text_2' in data and 'TEXT_BOTTOM_LEFT' in positions:
-                self.drawTextWithOutline(draw, data['text_2'], positions['TEXT_BOTTOM_LEFT'], fontPath, initialFontSize=fontSize, lineHeight=fontSize, fill=fontColor, outline_fill=(255, 255, 255), outline_width=2, center=False)
+            if 'text_2' in data and 'TEXT_RIGHT_TOP' in positions:
+                self.drawTextWithOutline(draw, data['text_2'], positions['TEXT_RIGHT_TOP'], fontPath, initialFontSize=fontSize, lineHeight=fontSize, fill=fontColor, outline_fill=(255, 255, 255), outline_width=2, right=True)
 
             # テキスト3は通常の横書き（アウトライン付き）
-            if 'text_3' in data and 'TEXT_BOTTOM_RIGHT' in positions:
-                self.drawTextWithOutline(draw, data['text_3'], positions['TEXT_BOTTOM_RIGHT'], fontPath, initialFontSize=fontSize, lineHeight=40, fill=fontColor, outline_fill=(255, 255, 255), outline_width=2)
+            if 'text_3' in data and 'TEXT_BOTTOM_LEFT' in positions:
+                self.drawTextWithOutline(draw, data['text_3'], positions['TEXT_BOTTOM_LEFT'], fontPath, initialFontSize=fontSize, lineHeight=40, fill=fontColor, outline_fill=(255, 255, 255), outline_width=2)
 
         else:
             # Pattern B, C, D の場合
@@ -223,7 +237,8 @@ class ImageEditor:
             fill: Tuple[int, int, int] = (0, 0, 0),
             outline_fill: Tuple[int, int, int] = (255, 255, 255),
             outline_width: int = 2,
-            center: bool = False  # この行を追加
+            center: bool = False,  # この行を追加
+            right: bool = False
         ):
         """
         アウトライン付きのテキストを描画し、必要であればフォントサイズを小さくして枠に収まるように調整します。
@@ -256,6 +271,9 @@ class ImageEditor:
         if center:
             x += (box_width - text_width) // 2
             y += (box_height - text_height) // 2
+
+        elif right:
+            x = boundingBox[2] - text_width
 
         # アウトラインの描画
         for offset_x in range(-outline_width, outline_width + 1):
@@ -345,44 +363,6 @@ class ImageEditor:
 
             # テキスト本体を描画
             draw.text((adjusted_x, char_y), line, font=font, fill=fill, direction='ttb')
-
-
-# ----------------------------------------------------------------------------------
-
-
-    def drawVerticalText(self, draw: ImageDraw.ImageDraw, text: str, font: ImageFont.FreeTypeFont, boundingBox: Tuple[int, int, int, int], lineHeight: int, fill: Tuple[int, int, int] = (0, 0, 0), center: bool = False):
-        """
-        縦書きのテキストを描画します。
-        """
-        # バウンディングボックスの幅と高さを取得
-        box_width = boundingBox[2] - boundingBox[0]
-        box_height = boundingBox[3] - boundingBox[1]
-
-        # 初期位置をバウンディングボックスの上側に設定
-        x = boundingBox[0]
-        y = boundingBox[1]
-
-        # 縦書きのため、文字ごとに描画
-        total_text_height = len(text) * lineHeight
-
-        # テキストの中央揃えを行う
-        if center:
-            y += (box_height - total_text_height) // 2
-
-        for char in text:
-            char_bbox = font.getbbox(char)
-            char_width = char_bbox[2] - char_bbox[0]
-            char_height = char_bbox[3] - char_bbox[1]
-
-            if center:
-                centered_x = x + (box_width - char_width) // 2
-            else:
-                centered_x = x
-
-            if y + char_height <= boundingBox[1] + box_height:  # ボックスの下限を超えない場合のみ描画
-                draw.text((centered_x, y), char, font=font, fill=fill)
-                y += lineHeight
-
 
 
 # ----------------------------------------------------------------------------------
@@ -523,9 +503,9 @@ class ImageEditor:
 
 data_A = {
     'imagePath_1': 'https://property.es-img.jp/rent/img/1136293183700000023966/0000000001136293183700000023966_10.jpg?iid=509482932',
-    'text_1': '東京臨海高速鉄道りんかい線',
-    'text_2': '江田駅    徒歩30分',
-    'text_3': ''
+    'text_1': '物件情報',
+    'text_2': '東京臨海高速鉄道りんかい線',
+    'text_3': 'リゾートゲートウェイ駅    徒歩30分'
 }
 
 data_B = {

@@ -51,18 +51,30 @@ class ImageGuideDrawer:
 if __name__ == "__main__":
     debugMode = True
     # ベース画像のパスを指定
-    base_image_path = "/Users/nyanyacyan/Desktop/Project_file/ImageAutomation/installer/src/method/inputData/B.png"
+    base_image_path = "/Users/nyanyacyan/Desktop/Project_file/ImageAutomation/installer/src/method/inputData/A.png"
     output_path = "guide_lines.png"
 
     # ガイド線の範囲を指定 (左上x, 左上y, 右下x, 右下y)
     # ここで指定した範囲を枠線確認
+
+# A
     guide_boxes = [
-        (20, 190, 550, 500),
-        (20, 550, 450, 970),
-        (600, 200, 1080, 500),
-        (725, 620, 995, 850),
-        (460, 1010, 700, 1050),
+        (0, 83, 1080, 998),
+        (50, 93, 400, 183),
+        (500, 93, 1020, 183),
+        (50, 880, 1020, 970),
+        (0, 70, 1200, 210),
+        (0, 850, 1200, 980),
     ]
+
+# B
+    # guide_boxes = [
+    #     (0, 83, 1080, 998),
+    #     (500, 93, 1000, 183),
+    #     (50, 880, 1000, 970),
+    #     (830, 880, 1080, 970),
+    #     (0, 850, 1200, 980),
+    # ]
 
     # ガイド線を描画する
     guide_drawer = ImageGuideDrawer(base_image_path, output_path, debugMode)

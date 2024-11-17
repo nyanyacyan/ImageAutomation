@@ -142,10 +142,11 @@ class ImageInfo(Enum):
     POSITIONS = {
         "A": {
             "IMAGE_CENTER": (0, 83, 1080, 998),
-            "TEXT_RIGHT_TOP": (500, 93, 1000, 183),
-            "TEXT_BOTTOM_LEFT": (50, 880, 1000, 970),
-            "TEXT_BOTTOM_RIGHT": (830, 880, 1080, 970),
-            "BACK_BOTTOM": (0, 850, 1200, 980),
+            "TEXT_LEFT_TOP": (50, 93, 300, 183),
+            "TEXT_RIGHT_TOP": (400, 93, 1030, 183),
+            "TEXT_BOTTOM_LEFT": (50, 910, 1020, 1000),
+            "BACK_TOP": (0, 83, 1200, 180),
+            "BACK_BOTTOM": (0, 900, 1200, 997),
         },
         "B": {
             "IMAGE_TOP_LEFT": (20, 190, 550, 500),
