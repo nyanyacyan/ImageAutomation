@@ -58,7 +58,7 @@ class DataInSQLite:
 # 一覧の物件リストから詳細ページへ移動して取得する
 
     @decoInstance.funcBase
-    def flowCollectElementDataToSQLite(self,retryCount: int = 5, delay: int = 2):
+    async def flowCollectElementDataToSQLite(self,retryCount: int = 5, delay: int = 2):
 
         # ジャンプしてURLへ移動して検索画面を消去まで実施
         self._navigateToTargetPage(delay=delay)
@@ -99,7 +99,7 @@ class DataInSQLite:
             id = self._textInsertData(mergeDict=mergeDict)
 
             # ２〜４枚目に必要なコメントを生成
-            updateColumnsData = self._generateComments(mergeDict=mergeDict)
+            updateColumnsData = await self._generateComments(mergeDict=mergeDict)
 
             # 生成したコメントをSQLiteへ格納（アップデート）
             self._updateDataInSQlite(id=id, updateColumnsData=updateColumnsData)
@@ -151,9 +151,11 @@ class DataInSQLite:
 # mergeDataに有るImageDataに必要データを取得
 
     def _getImageTableToColInMergeData(self, id: int, mergeDict: Dict):
+        self.logger.debug(f"mergeDict: {mergeDict}")
+
         name = mergeDict['name']
         createTime = mergeDict['createTime']
-        currentUrl = mergeDict['currentUrl']
+        currentUrl = mergeDict['url']
 
         return {
             "id": id,
@@ -272,25 +274,32 @@ class DataInSQLite:
 # ----------------------------------------------------------------------------------
 
     @decoInstance.funcBase
-    def _generateComments(self, mergeDict: Dict):
+    async def _generateComments(self, mergeDict: Dict):
         # 2ページ目のコメント
         secondComment = self.createSecondPageComment(mergeDict=mergeDict)
 
+        print(f"mergeDict: {mergeDict}")
+
         # 3ページ目のコメント
-        thirdComment = self.chatGPTComment(
+        thirdComment = await self.chatGPTComment(
             mergeDict=mergeDict,
-            startValue=5,
-            endValue=8,
+            itemStartValue=5,
+            itemEndValue=8,
             maxlen=30
         )
 
+        print(f"thirdComment: {dict(thirdComment)}")
+
+
         # 4ページ目のコメント
-        fourthPrompt = self.chatGPTComment(
+        fourthPrompt = await self.chatGPTComment(
             mergeDict=mergeDict,
-            startValue=9,
-            endValue=12,
+            itemStartValue=9,
+            itemEndValue=12,
             maxlen=30
         )
+
+        print(f"fourthPrompt: {dict(fourthPrompt)}")
 
         return {
             "secondComment": secondComment,
@@ -343,7 +352,16 @@ class DataInSQLite:
 
     @decoInstance.funcBase
     def ChatGPTPromptCreate(self, mergeDict: Dict, itemStartValue: int, itemEndValue: int, maxlen: int):
+        # 文字列をリストに変換
+        if isinstance(mergeDict['item'], str):
+            mergeDict['item'] = mergeDict['item'].split(', ')
+
+        # デバッグ用の出力
+        print(f"item (after split): {mergeDict['item']}")
+
         items = [mergeDict['item'][i] for i in range(itemStartValue, itemEndValue + 1)]
+        print(f"item: {mergeDict['item']}")
+        print(f"items: {items}")
         prompt = ChatGptPrompt.recommend.value.format(
             maxlen=maxlen,
             item0=items[0],
@@ -351,6 +369,8 @@ class DataInSQLite:
             item2=items[2],
             item3=items[3],
         )
+
+        self.logger.info(f"prompt: {prompt}")
 
         return prompt
 
@@ -369,11 +389,15 @@ class DataInSQLite:
             cols=['trainLine', 'station', 'walking', 'rent', 'managementCost']
         )
 
-        trainLine = result.get('trainLine', '-')
-        station = result.get('station', '-')
-        walking = result.get('walking', '-')
-        rent = result.get('rent', '-')
-        managementCost = result.get('managementCost', '-')
+        resultDict = dict(result)
+
+        print(f"result: {resultDict}")
+
+        trainLine = resultDict.get('trainLine', '-')
+        station = resultDict.get('station', '-')
+        walking = resultDict.get('walking', '-')
+        rent = resultDict.get('rent', '-')
+        managementCost = resultDict.get('managementCost', '-')
 
         commentParts = [
             "今回は",
@@ -382,6 +406,8 @@ class DataInSQLite:
             f"管理費等は {managementCost}",
             "紹介するよ"
         ]
+
+        self.logger.info(f"secondComment:\n{commentParts}")
 
         secondComment = '\n'.join(commentParts)
         return {'secondComment': secondComment}

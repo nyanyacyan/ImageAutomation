@@ -57,7 +57,7 @@ class ElementPath(Enum):
 
     AREA="//th[text()='専有面積']/following-sibling::td[1]/span"
 
-    ITEM="//th[text()='広告可否']/following-sibling::td[1]/span"
+    ITEM="//th[text()='設備']/following-sibling::td[1]/span"
 
     ADDRESS="//th[text()='物件所在地']/following-sibling::td[1]/span"
 

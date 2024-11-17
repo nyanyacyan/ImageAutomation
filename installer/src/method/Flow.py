@@ -7,7 +7,7 @@
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
-import os
+import os, asyncio
 from dotenv import load_dotenv
 
 # 自作モジュール
@@ -51,7 +51,7 @@ class Flow:
 # ----------------------------------------------------------------------------------
 
 # TODO ログイン
-    def flow(self):
+    async def flow(self):
         # ログイン情報を呼び出し
         loginInfo = LoginElement.LOGIN_INFO.value
         loginInfo['idText'] = os.getenv("ID")
@@ -64,7 +64,7 @@ class Flow:
         self.cookieLogin.flowSwitchLogin(cookies=cookies, url=self.homeUrl, loginInfo=loginInfo)
 
         # text, imageを取得してSQLiteに入れ込む→入れ込んだIDのリストを返す
-        allIDList = self.dataInSQLite.flowCollectElementDataToSQLite()
+        allIDList = await self.dataInSQLite.flowCollectElementDataToSQLite()
 
         return allIDList
 
@@ -80,5 +80,4 @@ class Flow:
 
 if __name__ == "__main__":
     process = Flow(debugMode=True)
-
-    process.flow()
+    asyncio.run(process.flow())

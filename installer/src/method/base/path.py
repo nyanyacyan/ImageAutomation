@@ -11,9 +11,9 @@ from datetime import datetime
 
 # 自作モジュール
 # import const
-from utils import Logger
+from .utils import Logger
 from method.const import Dir, SubDir, Extension
-from errorHandlers import AccessFileNotFoundError
+from .errorHandlers import AccessFileNotFoundError
 
 
 
