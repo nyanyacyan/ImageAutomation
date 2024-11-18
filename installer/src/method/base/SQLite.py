@@ -246,17 +246,35 @@ class SQLite:
 # 既存であるデータを更新する
 
     def updateData(self, tableName: str, updateColumnsData: dict, rowId: int):
-        setClause = ', '.join([f"{col} = ?" for col in updateColumnsData.keys()])
-        self.logger.debug(f"values: \n{setClause}")
+        strChangeDict = {col: self._strChange(value=value) for col, value in updateColumnsData.items()}
+        setClause = ', '.join([f"{col} = ?" for col in strChangeDict.keys()])
+        self.logger.debug(f"setClause: \n{setClause}")
 
         # IDを元にアップデート→SET部分がそのColumnを指している
         sql = f"UPDATE {tableName} SET {setClause} WHERE id = ?"
 
         # 入れ込むデータと最後にIDを渡す
-        values = tuple(updateColumnsData.values()) + (rowId,)
+        values = tuple(strChangeDict.values())
+        self.logger.debug(f"values: \n{values}")
 
-        self.SQLPromptBase(sql=sql, values=values, fetch=None)
+        # 最後に ID を追加
+        valuesWithId = values + (rowId,)
+        self.logger.debug(f"最終的な値: {valuesWithId}")
+
+        self.SQLPromptBase(sql=sql, values=valuesWithId, fetch=None)
         self.logger.info(f"【success】{tableName} ID:{rowId} のデータ更新に成功 \n追加したデータ{updateColumnsData}")
+
+
+# ----------------------------------------------------------------------------------
+
+
+    def _strChange(self, value):
+        if isinstance(value, list) or isinstance(value, dict):
+            self.logger.info(f"SQLで扱えないデータ（リストか辞書）を文字列に変換する\n{value}")
+            return ', '.join(value)
+        elif value is None:
+            return None
+        return value
 
 
 # ----------------------------------------------------------------------------------
@@ -294,9 +312,11 @@ class SQLite:
     def getRecordsAllData(self, tableName: str):
         sql = f"SELECT * FROM {tableName}"
         result = self.SQLPromptBase(sql=sql, fetch='all')
-        self.logger.critical(f"【success】{tableName} すべてのデータを抽出")
-        self.logger.critical(f"result: {result}")
-        return result
+        self.logger.info(f"【success】{tableName} すべてのデータを抽出")
+        allData = [dict(row) for row in result]
+        self.logger.info(f"result: {allData}")
+
+        return allData
 
 
 # ----------------------------------------------------------------------------------
@@ -307,7 +327,6 @@ class SQLite:
         sql = f"SELECT * FROM {tableName} WHERE {col} = ?"
         result = self.SQLPromptBase(sql=sql, values=(value, ), fetch='all')
         self.logger.info(f"【success】{tableName} 指定のカラムデータをすべて抽出")
-        self.logger.info(f"result: {result}")
         return result
 
 

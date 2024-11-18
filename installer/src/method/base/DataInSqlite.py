@@ -101,17 +101,25 @@ class DataInSQLite:
             # ２〜４枚目に必要なコメントを生成
             updateColumnsData = await self._generateComments(mergeDict=mergeDict)
 
+            print(f"updateColumnsData: {updateColumnsData}")
+
             # 生成したコメントをSQLiteへ格納（アップデート）
             self._updateDataInSQlite(id=id, updateColumnsData=updateColumnsData)
 
+            # debug確認
+            self.SQLite.getRecordsAllData(tableName=self.textTableName)
+
             # mergeDictを更新
-            mergeDict.update(updateColumnsData)
+            # mergeDict.update(updateColumnsData)
 
             # 詳細ページから画像データを取得
             imageDict = self._mergeImageTableData(id=id, mergeDict=mergeDict)
 
             # imageデータをSQLiteへ入れ込む
             id = self._ImageInsertData(imageDict=imageDict)
+
+            # debug確認
+            self.SQLite.getRecordsAllData(tableName=self.imageTableName)
 
             # それぞれのリストに追加
             allList.append(mergeDict)
@@ -402,7 +410,7 @@ class DataInSQLite:
         self.logger.info(f"secondComment:\n{commentParts}")
 
         secondComment = '\n'.join(commentParts)
-        return {'secondComment': secondComment}
+        return secondComment
 
 
 # ----------------------------------------------------------------------------------
