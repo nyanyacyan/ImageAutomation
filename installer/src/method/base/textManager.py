@@ -26,6 +26,9 @@ class TextManager:
 # 大元のリストからNGWordを除外したリストを作成
 
     def filterWords(self, targetList: list, ngWords: list):
+        targetList = [word.strip() for word in targetList]
+        ngWords = [word.strip() for word in ngWords]
+
         filterWords = [word for word in targetList if word not in ngWords]
         return filterWords
 

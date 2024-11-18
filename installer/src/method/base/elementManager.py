@@ -135,10 +135,10 @@ class ElementManager:
 # ----------------------------------------------------------------------------------
 
 
-    def _textCleaner(self, by: str, value: str):
-        targetList = self._getItemsList(by=by, value=value)
+    def textCleaner(self, textList: List):
         ngWords = NGWordList.ngWords.value
-        filterWordsList = self.textManager.filterWords(targetList=targetList, ngWords=ngWords)
+        filterWordsList = self.textManager.filterWords(targetList=textList, ngWords=ngWords)
+        self.logger.warning(f"\n\n大元のリスト: {textList}\n\nNGワード: {ngWords}\n\n除外後のリスト: {filterWordsList}")
         return filterWordsList
 
 

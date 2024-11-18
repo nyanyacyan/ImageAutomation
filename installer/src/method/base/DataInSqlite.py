@@ -359,9 +359,9 @@ class DataInSQLite:
         # デバッグ用の出力
         print(f"item (after split): {mergeDict['item']}")
 
-        items = [mergeDict['item'][i] for i in range(itemStartValue, itemEndValue + 1)]
-        print(f"item: {mergeDict['item']}")
+        items = self.element.textCleaner(textList=mergeDict['item'])
         print(f"items: {items}")
+
         prompt = ChatGptPrompt.recommend.value.format(
             maxlen=maxlen,
             item0=items[0],
