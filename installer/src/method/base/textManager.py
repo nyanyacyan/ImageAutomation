@@ -25,20 +25,26 @@ class TextManager:
 # ----------------------------------------------------------------------------------
 # 大元のリストからNGWordを除外したリストを作成
 
-    def filterWords(self, targetList: list, ngWords: list):
-        if isinstance(targetList, list) and len(targetList) == 1 and isinstance(targetList[0], str):
-            targetList = targetList[0].split(', ')
+    def filterWords(self, textList: list, ngWords: list):
+        self.logger.warning(f"\ntextList: {textList}\nngWords: {ngWords}")
+        self.logger.warning(f"\ntextList: {len(textList)}\nngWords: {len(ngWords)}")
+        self.logger.warning(f"\ntextListType: {type(textList)}\nngWordsType: {type(ngWords)}")
 
-        targetList = [word.strip() for word in targetList]
+        if isinstance(textList, list) and len(textList) == 1 or isinstance(textList, str):
+            self.logger.info(f"textListが {len(textList)} つしかないためリスト編集実施")
+            textList = textList.split('，')
+
+        textList = [word.strip() for word in textList]
         ngWords = [word.strip() for word in ngWords]
 
-        self.logger.warning(f"\ntargetList: {targetList}\nngWords: {ngWords}")
-        self.logger.warning(f"\ntargetList: {len(targetList)}\nngWords: {len(ngWords)}")
-        self.logger.warning(f"\ntargetListType: {type(targetList)}\nngWordsType: {type(ngWords)}")
+        self.logger.warning(f"\ntextList: {textList}\nngWords: {ngWords}")
+        self.logger.warning(f"\ntextList: {len(textList)}\nngWords: {len(ngWords)}")
+        self.logger.warning(f"\ntextListType: {type(textList)}\nngWordsType: {type(ngWords)}")
 
-        self.logger.warning(f"targetList: {targetList[0]}\n\nngWords: {ngWords[0]}")
+        self.logger.warning(f"textList: {textList[0]}\n\nngWords: {ngWords[0]}")
 
-        filterWords = [word for word in targetList if word not in ngWords]
+        filterWords = [word for word in textList if word not in ngWords]
+        self.logger.warning(f"filterWords: {filterWords}")
         return filterWords
 
 

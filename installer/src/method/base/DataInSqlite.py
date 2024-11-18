@@ -6,7 +6,7 @@
 import time, os
 from selenium.webdriver.chrome.webdriver import WebDriver
 from datetime import datetime
-from typing import Dict, Any
+from typing import Dict, Any, List
 from dotenv import load_dotenv
 
 from selenium.webdriver.remote.webelement import WebElement
@@ -278,33 +278,27 @@ class DataInSQLite:
         # 2ページ目のコメント
         secondComment = self.createSecondPageComment(mergeDict=mergeDict)
 
-        print(f"mergeDict: {mergeDict}")
+        selectItems = self.element.textCleaner(textList=mergeDict['item'])
 
         # 3ページ目のコメント
         thirdComment = await self.chatGPTComment(
-            mergeDict=mergeDict,
-            itemStartValue=5,
-            itemEndValue=8,
-            maxlen=30
+            selectItems=selectItems,
+            itemStartValue=0,
+            maxlen=100
         )
-
-        print(f"thirdComment: {dict(thirdComment)}")
-
 
         # 4ページ目のコメント
-        fourthPrompt = await self.chatGPTComment(
-            mergeDict=mergeDict,
-            itemStartValue=9,
-            itemEndValue=12,
-            maxlen=30
+        fourthComment = await self.chatGPTComment(
+            selectItems=selectItems,
+            itemStartValue=4,
+            maxlen=100
         )
-
-        print(f"fourthPrompt: {dict(fourthPrompt)}")
 
         return {
             "secondComment": secondComment,
             "thirdComment": thirdComment,
-            "fourthPrompt": fourthPrompt
+            "fourthComment": fourthComment,
+            "selectItems": selectItems,
         }
 
 
@@ -333,9 +327,9 @@ class DataInSQLite:
 # 3ページ目のChatGPT
 
     @decoInstance.funcBase
-    async def chatGPTComment(self, mergeDict: Dict, itemStartValue: int, itemEndValue: int, maxlen: int):
-        prompt = self.ChatGPTPromptCreate(mergeDict=mergeDict, itemStartValue=itemStartValue, itemEndValue=itemEndValue, maxlen=maxlen)
-        await self.chatGPT.resultOutput(
+    async def chatGPTComment(self, selectItems: List, itemStartValue: int, maxlen: int):
+        prompt = self.ChatGPTPromptCreate(selectItems=selectItems, itemStartValue=itemStartValue, maxlen=maxlen)
+        result = await self.chatGPT.resultOutput(
             prompt=prompt,
             fixedPrompt=ChatGptPrompt.fixedPrompt.value,
             endpointUrl=ChatgptUtils.endpointUrl.value,
@@ -344,6 +338,9 @@ class DataInSQLite:
             maxlen=maxlen,
             maxTokens=ChatgptUtils.MaxToken.value
         )
+        self.logger.info(f"3ページ目のコメント: {result}")
+        self.logger.info(f"3ページ目のコメント文字数: {len(result)}文字")
+        return result
 
 
 # ----------------------------------------------------------------------------------
@@ -351,23 +348,18 @@ class DataInSQLite:
 # 文字数制限はここで入力
 
     @decoInstance.funcBase
-    def ChatGPTPromptCreate(self, mergeDict: Dict, itemStartValue: int, itemEndValue: int, maxlen: int):
-        # 文字列をリストに変換
-        if isinstance(mergeDict['item'], str):
-            mergeDict['item'] = mergeDict['item'].split(', ')
+    def ChatGPTPromptCreate(self, selectItems: List, itemStartValue: int, maxlen: int):
+        # items = self.element.textCleaner(textList=mergeDict['item'])
 
-        # デバッグ用の出力
-        print(f"item (after split): {mergeDict['item']}")
-
-        items = self.element.textCleaner(textList=mergeDict['item'])
-        print(f"items: {items}")
+        self.logger.info(f"selectItems: {selectItems}")
 
         prompt = ChatGptPrompt.recommend.value.format(
             maxlen=maxlen,
-            item0=items[0],
-            item1=items[1],
-            item2=items[2],
-            item3=items[3],
+            minLen=maxlen - 20,
+            item0=selectItems[itemStartValue],
+            item1=selectItems[itemStartValue + 1],
+            item2=selectItems[itemStartValue + 2],
+            item3=selectItems[itemStartValue + 3],
         )
 
         self.logger.info(f"prompt: {prompt}")

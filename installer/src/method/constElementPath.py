@@ -124,7 +124,7 @@ class ImageInfo(Enum):
         'D': (0, 0, 0),
     }
 
-    UNDER_BOTTOM_COLOR = (200, 200, 200)
+    UNDER_BOTTOM_COLOR = (180, 180, 180)
 
     #! 修正必要
     FONT_PATH = "/Users/nyanyacyan/Desktop/Project_file/ImageAutomation/installer/src/method/inputData/MPLUSRounded1c-ExtraBold.ttf"

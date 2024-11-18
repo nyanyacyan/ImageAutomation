@@ -128,7 +128,7 @@ class ElementManager:
     def _getItemsList(self, by: str, value: str):
         itemElements = self.getElement(by=by, value=value)
         itemsText = itemElements.text
-        itemsList = itemsText.split('，')
+        itemsList = itemsText.split(', ')
         return itemsList
 
 
@@ -137,8 +137,7 @@ class ElementManager:
 
     def textCleaner(self, textList: List):
         ngWords = NGWordList.ngWords.value
-        filterWordsList = self.textManager.filterWords(targetList=textList, ngWords=ngWords)
-        self.logger.warning(f"\n\n大元のリスト: {textList}\n\nNGワード: {ngWords}\n\n除外後のリスト: {filterWordsList}")
+        filterWordsList = self.textManager.filterWords(textList=textList, ngWords=ngWords)
         return filterWordsList
 
 

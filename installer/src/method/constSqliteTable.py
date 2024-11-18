@@ -48,8 +48,9 @@ class TableSchemas:
         "managementCost": "TEXT NOT NULL",
 
         "secondComment": "TEXT",
-        "chatGpt1": "TEXT",
-        "chatGpt2": "TEXT",
+        "thirdComment": "TEXT",
+        "fourthComment": "TEXT",
+        "selectItems": "TEXT",
     }
 
 
