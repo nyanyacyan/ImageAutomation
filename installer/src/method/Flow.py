@@ -50,7 +50,7 @@ class Flow:
 
 # ----------------------------------------------------------------------------------
 
-# TODO ログイン
+
     async def flow(self):
         # ログイン情報を呼び出し
         loginInfo = LoginElement.LOGIN_INFO.value
