@@ -26,8 +26,17 @@ class TextManager:
 # 大元のリストからNGWordを除外したリストを作成
 
     def filterWords(self, targetList: list, ngWords: list):
+        if isinstance(targetList, list) and len(targetList) == 1 and isinstance(targetList[0], str):
+            targetList = targetList[0].split(', ')
+
         targetList = [word.strip() for word in targetList]
         ngWords = [word.strip() for word in ngWords]
+
+        self.logger.warning(f"\ntargetList: {targetList}\nngWords: {ngWords}")
+        self.logger.warning(f"\ntargetList: {len(targetList)}\nngWords: {len(ngWords)}")
+        self.logger.warning(f"\ntargetListType: {type(targetList)}\nngWordsType: {type(ngWords)}")
+
+        self.logger.warning(f"targetList: {targetList[0]}\n\nngWords: {ngWords[0]}")
 
         filterWords = [word for word in targetList if word not in ngWords]
         return filterWords
