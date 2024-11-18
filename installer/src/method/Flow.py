@@ -68,6 +68,12 @@ class Flow:
 
         return allIDList
 
+# TODO 写真でデータを作成
+
+# TODO 写真合成処理
+
+
+
 # TODO batFileの作成→実行、install
 
 # TODO 手順書の作成
