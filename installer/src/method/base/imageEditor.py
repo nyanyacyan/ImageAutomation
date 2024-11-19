@@ -33,7 +33,7 @@ class ImageEditor:
 # ----------------------------------------------------------------------------------
 
 
-    def executePatternEditors(self, data: dict):
+    def executePatternEditors(self, data: dict, buildingName: str):
         patterns = ['A', 'B', 'C', 'D']
 
         for pattern in patterns:
@@ -54,7 +54,7 @@ class ImageEditor:
             underBottomColor = ImageInfo.UNDER_BOTTOM_COLOR.value
 
             # 画像作成メソッドにパターン固有の情報を渡す
-            if not self.createImage(pattern_data, fontPath, baseImagePath, fontSize, commentSize, outputFolder, pattern, fontColor, underBottomSize, underBottomColor):
+            if not self.createImage(pattern_data, fontPath, baseImagePath, fontSize, commentSize, outputFolder, pattern, fontColor, underBottomSize, underBottomColor, buildingName):
                 self.logger.error(f"パターン {pattern} の画像データが揃ってないため、以降のパターンをスキップします。")
                 break
 
@@ -98,7 +98,7 @@ class ImageEditor:
 # ----------------------------------------------------------------------------------
 
 
-    def createImage(self, data: dict, fontPath: str, baseImagePath: str, fontSize: int, commentSize, outputFolder: str, pattern: str, fontColor: Tuple[int, int, int], underBottomSize: int, underBottomColor: Tuple[int, int, int]):
+    def createImage(self, data: dict, fontPath: str, baseImagePath: str, fontSize: int, commentSize, outputFolder: str, pattern: str, fontColor: Tuple[int, int, int], underBottomSize: int, underBottomColor: Tuple[int, int, int], buildingName: str):
         '''
         fontPath→使用したいフォントを指定する
         baseImagePath→ベース画像を指定する
@@ -189,7 +189,7 @@ class ImageEditor:
                 self.drawTextWithOutline(draw, data['text_3'], positions['TEXT_UNDER_BOTTOM'], fontPath, initialFontSize=underBottomSize, fill=underBottomColor, lineHeight=40, outline_fill=(255, 255, 255), outline_width=2)
 
         # 画像の保存
-        outputFilePath = os.path.join(outputFolder, f"output_{pattern}.png")
+        outputFilePath = os.path.join(outputFolder, f"{buildingName}_{pattern}.png")
         base_image.save(outputFilePath, format="PNG")
         self.logger.info(f"保存完了: {outputFilePath}")
 
@@ -538,10 +538,10 @@ data = {
     'D': data_D
 }
 
-
+buildingName = 'ネオマイム横浜阪東橋弐番館 802号室'
 
 
 # Instantiate the main ImageEditor class and execute pattern editors
 if __name__ == "__main__":
     image_editor = ImageEditor(debugMode=True)
-    image_editor.executePatternEditors(data)
+    image_editor.executePatternEditors(data, buildingName)

@@ -266,7 +266,7 @@ class SQLite:
 
 
 # ----------------------------------------------------------------------------------
-
+# 文字列に変換
 
     def _strChange(self, value):
         if isinstance(value, list) or isinstance(value, dict):
@@ -283,7 +283,10 @@ class SQLite:
 
     @decoInstance.funcBase
     def insertDictData(self, tableName: str, inputDict: Dict):
-        cols = ', '.join(inputDict.keys())
+        # inputDictとSQLiteにあるColumnを突合して存在してるものだけを抽出
+        cols, values = self._columnsExtract(tableName=tableName, inputDict=inputDict)
+
+        # プレースホルダーを作成
         placeholders = ', '.join(['?' for _ in inputDict.values()]) # valuesの数の文？を追加して結合
         self.logger.debug(f"cols: {cols}")
         self.logger.debug(f"values: {placeholders}")  # valueの数だけ「？」ができる
@@ -303,6 +306,34 @@ class SQLite:
         allData = self.SQLPromptBase(sql=sqlCheck, fetch='all')
         self.logger.debug(f"{tableName} の全データ: {allData}")
         return rowData
+
+
+# ----------------------------------------------------------------------------------
+# 対象テーブルのColumnをすべて取得して現在のColumnと突合させる
+
+    @decoInstance.funcBase
+    def _columnsExtract(self, tableName: str, inputDict: Dict):
+        # keyを抜き出す
+        inputCols = list(inputDict.keys())
+
+        sql = f"PRAGMA table_info({tableName});"
+        sqlAllColsInfo = self.SQLPromptBase(sql=sql, fetch='all')
+        sqlAllCols = [colInfo[1] for colInfo in sqlAllColsInfo]
+        self.logger.debug(f"sqlAllCols: {sqlAllCols}")
+
+        # 存在するColumnと値
+        existCols = [col for col in inputCols if col in sqlAllCols]
+        existVols = [inputDict[col] for col in existCols]
+
+        # inputDictにある除外されたColumn
+        exclusionCols = [col for col in inputCols if not col in sqlAllCols]
+
+        self.logger.info(f"\nSQLiteに存在するColumn: {existCols}\nSQLiteに存在するColumnの値: {existVols}")
+
+        if exclusionCols:
+            self.logger.error(f"除外されたColumnがあります: {exclusionCols}")
+
+        return existCols, existVols
 
 
 # ----------------------------------------------------------------------------------

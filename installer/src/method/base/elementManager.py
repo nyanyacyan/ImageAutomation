@@ -81,6 +81,28 @@ class ElementManager:
 
 
 # ----------------------------------------------------------------------------------
+# 要素を絞り込み
+
+    def filterElement(self, parentElement: str, by: str, value: str):
+        if by == "id":
+            return parentElement.find_element_by_id(value)
+        elif by == "css":
+            return parentElement.find_element_by_css_selector(value)
+        elif by == "xpath":
+            return parentElement.find_element_by_xpath(value)
+        elif by == "tag":
+            return parentElement.find_element_by_tag_name(value)
+        elif by == "link":
+            return parentElement.find_element_by_link_text(value)
+        elif by == "name":
+            return parentElement.find_element_by_name(value)
+        elif by == "class":
+            return parentElement.find_element_by_class_name(value)
+        else:
+            raise ValueError("定義しているもの以外のものを指定しています")
+
+
+# ----------------------------------------------------------------------------------
 
 
     @decoInstance.funcBase
@@ -215,6 +237,33 @@ class ElementManager:
         allHandles = self.chrome.window_handles  # すべてのWindowハンドルを取得
         self.chrome.switch_to.window(allHandles[-1])  # 元々のWindowはallHandles[0]
         return self.logger.info(f"クリックした新しいページタイトル「{self.chrome.title}」")
+
+
+# ----------------------------------------------------------------------------------
+
+
+    def unlockDisplayNone(self):
+        elements = self._searchDisplayNone
+        for element in elements:
+            if "display: none" in element.get_attribute("style"):
+                self.chrome.execute_script("arguments[0].style.display='block';", element)
+                self.logger.info(f"display: noneになってる部分を解除実施: {element}")
+
+            else:
+                self.logger.debug(f"display: noneになっている部分はありません")
+
+
+# ----------------------------------------------------------------------------------
+
+
+    @property
+    def _searchDisplayNone(self):
+        return self.getElements(by='xpath', value="//*[contains(@style, 'display: none')]")
+
+
+# ----------------------------------------------------------------------------------
+
+
 
 
 # ----------------------------------------------------------------------------------

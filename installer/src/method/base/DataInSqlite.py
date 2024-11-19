@@ -10,6 +10,7 @@ from typing import Dict, Any, List
 from dotenv import load_dotenv
 
 from selenium.webdriver.remote.webelement import WebElement
+from selenium.common.exceptions import NoSuchElementException
 
 
 # 自作モジュール
@@ -150,6 +151,8 @@ class DataInSQLite:
 
     def _mergeImageTableData(self, id: int, mergeDict: Dict):
         dataInMergeDict = self._getImageTableToColInMergeData(id=id, mergeDict=mergeDict)
+        self.logger.info(f"imageDataにて使うデータ: {dataInMergeDict}")
+
         imageDict = self._imagesDict()
 
         return {**dataInMergeDict, **imageDict}
@@ -178,24 +181,35 @@ class DataInSQLite:
 
 
     def _imagesDict(self):
+        # display: noneがあったら解除
+        self.element.unlockDisplayNone()
+
         imageElements = self._getImageList()
+        self.logger.info(f"imageElements: {imageElements}")
 
         imageData = {}
         for element in imageElements:
             imageUrl = element.get_attribute("href")
+            self.logger.debug(f"imageUrl: {imageUrl}")
 
-            imageTag = self.element.getElement(
-                by="tag",
-                value="img"
-            )
-            imageTitle = imageTag.get_attribute('title')
+            try:
+                # 要素を絞り込み
+                imageTag = self.element.filterElement(parentElement=element, by='tag', value='img')
+            except NoSuchElementException:
+                self.logger.warning(f"<img>タグが見つかりませんでした: {element}")
+                continue
+
+            self.logger.info(f"imageTag: {imageTag}")
+
+            imageTitle = imageTag.get_attribute('title') or imageTag.get_attribute('alt')
+            self.logger.debug(f"imageTitle: {imageTitle}")
 
             imageData[imageTitle] = imageUrl
 
         self.logger.warning(f"imageData:\n{imageData}")
 
         # image.key()は辞書のKeyオブジェクトを返すためListに変換する必要あり
-        imageKeys = [list(image.key())[0] for image in imageData]
+        imageKeys = list(imageData.keys())
         self.logger.warning(f"imageDataのKey一覧:\n{imageKeys}")
 
         return imageData

@@ -68,8 +68,15 @@ class Flow:
 
         return allIDList
 
-# TODO 写真でデータを作成
+# TODO SQLiteからテキストデータを取得
 
+# TODO テキスト同士で結合させる
+
+# TODO 指定のデータ型へ変換
+
+# TODO 抽出データ加工（２つ）
+
+# TODO データ辞書に入れ込む
 
 # TODO 写真合成処理
 
