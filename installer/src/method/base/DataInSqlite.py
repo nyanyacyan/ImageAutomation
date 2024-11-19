@@ -177,7 +177,6 @@ class DataInSQLite:
 
 
 # ----------------------------------------------------------------------------------
-#TODO ElementPathから取得するようにする
 
 
     def _imagesDict(self):
@@ -216,7 +215,7 @@ class DataInSQLite:
 
 
 # ----------------------------------------------------------------------------------
-#TODO ElementPathから取得するようにする
+
 
     def _getImageList(self):
         return self.element.getElements(
@@ -227,7 +226,6 @@ class DataInSQLite:
 
 # ----------------------------------------------------------------------------------
 # 一覧ページからすべてのリンクを取得してリストにする
-#TODO ElementPathから取得するようにする
 
     @decoInstance.funcBase
     def _getLinkList(self):
