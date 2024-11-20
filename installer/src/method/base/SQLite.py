@@ -286,8 +286,12 @@ class SQLite:
         # inputDictとSQLiteにあるColumnを突合して存在してるものだけを抽出
         cols, values = self._columnsExtract(tableName=tableName, inputDict=inputDict)
 
+        # SQLiteに入れ込むために文字列に変換
+        cols = ', '.join(cols)
+        self.logger.info(f"col: {cols}\nvalues: {values}")
+
         # プレースホルダーを作成
-        placeholders = ', '.join(['?' for _ in inputDict.values()]) # valuesの数の文？を追加して結合
+        placeholders = ', '.join(['?' for _ in values]) # valuesの数の文？を追加して結合
         self.logger.debug(f"cols: {cols}")
         self.logger.debug(f"values: {placeholders}")  # valueの数だけ「？」ができる
 
@@ -295,7 +299,9 @@ class SQLite:
         sql = f"INSERT INTO {tableName} ({cols}) VALUES ({placeholders})"
 
         # 値をtupleに変更→オブジェクトになっているためtupleに変更が必要
-        values = tuple(inputDict.values())
+        # values = tuple(inputDict.values())
+
+        self.logger.debug(f"sql文: {sql}\nvalues: {values}")
 
         rowData = self.SQLPromptBase(sql=sql, values=values, fetch=None)
         self.logger.debug(f"{tableName} の行データ: {rowData}")
@@ -345,8 +351,6 @@ class SQLite:
         result = self.SQLPromptBase(sql=sql, fetch='all')
         self.logger.info(f"【success】{tableName} すべてのデータを抽出")
         allData = [dict(row) for row in result]
-        self.logger.info(f"result: {allData}")
-
         return allData
 
 

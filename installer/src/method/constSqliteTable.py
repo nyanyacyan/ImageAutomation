@@ -36,10 +36,13 @@ class TableSchemas:
         "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
         "name": "TEXT NOT NULL",
         "createTime": "TEXT NOT NULL",
+
         "url": "TEXT NOT NULL",
         "trainLine": "TEXT NOT NULL",
         "station": "TEXT NOT NULL",
         "walking": "TEXT NOT NULL",
+        "stationWord": "TEXT NOT NULL",
+
         "ad": "TEXT NOT NULL",
         "area": "TEXT NOT NULL",
         "item": "TEXT NOT NULL",

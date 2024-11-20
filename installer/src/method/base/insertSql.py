@@ -8,6 +8,7 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 from datetime import datetime
 from typing import Dict, Any, List
 from dotenv import load_dotenv
+from pprint import pprint
 
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.common.exceptions import NoSuchElementException
@@ -68,6 +69,38 @@ class DataInSQLite:
         linkList = self._getLinkList()
         self.logger.warning(f"linkList: {linkList}: {len(linkList)}個のリンクを取得")
 
+        # newのカウントを行う
+        newElement = self._getClassElementList()
+        self.logger.warning(f"newElement: {newElement}: {len(newElement)}個の[NEW]の要素を発見")
+
+        data = {}
+        for i in range(len(newElement)):
+            link = linkList[i].get_attribute('href')
+            newText = newElement[i].text
+            newTextList = newText.split('\u3000')  # \u3000は全角の空白
+
+            station = newTextList[0] + '駅'
+            trainName = newTextList[1]
+            walking = newTextList[2]
+
+            stationWord = '  '.join([station, walking])
+
+            data[i + 1] = {
+                'link': link,
+                'station': station,
+                'walking': walking,
+                'trainName': trainName,
+                'stationWord': stationWord,
+            }
+
+            pprint(data[i + 1])
+        print(f"data:\n{data}")
+
+        # もしリンク数と「new」が正の場合には次のページに行って再度実施
+
+        # もしリンク数と「new」が誤の場合には完了
+
+
         allList = []
         allIDList = []
         for i in range(retryCount):
@@ -102,22 +135,19 @@ class DataInSQLite:
             # ２〜４枚目に必要なコメントを生成
             updateColumnsData = await self._generateComments(mergeDict=mergeDict)
 
-            print(f"updateColumnsData: {updateColumnsData}")
+            pprint(f"updateColumnsData: {updateColumnsData}")
 
             # 生成したコメントをSQLiteへ格納（アップデート）
             self._updateDataInSQlite(id=id, updateColumnsData=updateColumnsData)
-
-            # debug確認
-            self.SQLite.getRecordsAllData(tableName=self.textTableName)
-
-            # mergeDictを更新
-            # mergeDict.update(updateColumnsData)
 
             # 詳細ページから画像データを取得
             imageDict = self._mergeImageTableData(id=id, mergeDict=mergeDict)
 
             # imageデータをSQLiteへ入れ込む
             id = self._ImageInsertData(imageDict=imageDict)
+
+            # debug確認
+            self.SQLite.getRecordsAllData(tableName=self.textTableName)
 
             # debug確認
             self.SQLite.getRecordsAllData(tableName=self.imageTableName)
@@ -215,12 +245,22 @@ class DataInSQLite:
 
 
 # ----------------------------------------------------------------------------------
-
+# すべての画像データを取得する
 
     def _getImageList(self):
         return self.element.getElements(
             by="xpath",
             value="//div[@id='box_main_gallery']//li//a"
+        )
+
+
+# ----------------------------------------------------------------------------------
+# 特定のクラスの要素をすべて取得する
+
+    def _getClassElementList(self):
+        return self.element.getElements(
+            by="class",
+            value="new"
         )
 
 
@@ -400,7 +440,6 @@ class DataInSQLite:
             primaryKeyColValue = mergeDict.get('name'),
             cols=['trainLine', 'station', 'walking', 'rent', 'managementCost']
         )
-        self.logger.info(f"result: {result}")
         resultDict = dict(result)
 
         print(f"result: {resultDict}")

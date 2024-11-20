@@ -41,7 +41,7 @@ class LoginID:
 # IDログイン
 # loginInfoはconstから取得
     @decoInstance.jsCompleteWaitRetry()
-    def flowLoginID(self, url: str, loginInfo: dict, delay: int=2):
+    def flowLoginID(self, url: str, loginInfo: dict, delay: int=1):
 
         # サイトを開いてCookieを追加
         # self.openSite(url=url)
@@ -125,7 +125,6 @@ class LoginID:
     def actionBeforeLogin(self, url: str, loginInfo: dict, delay: int=2, maxRetries: int = 3):
         # 特定のサイトにアクセス
         self.openSite(url=url)
-
 
         retries = 0
         while retries < maxRetries:

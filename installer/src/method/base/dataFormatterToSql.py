@@ -12,7 +12,7 @@ from typing import List
 
 # 自作モジュール
 from base.utils import Logger
-from base.dataInSqlite import DataInSQLite
+from installer.src.method.base.insertSql import DataInSQLite
 from base.textManager import TextManager
 
 
