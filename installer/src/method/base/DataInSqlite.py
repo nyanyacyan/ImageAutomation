@@ -400,7 +400,7 @@ class DataInSQLite:
             primaryKeyColValue = mergeDict.get('name'),
             cols=['trainLine', 'station', 'walking', 'rent', 'managementCost']
         )
-
+        self.logger.info(f"result: {result}")
         resultDict = dict(result)
 
         print(f"result: {resultDict}")

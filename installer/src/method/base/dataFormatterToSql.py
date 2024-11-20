@@ -8,10 +8,12 @@
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
 import os
+from typing import List
 
 # 自作モジュール
 from base.utils import Logger
 from base.dataInSqlite import DataInSQLite
+from base.textManager import TextManager
 
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
@@ -27,50 +29,73 @@ class DataFormatterToSql:
         self.logger = self.getLogger.getLogger()
 
         self.dataInSQLite = DataInSQLite(chrome=self.chrome, debugMode=debugMode)
+        self.textManager = TextManager(debugMode=debugMode)
 
 
+# ----------------------------------------------------------------------------------
+# 各データをパターンごとにまとめる辞書
+
+    def allDataCreate(self):
+        data = {
+            'A': self.dataA_create(),
+            'B': self.dataC_create(),
+            'C': self.dataC_create(),
+            'D': self.dataD_create()
+        }
+
+        return data
 
 # ----------------------------------------------------------------------------------
 # TODO データ型に入れ込む
 
+    def dataA_create(self):
+        pass
+        data_A = {
+            'imagePath_1': '',
+            'text_1': '',
+            'text_2': '',
+            'text_3': ''
+        }
 
-data_A = {
-    'imagePath_1': '',
-    'text_1': '',
-    'text_2': '',
-    'text_3': ''
-}
 
-data_B = {
-    'imagePath_1': '',
-    'imagePath_2': '',
-    'text_1': '',
-    'text_2': '',
-    'text_3': ''
-}
+# ----------------------------------------------------------------------------------
 
-data_C = {
-    'imagePath_1': '',
-    'imagePath_2': '',
-    'text_1': '',
-    'text_2': ''
-}
 
-data_D = {
-    'imagePath_1': '',
-    'imagePath_2': '',
-    'text_1': '',
-    'text_2': ''
-}
+    def dataB_create(self):
+        pass
+        data_B = {
+            'imagePath_1': '',
+            'imagePath_2': '',
+            'text_1': '',
+            'text_2': '',
+            'text_3': ''
+        }
 
-# 各データをパターンごとにまとめる辞書
-data = {
-    'A': data_A,
-    'B': data_B,
-    'C': data_C,
-    'D': data_D
-}
 
+# ----------------------------------------------------------------------------------
+
+
+    def dataC_create(self):
+        pass
+        data_C = {
+            'imagePath_1': '',
+            'imagePath_2': '',
+            'text_1': '',
+            'text_2': ''
+        }
+
+
+# ----------------------------------------------------------------------------------
+
+
+    def dataD_create(self):
+        pass
+        data_D = {
+            'imagePath_1': '',
+            'imagePath_2': '',
+            'text_1': '',
+            'text_2': ''
+        }
 
 
 # ----------------------------------------------------------------------------------
@@ -79,6 +104,13 @@ data = {
 # TODO 専有面積とselectItem[0]~[3]
 # TODO selectItem[4]~[7]
 # TODO selectItem[8]~[11]
+
+
+# ----------------------------------------------------------------------------------
+# データ結合
+
+    def textJoin(self, joinWordsList: List, joint: str):
+        return self.textManager.textJoin(joinWordsList=joinWordsList, joint=joint)
 
 
 # ----------------------------------------------------------------------------------
