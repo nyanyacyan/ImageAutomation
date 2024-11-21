@@ -24,7 +24,7 @@ from .SQLite import SQLite
 from .decorators import Decorators
 from .jumpTargetPage import JumpTargetPage
 from const import ChatGptPrompt, ChatgptUtils, TableName
-from constElementPath import ElementPath, ElementSpecify
+from constElementInfo import ElementPath, ElementSpecify
 from constSqliteTable import TableSchemas
 
 decoInstance = Decorators(debugMode=True)
@@ -60,64 +60,81 @@ class InsertSql:
 # 一覧の物件リストから詳細ページへ移動して取得する
 
     @decoInstance.funcBase
-    async def flowCollectElementDataToSQLite(self,retryCount: int = 5, delay: int = 2):
+    def getListPageInfo(self, delay: int = 2):
 
         # ジャンプしてURLへ移動して検索画面を消去まで実施
         self._navigateToTargetPage(delay=delay)
 
-        # 一覧ページにある物件詳細リンクを全て取得
-        linkList = self._getLinkList()
-        self.logger.warning(f"linkList: {linkList}: {len(linkList)}個のリンクを取得")
+        maxRetries = 10
+        pageCount = 0
+        count = 0
+        listPageInfoDict = {}
 
-        # newのカウントを行う
-        newElement = self._getClassElementList()
-        self.logger.warning(f"newElement: {newElement}: {len(newElement)}個の[NEW]の要素を発見")
+        while pageCount < maxRetries:
+            # 一覧ページにある物件詳細リンクを全て取得
+            linkList = self._getLinkList()
+            self.logger.warning(f"linkList: {linkList}: {len(linkList)}個のリンクを取得")
 
-        data = {}
-        for i in range(len(newElement)):
-            link = linkList[i].get_attribute('href')
-            newText = newElement[i].text
-            newTextList = newText.split('\u3000')  # \u3000は全角の空白
+            # newのカウントを行う
+            newElement = self._getClassElementList()
+            self.logger.warning(f"newElement: {newElement}: {len(newElement)}個の[NEW]の要素を発見")
 
-            station = newTextList[0] + '駅'
-            trainName = newTextList[1]
-            walking = newTextList[2]
+            if len(newElement) == 0:
+                self.logger.warning(f"処理可能な[NEW]要素が見つからなくなりました。処理を終了します。")
+                break
 
-            stationWord = '  '.join([station, walking])
+            for i in range(len(newElement)):
+                link = linkList[i].get_attribute('href')
+                newText = newElement[i].text
+                newTextList = newText.split('\u3000')  # \u3000は全角の空白
 
-            data[i + 1] = {
-                'link': link,
-                'station': station,
-                'walking': walking,
-                'trainName': trainName,
-                'stationWord': stationWord,
-            }
+                station = newTextList[0] + '駅'
+                trainName = newTextList[1]
+                walking = newTextList[2]
 
-            pprint(data[i + 1])
-        print(f"data:\n{data}")
+                stationWord = '  '.join([station, walking])
 
-        # もしリンク数と「new」が正の場合には次のページに行って再度実施
+                listPageInfoDict[count] = {
+                    'link': link,
+                    'station': station,
+                    'walking': walking,
+                    'trainName': trainName,
+                    'stationWord': stationWord,
+                }
 
-        # もしリンク数と「new」が誤の場合には完了
+                print(f"{count} 個目 listPageInfo: \n{listPageInfoDict[count]}")
+                count += 1
+
+            try:
+                # 次へのページをClick
+                self.element.clickElement(
+                    by='xpath',
+                    value='//div[@class="numberArea"]//a[contains(text(), ">")]'
+                )
+
+            except NoSuchElementException:
+                self.logger.error(f"次のページが見当たらないため処理を終了: {count}目実施")
+                break
+
+        print(f"listPageInfo{count}個目の全データ:\n{listPageInfoDict}")
+        return listPageInfoDict
 
 
-        allList = []
-        allIDList = []
-        for i in range(retryCount):
-            # 一覧ページからスクレイピング
-            listPageInfo = self._getListPageData(tableValue=(i + 1))
+# ----------------------------------------------------------------------------------
 
-            # webElementをtext化
-            fixedListPageInfo = self.webElementToText(webElementData=listPageInfo)
-            self.logger.warning(f"listPageInfo: {fixedListPageInfo}")
+
+    async def getDetailPageInfo(self, listPageInfoDict: Dict, delay: int = 2):
+
+        listNum = len(listPageInfoDict)
+        for i in range(1,listNum + 1):  # 最初の引数がstart 2つ目の引数がend
+            # サブ辞書からデータ部分を抽出
+            listPageInfo = listPageInfoDict[i]
 
             # 物件詳細リンクにアクセス
-            linkList[i].click()
+            detailPageUrl = listPageInfo['link']
+            self.logger.debug(f"detailPageUrl: {detailPageUrl}")
+            self.chrome.get(url=detailPageUrl)
             time.sleep(delay)
-
-            # すべてのタブ（ウィンドウ）ハンドルを取得
-            all_handles = self.chrome.window_handles
-            self.chrome.switch_to.window(all_handles[-1])
 
             # 詳細からtextデータをスクレイピング
             detailPageInfo = self._getDetailPageData()
@@ -127,6 +144,62 @@ class InsertSql:
             self.logger.warning(f"fixedDetailPageInfo: {fixedDetailPageInfo}")
 
             # 取得したtextデータをマージ
+            mergeDict = {**listPageInfo, **fixedDetailPageInfo}
+
+            # textデータをSQLiteへ入れ込む
+            id = self._textInsertData(mergeDict=mergeDict)
+
+            # ２〜４枚目に必要なコメントを生成
+            updateColumnsData = await self._generateComments(mergeDict=mergeDict)
+
+            pprint(f"updateColumnsData: {updateColumnsData}")
+
+            # 生成したコメントをSQLiteへ格納（アップデート）
+            self._updateDataInSQlite(id=id, updateColumnsData=updateColumnsData)
+
+            # 詳細ページから画像データを取得
+            imageDict = self._mergeImageTableData(id=id, mergeDict=mergeDict)
+
+            # imageデータをSQLiteへ入れ込む
+            id = self._ImageInsertData(imageDict=imageDict)
+
+            self.logger.info(f"{i + 1}回目実施完了")
+
+        # return mergeDict
+
+
+# ----------------------------------------------------------------------------------
+
+
+    async def _getDetailPageInfo(self, listPageInfo: Dict, retryCount: int = 5, delay: int = 2):
+        allList = []
+        allIDList = []
+        for i in range(retryCount):
+            # 一覧ページからスクレイピング
+            # listPageInfo = self._getListPageData(tableValue=(i + 1))
+
+            # webElementをtext化
+            # fixedListPageInfo = self.webElementToText(webElementData=listPageInfo)
+            # self.logger.warning(f"listPageInfo: {fixedListPageInfo}")
+
+            # 物件詳細リンクにアクセス
+            detailPageUrl = listPageInfo[i]['link']
+            self.logger.debug(f"detailPageUrl: {detailPageUrl}")
+            self.chrome.get(url=detailPageUrl)
+            time.sleep(delay)
+
+            # すべてのタブ（ウィンドウ）ハンドルを取得
+            # all_handles = self.chrome.window_handles
+            # self.chrome.switch_to.window(all_handles[-1])
+
+            # 詳細からtextデータをスクレイピング
+            detailPageInfo = self._getDetailPageData()
+
+            # webElementをtext化
+            fixedDetailPageInfo = self.webElementToText(webElementData=detailPageInfo)
+            self.logger.warning(f"fixedDetailPageInfo: {fixedDetailPageInfo}")
+
+            # TODO 取得したtextデータをマージ
             mergeDict = {**fixedListPageInfo, **fixedDetailPageInfo}
 
             # textデータをSQLiteへ入れ込む

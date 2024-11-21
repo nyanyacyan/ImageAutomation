@@ -7,7 +7,7 @@ from PIL import Image, ImageDraw
 
 
 from utils import Logger
-from installer.src.method.constElementPath import ImageInfo
+from installer.src.method.constElementInfo import ImageInfo
 
 
 # **********************************************************************************

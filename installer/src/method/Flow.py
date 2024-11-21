@@ -17,7 +17,7 @@ from base.cookieManager import CookieManager
 from base.loginWithCookie import CookieLogin
 from installer.src.method.base.insertSql import InsertSql
 from const import SiteUrl
-from constElementPath import LoginElement
+from installer.src.method.constElementInfo import LoginElement
 
 load_dotenv()
 
@@ -64,9 +64,9 @@ class Flow:
         self.cookieLogin.flowSwitchLogin(cookies=cookies, url=self.homeUrl, loginInfo=loginInfo)
 
         # text, imageを取得してSQLiteに入れ込む→入れ込んだIDのリストを返す
-        allIDList = await self.insertSql.flowCollectElementDataToSQLite()
+        listPageInfo = self.insertSql.getListPageInfo()
 
-        return allIDList
+        return listPageInfo
 
 # TODO SQLiteからテキストデータを取得
 

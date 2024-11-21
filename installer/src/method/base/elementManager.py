@@ -120,9 +120,9 @@ class ElementManager:
 
     def clickElement(self, by: str, value: str):
         self.clickWait.canWaitClick(chrome=self.chrome, by=by, value=value, timeout=3)
-        self.clickWait.jsPageChecker(chrome=self.chrome)
         element = self.getElement(by=by, value=value)
         element.click()
+        self.clickWait.jsPageChecker(chrome=self.chrome)
         return
 
 
