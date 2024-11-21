@@ -35,7 +35,7 @@ load_dotenv()
 # **********************************************************************************
 
 
-class DataInSQLite:
+class InsertSql:
     def __init__(self, chrome: WebDriver, debugMode=True):
         # logger
         self.getLogger = Logger(__name__, debugMode=debugMode)

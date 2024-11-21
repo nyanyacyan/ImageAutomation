@@ -12,7 +12,7 @@ from typing import List
 
 # 自作モジュール
 from base.utils import Logger
-from installer.src.method.base.insertSql import DataInSQLite
+from installer.src.method.base.insertSql import InsertSql
 from base.textManager import TextManager
 
 
@@ -28,7 +28,7 @@ class DataFormatterToSql:
         self.getLogger = Logger(__name__, debugMode=debugMode)
         self.logger = self.getLogger.getLogger()
 
-        self.dataInSQLite = DataInSQLite(chrome=self.chrome, debugMode=debugMode)
+        self.insertSql = InsertSql(chrome=self.chrome, debugMode=debugMode)
         self.textManager = TextManager(debugMode=debugMode)
 
 

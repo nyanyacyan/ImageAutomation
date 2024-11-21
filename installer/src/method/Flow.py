@@ -15,7 +15,7 @@ from base.utils import Logger
 from base.chrome import ChromeManager
 from base.cookieManager import CookieManager
 from base.loginWithCookie import CookieLogin
-from installer.src.method.base.insertSql import DataInSQLite
+from installer.src.method.base.insertSql import InsertSql
 from const import SiteUrl
 from constElementPath import LoginElement
 
@@ -45,7 +45,7 @@ class Flow:
         # インスタンス
         self.cookieManager = CookieManager(chrome=self.chrome, loginUrl=self.loginUrl, homeUrl=self.homeUrl, debugMode=debugMode)
         self.cookieLogin = CookieLogin(chrome=self.chrome, loginUrl=self.loginUrl, homeUrl=self.homeUrl, signInUrl=self.signInUrl, debugMode=debugMode)
-        self.dataInSQLite = DataInSQLite(chrome=self.chrome, debugMode=debugMode)
+        self.insertSql = InsertSql(chrome=self.chrome, debugMode=debugMode)
 
 
 # ----------------------------------------------------------------------------------
@@ -64,7 +64,7 @@ class Flow:
         self.cookieLogin.flowSwitchLogin(cookies=cookies, url=self.homeUrl, loginInfo=loginInfo)
 
         # text, imageを取得してSQLiteに入れ込む→入れ込んだIDのリストを返す
-        allIDList = await self.dataInSQLite.flowCollectElementDataToSQLite()
+        allIDList = await self.insertSql.flowCollectElementDataToSQLite()
 
         return allIDList
 
