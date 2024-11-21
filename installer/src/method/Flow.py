@@ -64,9 +64,10 @@ class Flow:
         self.cookieLogin.flowSwitchLogin(cookies=cookies, url=self.homeUrl, loginInfo=loginInfo)
 
         # text, imageを取得してSQLiteに入れ込む→入れ込んだIDのリストを返す
-        listPageInfo = self.insertSql.getListPageInfo()
+        listPageInfoDict = self.insertSql.getListPageInfo()
+        self.insertSql.getDetailPageInfo(listPageInfoDict=listPageInfoDict)
 
-        return listPageInfo
+        # return listPageInfo
 
 # TODO SQLiteからテキストデータを取得
 

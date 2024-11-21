@@ -165,7 +165,11 @@ class InsertSql:
 
             self.logger.info(f"{i + 1}回目実施完了")
 
-        # return mergeDict
+        # debug確認
+        self.SQLite.getRecordsAllData(tableName=self.textTableName)
+
+        # debug確認
+        self.SQLite.getRecordsAllData(tableName=self.imageTableName)
 
 
 # ----------------------------------------------------------------------------------
