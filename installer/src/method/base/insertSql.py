@@ -116,7 +116,7 @@ class InsertSql:
                 self.logger.error(f"次のページが見当たらないため処理を終了: {count}目実施")
                 break
 
-        print(f"listPageInfo{count}個目の全データ:\n{listPageInfoDict}")
+        print(f"listPageInfo{count}個 全データ:\n{listPageInfoDict}")
         return listPageInfoDict
 
 
@@ -126,6 +126,7 @@ class InsertSql:
     async def getDetailPageInfo(self, listPageInfoDict: Dict, delay: int = 2):
 
         listNum = len(listPageInfoDict)
+        textAndImageDict = {}
         for i in range(1,listNum + 1):  # 最初の引数がstart 2つ目の引数がend
             # サブ辞書からデータ部分を抽出
             listPageInfo = listPageInfoDict[i]
@@ -144,13 +145,16 @@ class InsertSql:
             self.logger.warning(f"fixedDetailPageInfo: {fixedDetailPageInfo}")
 
             # 取得したtextデータをマージ
-            mergeDict = {**listPageInfo, **fixedDetailPageInfo}
+            textMergeDict = {**listPageInfo, **fixedDetailPageInfo}
+
+            # 必要なデータのみに整理する
+
 
             # textデータをSQLiteへ入れ込む
-            id = self._textInsertData(mergeDict=mergeDict)
+            id = self._textInsertData(mergeDict=textMergeDict)
 
             # ２〜４枚目に必要なコメントを生成
-            updateColumnsData = await self._generateComments(mergeDict=mergeDict)
+            updateColumnsData = await self._generateComments(mergeDict=textMergeDict)
 
             pprint(f"updateColumnsData: {updateColumnsData}")
 
@@ -158,18 +162,22 @@ class InsertSql:
             self._updateDataInSQlite(id=id, updateColumnsData=updateColumnsData)
 
             # 詳細ページから画像データを取得
-            imageDict = self._mergeImageTableData(id=id, mergeDict=mergeDict)
+            imageDict = self._mergeImageTableData(id=id, mergeDict=updateColumnsData)
 
             # imageデータをSQLiteへ入れ込む
             id = self._ImageInsertData(imageDict=imageDict)
 
-            self.logger.info(f"{i + 1}回目実施完了")
+            # テキストデータと画像データをまとめてサブ辞書として格納
+            textAndImageDict[i + 1] = {'text': updateColumnsData, 'image': imageDict}
+            
+            self.logger.info(f"{i + 1}回目実施完了 {textAndImageDict[i + 1]}")
 
         # debug確認
         self.SQLite.getRecordsAllData(tableName=self.textTableName)
 
         # debug確認
         self.SQLite.getRecordsAllData(tableName=self.imageTableName)
+
 
 
 # ----------------------------------------------------------------------------------
