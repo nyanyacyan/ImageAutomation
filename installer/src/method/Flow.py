@@ -15,9 +15,9 @@ from base.utils import Logger
 from base.chrome import ChromeManager
 from base.cookieManager import CookieManager
 from base.loginWithCookie import CookieLogin
-from installer.src.method.base.insertSql import InsertSql
+from base.insertSql import InsertSql
 from const import SiteUrl
-from installer.src.method.constElementInfo import LoginElement
+from constElementInfo import LoginElement
 
 load_dotenv()
 

@@ -126,7 +126,7 @@ class InsertSql:
     async def getDetailPageInfo(self, listPageInfoDict: Dict, delay: int = 2):
 
         listNum = len(listPageInfoDict)
-        textAndImageDict = {}
+        allTextAndImageDict = {}
         for i in range(1,listNum + 1):  # 最初の引数がstart 2つ目の引数がend
             # サブ辞書からデータ部分を抽出
             listPageInfo = listPageInfoDict[i]
@@ -165,12 +165,14 @@ class InsertSql:
             imageDict = self._mergeImageTableData(id=id, mergeDict=updateColumnsData)
 
             # imageデータをSQLiteへ入れ込む
-            id = self._ImageInsertData(imageDict=imageDict)
+            self._ImageInsertData(imageDict=imageDict)
 
             # テキストデータと画像データをまとめてサブ辞書として格納
-            textAndImageDict[i + 1] = {'text': updateColumnsData, 'image': imageDict}
-            
-            self.logger.info(f"{i + 1}回目実施完了 {textAndImageDict[i + 1]}")
+            allTextAndImageDict[i] = {'text': updateColumnsData, 'image': imageDict}
+
+            self.logger.info(f"{i + 1}回目実施完了 {allTextAndImageDict[i + 1]}")
+
+        self.logger.info(f"すべてのデータ\n{allTextAndImageDict}")
 
         # debug確認
         self.SQLite.getRecordsAllData(tableName=self.textTableName)
