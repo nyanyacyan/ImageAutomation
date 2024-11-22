@@ -38,7 +38,7 @@ class TableSchemas:
         "createTime": "TEXT NOT NULL",
 
         "url": "TEXT NOT NULL",
-        "trainLine": "TEXT NOT NULL",
+        "trainName": "TEXT NOT NULL",
         "station": "TEXT NOT NULL",
         "walking": "TEXT NOT NULL",
         "stationWord": "TEXT NOT NULL",

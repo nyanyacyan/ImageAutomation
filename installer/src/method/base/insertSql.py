@@ -84,7 +84,7 @@ class InsertSql:
                 break
 
             for i in range(len(newElement)):
-                link = linkList[i].get_attribute('href')
+                url = linkList[i].get_attribute('href')
                 newText = newElement[i].text
                 newTextList = newText.split('\u3000')  # \u3000は全角の空白
 
@@ -95,7 +95,7 @@ class InsertSql:
                 stationWord = '  '.join([station, walking])
 
                 listPageInfoDict[count] = {
-                    'link': link,
+                    'url': url,
                     'station': station,
                     'walking': walking,
                     'trainName': trainName,
@@ -132,7 +132,7 @@ class InsertSql:
             listPageInfo = listPageInfoDict[i]
 
             # 物件詳細リンクにアクセス
-            detailPageUrl = listPageInfo['link']
+            detailPageUrl = listPageInfo['url']
             self.logger.debug(f"detailPageUrl: {detailPageUrl}")
             self.chrome.get(url=detailPageUrl)
             time.sleep(delay)
@@ -525,7 +525,7 @@ class InsertSql:
             primaryKeyCol = "name",
             sortCol = 'createTime',
             primaryKeyColValue = mergeDict.get('name'),
-            cols=['trainLine', 'station', 'walking', 'rent', 'managementCost']
+            cols=['trainName', 'station', 'walking', 'rent', 'managementCost']
         )
         resultDict = dict(result)
 

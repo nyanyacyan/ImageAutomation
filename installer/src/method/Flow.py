@@ -65,7 +65,7 @@ class Flow:
 
         # text, imageを取得してSQLiteに入れ込む→入れ込んだIDのリストを返す
         listPageInfoDict = self.insertSql.getListPageInfo()
-        self.insertSql.getDetailPageInfo(listPageInfoDict=listPageInfoDict)
+        await self.insertSql.getDetailPageInfo(listPageInfoDict=listPageInfoDict)
 
         # return listPageInfo
 
