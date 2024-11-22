@@ -172,15 +172,12 @@ class InsertSql:
             self.logger.debug(f"id: {id}")
 
             # ２〜４枚目に必要なコメントを生成
-            updateColumnsData = await self._generateComments(mergeDict=textMergeDict)
+            updateColumnsData = await self._generateComments(id=id, mergeDict=textMergeDict)
 
             # pprint(f"updateColumnsData: {updateColumnsData}")
 
             allTextMergeDict = {**textMergeDict, **updateColumnsData}
             print(f"updateColumnsData: {updateColumnsData}\n\nlistPageInfo: {listPageInfo}\n\nallTextMergeDict: {allTextMergeDict}")
-
-            # TODO 必要なデータのみに整理する
-
 
             # 生成したコメントをSQLiteへ格納（アップデート）
             self._updateDataInSQlite(id=id, updateColumnsData=allTextMergeDict)
@@ -204,7 +201,6 @@ class InsertSql:
         # debug確認
         self.SQLite.getRecordsAllData(tableName=self.imageTableName)
 
-        # TODO returnを設置して必要なデータを返すようにする
         self.logger.warning(f"allTextAndImageDict:\n{allTextAndImageDict}")
         return allTextAndImageDict
 
@@ -386,7 +382,7 @@ class InsertSql:
 # ----------------------------------------------------------------------------------
 
     @decoInstance.funcBase
-    async def _generateComments(self, mergeDict: Dict):
+    async def _generateComments(self, id: int ,mergeDict: Dict):
         # 2ページ目のコメント
         secondComment = self.createSecondPageComment(mergeDict=mergeDict)
 
@@ -407,6 +403,7 @@ class InsertSql:
         )
 
         return {
+            "id": id,
             "secondComment": secondComment,
             "thirdComment": thirdComment,
             "fourthComment": fourthComment,
