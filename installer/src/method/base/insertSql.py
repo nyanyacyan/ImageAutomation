@@ -162,11 +162,10 @@ class InsertSql:
             fixedDetailPageInfo = self.webElementToText(webElementData=detailPageInfo)
             self.logger.warning(f"fixedDetailPageInfo: {fixedDetailPageInfo}")
 
+            print(f"")
+
             # 取得したtextデータをマージ
             textMergeDict = {**listPageInfo, **fixedDetailPageInfo}
-
-            # 必要なデータのみに整理する
-
 
             # textデータをSQLiteへ入れ込む
             id = self._textInsertData(mergeDict=textMergeDict)
@@ -175,19 +174,25 @@ class InsertSql:
             # ２〜４枚目に必要なコメントを生成
             updateColumnsData = await self._generateComments(mergeDict=textMergeDict)
 
-            pprint(f"updateColumnsData: {updateColumnsData}")
+            # pprint(f"updateColumnsData: {updateColumnsData}")
+
+            allTextMergeDict = {**textMergeDict, **updateColumnsData}
+            print(f"updateColumnsData: {updateColumnsData}\n\nlistPageInfo: {listPageInfo}\n\nallTextMergeDict: {allTextMergeDict}")
+
+            # TODO 必要なデータのみに整理する
+
 
             # 生成したコメントをSQLiteへ格納（アップデート）
-            self._updateDataInSQlite(id=id, updateColumnsData=updateColumnsData)
+            self._updateDataInSQlite(id=id, updateColumnsData=allTextMergeDict)
 
             # 詳細ページから画像データを取得
-            imageDict = self._mergeImageTableData(id=id, mergeDict=textMergeDict)
+            imageDict = self._mergeImageTableData(id=id, mergeDict=allTextMergeDict)
 
             # imageデータをSQLiteへ入れ込む
             self._ImageInsertData(imageDict=imageDict)
 
             # テキストデータと画像データをまとめてサブ辞書として格納
-            allTextAndImageDict[i] = {'text': updateColumnsData, 'image': imageDict}
+            allTextAndImageDict[i] = {'text': allTextMergeDict, 'image': imageDict}
 
             self.logger.info(f"{i}回目実施完了 {allTextAndImageDict[i]}")
 
@@ -198,6 +203,10 @@ class InsertSql:
 
         # debug確認
         self.SQLite.getRecordsAllData(tableName=self.imageTableName)
+
+        # TODO returnを設置して必要なデータを返すようにする
+        self.logger.warning(f"allTextAndImageDict:\n{allTextAndImageDict}")
+        return allTextAndImageDict
 
 
 # ----------------------------------------------------------------------------------
@@ -249,6 +258,7 @@ class InsertSql:
         self.logger.info(f"imageElements: {imageElements}")
 
         imageData = {}
+        titleCount = {}
         for element in imageElements:
             imageUrl = element.get_attribute("href")
             self.logger.debug(f"imageUrl: {imageUrl}")
@@ -264,6 +274,16 @@ class InsertSql:
 
             imageTitle = imageTag.get_attribute('title') or imageTag.get_attribute('alt')
             self.logger.debug(f"imageTitle: {imageTitle}")
+
+            # 同じtitleがあるかを検知
+            if imageTitle in imageData:
+                if imageTitle in titleCount:
+                    titleCount[imageTitle] += 1
+                else:
+                    titleCount[imageTitle] = 1  # titleCountに入ってなかったら初期値設定
+                # 重複していたらユニーク数を追記
+                imageTitle = f"{imageTitle}_{titleCount[imageTitle]}"
+
 
             imageData[imageTitle] = imageUrl
 
