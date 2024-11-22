@@ -65,12 +65,13 @@ class InsertSql:
         # ジャンプしてURLへ移動して検索画面を消去まで実施
         self._navigateToTargetPage(delay=delay)
 
-        maxRetries = 10
+        #! テスト中に設定ｚ
+        maxRetries = 1
         pageCount = 0
         count = 0
         listPageInfoDict = {}
 
-        while pageCount < maxRetries:
+        while pageCount <= maxRetries:
             # 一覧ページにある物件詳細リンクを全て取得
             linkList = self._getLinkList()
             self.logger.warning(f"linkList: {linkList}: {len(linkList)}個のリンクを取得")
@@ -79,9 +80,17 @@ class InsertSql:
             newElement = self._getClassElementList()
             self.logger.warning(f"newElement: {newElement}: {len(newElement)}個の[NEW]の要素を発見")
 
+
+            #! テスト時はnewElementの要素を制限
+            if len(newElement) > 2:
+                newElement = newElement[:2]  # 最初の2つの要素のみを使用
+
+
             if len(newElement) == 0:
                 self.logger.warning(f"処理可能な[NEW]要素が見つからなくなりました。処理を終了します。")
                 break
+
+            print(f"newElement: {newElement}\nnewElementの数: {len(newElement)}個")
 
             for i in range(len(newElement)):
                 url = linkList[i].get_attribute('href')
@@ -94,6 +103,8 @@ class InsertSql:
 
                 stationWord = '  '.join([station, walking])
 
+                count += 1
+
                 listPageInfoDict[count] = {
                     'url': url,
                     'station': station,
@@ -103,18 +114,24 @@ class InsertSql:
                 }
 
                 print(f"{count} 個目 listPageInfo: \n{listPageInfoDict[count]}")
-                count += 1
 
-            try:
-                # 次へのページをClick
-                self.element.clickElement(
-                    by='xpath',
-                    value='//div[@class="numberArea"]//a[contains(text(), ">")]'
-                )
 
-            except NoSuchElementException:
-                self.logger.error(f"次のページが見当たらないため処理を終了: {count}目実施")
-                break
+                #! テスト中に設定
+                pageCount += 1
+
+
+            #! テスト中はコメントアウト→本番の際には解除
+            # try:
+            #     # 次へのページをClick
+            #     self.element.clickElement(
+            #         by='xpath',
+            #         value='//div[@class="numberArea"]//a[contains(text(), ">")]'
+            #     )
+                # pageCount += 1
+
+            # except NoSuchElementException:
+            #     self.logger.error(f"次のページが見当たらないため処理を終了: {count}目実施")
+            #     break
 
         print(f"listPageInfo{count}個 全データ:\n{listPageInfoDict}")
         return listPageInfoDict
@@ -126,6 +143,7 @@ class InsertSql:
     async def getDetailPageInfo(self, listPageInfoDict: Dict, delay: int = 2):
 
         listNum = len(listPageInfoDict)
+        print(f"listPageInfoDict: {listPageInfoDict}\nlistNum: {listNum}")
         allTextAndImageDict = {}
         for i in range(1,listNum + 1):  # 最初の引数がstart 2つ目の引数がend
             # サブ辞書からデータ部分を抽出
@@ -152,6 +170,7 @@ class InsertSql:
 
             # textデータをSQLiteへ入れ込む
             id = self._textInsertData(mergeDict=textMergeDict)
+            self.logger.debug(f"id: {id}")
 
             # ２〜４枚目に必要なコメントを生成
             updateColumnsData = await self._generateComments(mergeDict=textMergeDict)
@@ -162,7 +181,7 @@ class InsertSql:
             self._updateDataInSQlite(id=id, updateColumnsData=updateColumnsData)
 
             # 詳細ページから画像データを取得
-            imageDict = self._mergeImageTableData(id=id, mergeDict=updateColumnsData)
+            imageDict = self._mergeImageTableData(id=id, mergeDict=textMergeDict)
 
             # imageデータをSQLiteへ入れ込む
             self._ImageInsertData(imageDict=imageDict)
@@ -170,7 +189,7 @@ class InsertSql:
             # テキストデータと画像データをまとめてサブ辞書として格納
             allTextAndImageDict[i] = {'text': updateColumnsData, 'image': imageDict}
 
-            self.logger.info(f"{i + 1}回目実施完了 {allTextAndImageDict[i + 1]}")
+            self.logger.info(f"{i}回目実施完了 {allTextAndImageDict[i]}")
 
         self.logger.info(f"すべてのデータ\n{allTextAndImageDict}")
 
@@ -179,80 +198,6 @@ class InsertSql:
 
         # debug確認
         self.SQLite.getRecordsAllData(tableName=self.imageTableName)
-
-
-
-# ----------------------------------------------------------------------------------
-
-
-    async def _getDetailPageInfo(self, listPageInfo: Dict, retryCount: int = 5, delay: int = 2):
-        allList = []
-        allIDList = []
-        for i in range(retryCount):
-            # 一覧ページからスクレイピング
-            # listPageInfo = self._getListPageData(tableValue=(i + 1))
-
-            # webElementをtext化
-            # fixedListPageInfo = self.webElementToText(webElementData=listPageInfo)
-            # self.logger.warning(f"listPageInfo: {fixedListPageInfo}")
-
-            # 物件詳細リンクにアクセス
-            detailPageUrl = listPageInfo[i]['link']
-            self.logger.debug(f"detailPageUrl: {detailPageUrl}")
-            self.chrome.get(url=detailPageUrl)
-            time.sleep(delay)
-
-            # すべてのタブ（ウィンドウ）ハンドルを取得
-            # all_handles = self.chrome.window_handles
-            # self.chrome.switch_to.window(all_handles[-1])
-
-            # 詳細からtextデータをスクレイピング
-            detailPageInfo = self._getDetailPageData()
-
-            # webElementをtext化
-            fixedDetailPageInfo = self.webElementToText(webElementData=detailPageInfo)
-            self.logger.warning(f"fixedDetailPageInfo: {fixedDetailPageInfo}")
-
-            # TODO 取得したtextデータをマージ
-            mergeDict = {**fixedListPageInfo, **fixedDetailPageInfo}
-
-            # textデータをSQLiteへ入れ込む
-            id = self._textInsertData(mergeDict=mergeDict)
-
-            # ２〜４枚目に必要なコメントを生成
-            updateColumnsData = await self._generateComments(mergeDict=mergeDict)
-
-            pprint(f"updateColumnsData: {updateColumnsData}")
-
-            # 生成したコメントをSQLiteへ格納（アップデート）
-            self._updateDataInSQlite(id=id, updateColumnsData=updateColumnsData)
-
-            # 詳細ページから画像データを取得
-            imageDict = self._mergeImageTableData(id=id, mergeDict=mergeDict)
-
-            # imageデータをSQLiteへ入れ込む
-            id = self._ImageInsertData(imageDict=imageDict)
-
-            # debug確認
-            self.SQLite.getRecordsAllData(tableName=self.textTableName)
-
-            # debug確認
-            self.SQLite.getRecordsAllData(tableName=self.imageTableName)
-
-            # それぞれのリストに追加
-            allList.append(mergeDict)
-            allIDList.append(id)
-            time.sleep(delay)
-
-            # 一覧へ戻る
-            self.chrome.back()
-
-            self.logger.info(f"{i + 1}回目実施完了")
-        self.logger.warning(f"insertID: {allIDList}")
-        self.logger.warning(f"allList:\n{allList}")
-
-
-        return allIDList
 
 
 # ----------------------------------------------------------------------------------
@@ -279,7 +224,7 @@ class InsertSql:
 # mergeDataに有るImageDataに必要データを取得
 
     def _getImageTableToColInMergeData(self, id: int, mergeDict: Dict):
-        self.logger.debug(f"mergeDict: {mergeDict}")
+        self.logger.debug(f"mergeDict: {mergeDict}\nid: {id}")
 
         name = mergeDict['name']
         createTime = mergeDict['createTime']
@@ -500,13 +445,17 @@ class InsertSql:
 
         self.logger.info(f"selectItems: {selectItems}")
 
+        def getItemOrDefault(index: int, default: str = 'なし'):
+            """指定したインデックスのアイテムを取得、なければデフォルト値を返す"""
+            return selectItems[index] if index < len(selectItems) else default
+
         prompt = ChatGptPrompt.recommend.value.format(
             maxlen=maxlen,
             minLen=maxlen - 20,
-            item0=selectItems[itemStartValue],
-            item1=selectItems[itemStartValue + 1],
-            item2=selectItems[itemStartValue + 2],
-            item3=selectItems[itemStartValue + 3],
+            item0=getItemOrDefault(itemStartValue),
+            item1=getItemOrDefault(itemStartValue + 1),
+            item2=getItemOrDefault(itemStartValue + 2),
+            item3=getItemOrDefault(itemStartValue + 3),
         )
 
         self.logger.info(f"prompt: {prompt}")
@@ -531,7 +480,7 @@ class InsertSql:
 
         print(f"result: {resultDict}")
 
-        trainLine = resultDict.get('trainLine', '-')
+        trainName = resultDict.get('trainName', '-')
         station = resultDict.get('station', '-')
         walking = resultDict.get('walking', '-')
         rent = resultDict.get('rent', '-')
@@ -539,7 +488,7 @@ class InsertSql:
 
         commentParts = [
             "今回は",
-            f"{trainLine} の {station}駅 から {walking} の物件です。",
+            f"{trainName} の {station}駅 から {walking} の物件です。",
             f"賃料は {rent}",
             f"管理費等は {managementCost}",
             "紹介するよ"
