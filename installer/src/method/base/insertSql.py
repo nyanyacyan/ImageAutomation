@@ -176,6 +176,7 @@ class InsertSql:
 
             # pprint(f"updateColumnsData: {updateColumnsData}")
 
+            # すべてのテキストをマージ
             allTextMergeDict = {**textMergeDict, **updateColumnsData}
             print(f"updateColumnsData: {updateColumnsData}\n\nlistPageInfo: {listPageInfo}\n\nallTextMergeDict: {allTextMergeDict}")
 
@@ -239,7 +240,7 @@ class InsertSql:
             "id": id,
             "name": name,
             "createTime": createTime,
-            "currentUrl": currentUrl
+            "url": currentUrl
         }
 
 
