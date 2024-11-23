@@ -66,19 +66,9 @@ class Flow:
 
         # text, imageを取得してSQLiteに入れ込む→入れ込んだIDのリストを返す
         listPageInfoDict = self.insertSql.getListPageInfo()
-        await self.insertSql.getDetailPageInfo(listPageInfoDict=listPageInfoDict)
+        allData = await self.insertSql.getDetailPageInfo(listPageInfoDict=listPageInfoDict)
 
-        # return listPageInfo
-
-# TODO SQLiteからテキストデータを取得
-
-# TODO テキスト同士で結合させる
-
-# TODO 指定のデータ型へ変換
-
-# TODO 抽出データ加工（２つ）
-
-# TODO データ辞書に入れ込む
+        return allData
 
 # TODO 写真合成処理
 
