@@ -144,7 +144,7 @@ class DataFormatterToSql:
         text_1 = self._data_C_D_text_1(dataDict=textDataDict, startNum=3, endNum=8)
         text_2 = textDataDict['thirdComment']
 
-        self.logger.warning(f"\nimageData: {imageData}\ntext_2: {text_2}\ntext_3: {text_3}")
+        self.logger.warning(f"\nimageData: {imageData}\ntext_2: {text_2}")
 
 
         data_C = {
@@ -173,7 +173,7 @@ class DataFormatterToSql:
         text_1 = self._data_C_D_text_1(dataDict=textDataDict, startNum=8, endNum=12)
         text_2 = textDataDict['fourthComment']
 
-        self.logger.warning(f"\nimageData: {imageData}\ntext_2: {text_2}\ntext_3: {text_3}")
+        self.logger.warning(f"\nimageData: {imageData}\ntext_2: {text_2}")
 
 
         data_D = {

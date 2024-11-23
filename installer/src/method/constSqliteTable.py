@@ -75,6 +75,8 @@ class TableSchemas:
         'thirdComment',
         'fourthComment',
         'selectItems',
+        "deposit",
+        "keyMoney",
     ]
 
 # ----------------------------------------------------------------------------------
