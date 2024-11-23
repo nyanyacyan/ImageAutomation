@@ -589,7 +589,7 @@ class InsertSql:
 # ----------------------------------------------------------------------------------
 
 
-    def _detailPageInfoValue(self):
+    def _detailPageInfoValue(self) -> DetailPageInfo:
         return DetailPageInfo(
             nameBy=ElementSpecify.XPATH.value,
             nameValue=ElementPath.NAME.value,
@@ -605,6 +605,10 @@ class InsertSql:
             rentValue=ElementPath.RENT.value,
             managementCostBy=ElementSpecify.XPATH.value,
             managementCostValue=ElementPath.MANAGEMENT_COST.value,
+            depositBy=ElementSpecify.XPATH.value,
+            depositValue=ElementPath.DEPOSIT.value,
+            keyMoneyBy=ElementSpecify.XPATH.value,
+            keyMoneyValue=ElementPath.KEY_MONEY.value,
         )
 
 
@@ -641,6 +645,9 @@ class InsertSql:
         address = self.element.getElement(by=detailPageInfo.addressBy, value=detailPageInfo.addressValue)
         rent = self.element.getElement(by=detailPageInfo.rentBy, value=detailPageInfo.rentValue)
         managementCost = self.element.getElement(by=detailPageInfo.managementCostBy, value=detailPageInfo.managementCostValue)
+        deposit = self.element.getElement(by=detailPageInfo.depositBy, value=detailPageInfo.depositValue)
+        keyMoney = self.element.getElement(by=detailPageInfo.keyMoneyBy, value=detailPageInfo.keyMoneyValue)
+
 
         dataDict = {
             "name": name,  # 物件名
@@ -650,6 +657,8 @@ class InsertSql:
             "address": address,  # 徒歩
             "rent": rent,  # 徒歩
             "managementCost": managementCost,  # 徒歩
+            "deposit": deposit,  # 徒歩
+            "keyMoney": keyMoney,  # 徒歩
         }
 
         return dataDict

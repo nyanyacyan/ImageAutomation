@@ -10,9 +10,9 @@ from io import BytesIO
 
 
 # 自作モジュール
-from utils import Logger
-from path import BaseToPath
-from installer.src.method.constElementInfo import ImageInfo
+from .utils import Logger
+from .path import BaseToPath
+from constElementInfo import ImageInfo
 
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$

@@ -49,6 +49,8 @@ class TableSchemas:
         "address": "TEXT NOT NULL",
         "rent": "TEXT NOT NULL",
         "managementCost": "TEXT NOT NULL",
+        "deposit": "TEXT",
+        "keyMoney": "TEXT",
 
         "secondComment": "TEXT",
         "thirdComment": "TEXT",

@@ -43,7 +43,10 @@ class DetailPageInfo:
     rentValue: str
     managementCostBy: str  # 管理費等
     managementCostValue: str
-
+    depositBy: str  # 管理費等
+    depositValue: str
+    keyMoneyBy: str  # 管理費等
+    keyMoneyValue: str
 
 # **********************************************************************************
 

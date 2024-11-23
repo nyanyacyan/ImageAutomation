@@ -52,7 +52,7 @@ class Flow:
         self.cookieManager = CookieManager(chrome=self.chrome, loginUrl=self.loginUrl, homeUrl=self.homeUrl, debugMode=debugMode)
         self.cookieLogin = CookieLogin(chrome=self.chrome, loginUrl=self.loginUrl, homeUrl=self.homeUrl, signInUrl=self.signInUrl, debugMode=debugMode)
         self.insertSql = InsertSql(chrome=self.chrome, debugMode=debugMode)
-        self.createImage = DataFormatterToSql(debugMode=debugMode)
+        self.createImage = DataFormatterToSql(chrome=self.chrome, debugMode=debugMode)
 
 # ----------------------------------------------------------------------------------
 
@@ -73,7 +73,7 @@ class Flow:
         listPageInfoDict = self.insertSql.getListPageInfo()
         allData = await self.insertSql.getDetailPageInfo(listPageInfoDict=listPageInfoDict)
 
-        self.createImage.allDataCreate(allDataDict=allData)
+        self.createImage.flowAllDataCreate(allDataDict=allData)
 
 # TODO 写真合成処理
 

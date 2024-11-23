@@ -65,6 +65,10 @@ class ElementPath(Enum):
 
     MANAGEMENT_COST="//th[text()='管理費等']/following-sibling::td[1]/span"
 
+    DEPOSIT="//th[text()='敷金']/following-sibling::td[1]/span"
+
+    KEY_MONEY="//th[text()='礼金']/following-sibling::td[1]/span"
+
 
 
 # ----------------------------------------------------------------------------------
