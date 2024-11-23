@@ -162,8 +162,6 @@ class InsertSql:
             fixedDetailPageInfo = self.webElementToText(webElementData=detailPageInfo)
             self.logger.warning(f"fixedDetailPageInfo: {fixedDetailPageInfo}")
 
-            print(f"")
-
             # 取得したtextデータをマージ
             textMergeDict = {**listPageInfo, **fixedDetailPageInfo}
 
@@ -180,8 +178,15 @@ class InsertSql:
             allTextMergeDict = {**textMergeDict, **updateColumnsData}
             print(f"updateColumnsData: {updateColumnsData}\n\nlistPageInfo: {listPageInfo}\n\nallTextMergeDict: {allTextMergeDict}")
 
+            # Sortする
+            sortAllTextDict = self._sortOrderDict(
+                dataDict=allTextMergeDict,
+                sortOrder=TableSchemas.SORT_TEXT_KEY
+            )
+            self.logger.warning(f"sortAllTextDict: {sortAllTextDict}")
+
             # 生成したコメントをSQLiteへ格納（アップデート）
-            self._updateDataInSQlite(id=id, updateColumnsData=allTextMergeDict)
+            self._updateDataInSQlite(id=id, updateColumnsData=sortAllTextDict)
 
             # 詳細ページから画像データを取得
             imageDict = self._mergeImageTableData(id=id, mergeDict=allTextMergeDict)
@@ -190,7 +195,7 @@ class InsertSql:
             self._ImageInsertData(imageDict=imageDict)
 
             # テキストデータと画像データをまとめてサブ辞書として格納
-            allTextAndImageDict[i] = {'text': allTextMergeDict, 'image': imageDict}
+            allTextAndImageDict[i] = {'text': sortAllTextDict, 'image': imageDict}
 
             self.logger.info(f"{i}回目実施完了 {allTextAndImageDict[i]}")
 
@@ -234,13 +239,13 @@ class InsertSql:
 
         name = mergeDict['name']
         createTime = mergeDict['createTime']
-        currentUrl = mergeDict['url']
+        url = mergeDict['url']
 
         return {
             "id": id,
             "name": name,
             "createTime": createTime,
-            "url": currentUrl
+            "url": url
         }
 
 
@@ -284,13 +289,29 @@ class InsertSql:
 
             imageData[imageTitle] = imageUrl
 
-        self.logger.warning(f"imageData:\n{imageData}")
+        print(f"imageData: {imageData}")
+
+        sortedImageData = self._sortOrderDict(
+            dataDict=imageData,
+            sortOrder=TableSchemas.SORT_IMAGE_KEY
+        )
+
+        self.logger.warning(f"Sortが完了してるimageData:\n{sortedImageData}")
 
         # image.key()は辞書のKeyオブジェクトを返すためListに変換する必要あり
         imageKeys = list(imageData.keys())
         self.logger.warning(f"imageDataのKey一覧:\n{imageKeys}")
 
-        return imageData
+        return sortedImageData
+
+
+# ----------------------------------------------------------------------------------
+# すべての画像データを取得する
+
+    def _sortOrderDict(self, dataDict: Dict, sortOrder: List):
+        sortedDict = {k: dataDict[k] for k in sortOrder if k in dataDict}
+        self.logger.info(f"sortedDict: {sortedDict}")
+        return sortedDict
 
 
 # ----------------------------------------------------------------------------------
