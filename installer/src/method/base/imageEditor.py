@@ -33,16 +33,16 @@ class ImageEditor:
 # ----------------------------------------------------------------------------------
 
 
-    def executePatternEditors(self, data: dict, buildingName: str):
+    def executePatternEditors(self, dataDict: dict, buildingName: str):
         patterns = ['A', 'B', 'C', 'D']
 
         for pattern in patterns:
-            if pattern not in data:
+            if pattern not in dataDict:
                 self.logger.error(f"{pattern} パターンのデータが欠けているため、{pattern} とそれ以降のすべてのパターンをスキップします。")
                 break
 
             # パターン固有のデータを取得
-            pattern_data = data[pattern]
+            pattern_data = dataDict[pattern]
             baseImagePath = ImageInfo.BASE_IMAGE_PATH.value[pattern]
             fontSize = ImageInfo.FONT_SIZES.value[pattern]
             commentSize = ImageInfo.COMMENT_SIZE.value

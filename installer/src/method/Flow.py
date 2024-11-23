@@ -6,6 +6,10 @@
 # PYTHONPATH=/Users/nyanyacyan/Desktop/Project_file/ImageAutomation/installer/src
 
 
+# 辞書データデバッグ
+# import json
+# json.dumps(data, indent=4, ensure_ascii=False)
+
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
 import os, asyncio
@@ -17,6 +21,7 @@ from base.chrome import ChromeManager
 from base.cookieManager import CookieManager
 from base.loginWithCookie import CookieLogin
 from base.insertSql import InsertSql
+from base.dataFormatterToSql import DataFormatterToSql
 from const import SiteUrl
 from constElementInfo import LoginElement
 
@@ -47,7 +52,7 @@ class Flow:
         self.cookieManager = CookieManager(chrome=self.chrome, loginUrl=self.loginUrl, homeUrl=self.homeUrl, debugMode=debugMode)
         self.cookieLogin = CookieLogin(chrome=self.chrome, loginUrl=self.loginUrl, homeUrl=self.homeUrl, signInUrl=self.signInUrl, debugMode=debugMode)
         self.insertSql = InsertSql(chrome=self.chrome, debugMode=debugMode)
-
+        self.createImage = DataFormatterToSql(debugMode=debugMode)
 
 # ----------------------------------------------------------------------------------
 
@@ -68,7 +73,7 @@ class Flow:
         listPageInfoDict = self.insertSql.getListPageInfo()
         allData = await self.insertSql.getDetailPageInfo(listPageInfoDict=listPageInfoDict)
 
-        return allData
+        self.createImage.allDataCreate(allDataDict=allData)
 
 # TODO 写真合成処理
 
