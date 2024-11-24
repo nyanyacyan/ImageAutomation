@@ -18,6 +18,7 @@ from base.insertSql import InsertSql
 from base.textManager import TextManager
 from constSqliteTable import TableSchemas
 from base.imageEditor import ImageEditor
+from base.fileWrite import FileWrite
 
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
@@ -37,6 +38,7 @@ class DataFormatterToSql:
         self.insertSql = InsertSql(chrome=self.chrome, debugMode=debugMode)
         self.textManager = TextManager(debugMode=debugMode)
         self.imageEditor = ImageEditor(debugMode=debugMode)
+        self.fileWrite = FileWrite(debugMode=debugMode)
 
 
 # ----------------------------------------------------------------------------------
@@ -45,12 +47,18 @@ class DataFormatterToSql:
     def flowAllDataCreate(self, allDataDict: Dict):
         self.logger.info(f"すべてのデータ数: {len(allDataDict)}")
         self.logger.debug(f"allDataDict: {allDataDict}")
+
+        adCommentList = []
         for key, valueDict in allDataDict.items():
             self.logger.warning(f"key: {key}\nvalueDict: {valueDict}")
             dataDict, fileName, ad = self.allDataCreate(dataDict=valueDict)
             self.imageEditor.executePatternEditors(dataDict=dataDict, buildingName=fileName)
 
             # TODO adのリストを作成
+            adComment = f"{fileName} : {ad}"
+            adCommentList.append(adComment)
+
+        self.fileWrite.writeToText(data=adCommentList, fileName=fileName)
 
 
 # ----------------------------------------------------------------------------------
@@ -68,7 +76,7 @@ class DataFormatterToSql:
             'D': self.dataD_create(dataDict)
         }
 
-        return fileName, data, ad
+        return data, fileName, ad
 
 # ----------------------------------------------------------------------------------
 # TODO データ型に入れ込む
@@ -202,7 +210,7 @@ class DataFormatterToSql:
 # 専有面積とselectItem[0]~[3]
 
     def _dataB_text_1(self, dataDict: Dict, startNum: int = 0, endNum: int = 4):
-        area = '専有面積' + dataDict['area']
+        area = '専有面積 ' + dataDict['area']
         items = dataDict['selectItems'][startNum:endNum]
         print(f"items: {items}")
         result = f"・{area}\n\n・{items[0]}\n\n・{items[1]}\n\n・{items[2]}\n\n・{items[3]}"
@@ -236,7 +244,7 @@ class DataFormatterToSql:
 
         total = rent * (deposit + keyMoney)
 
-        depositTotal = f"敷金 {rent_str}  礼金 {keyMoney_str}  合計 {total} 円"
+        depositTotal = f"敷金 {deposit_str}  礼金 {keyMoney_str}  合計 {total} 円"
         self.logger.debug(f"敷金礼金の文言: {depositTotal}")
         return depositTotal
 

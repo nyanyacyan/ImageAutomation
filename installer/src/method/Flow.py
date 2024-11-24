@@ -54,6 +54,7 @@ class Flow:
         self.insertSql = InsertSql(chrome=self.chrome, debugMode=debugMode)
         self.createImage = DataFormatterToSql(chrome=self.chrome, debugMode=debugMode)
 
+
 # ----------------------------------------------------------------------------------
 
 

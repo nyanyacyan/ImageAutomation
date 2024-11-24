@@ -398,14 +398,21 @@ class ImageEditor:
         lines = []
         current_line = ""
 
-        for char in text:
-            # 1文字ずつ追加して幅を計算
-            if draw.textlength(current_line + char, font=font) <= box_width:
-                current_line += char
-            else:
-                # 枠の幅を超える場合は新しい行を追加
-                lines.append(current_line)
-                current_line = char
+        print(f"text: {text}")
+        textLines = text.split("\n")
+        print(f"textLines: {textLines}")
+
+        for line in textLines:
+
+            for char in text:
+                # 1文字ずつ追加して幅を計算
+                print(f"char: {char}")
+                if draw.textlength(current_line + char, font=font) <= box_width:
+                    current_line += char
+                else:
+                    # 枠の幅を超える場合は新しい行を追加
+                    lines.append(current_line)
+                    current_line = char
 
         # 最後の行を追加
         if current_line:
@@ -444,7 +451,7 @@ class ImageEditor:
                 response.raise_for_status()
                 insertImage = Image.open(BytesIO(response.content)).convert("RGBA")
             except requests.RequestException as e:
-                self.log(f"画像の取得に失敗しました: {imagePath}\nエラー: {e}")
+                self.logger.error(f"画像の取得に失敗しました: {imagePath}\nエラー: {e}")
                 return
         else:
             try:
