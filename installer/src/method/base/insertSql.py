@@ -413,14 +413,14 @@ class InsertSql:
         # 3ページ目のコメント
         thirdComment = await self.chatGPTComment(
             selectItems=selectItems,
-            itemStartValue=0,
+            itemStartValue=4,
             maxlen=100
         )
 
         # 4ページ目のコメント
         fourthComment = await self.chatGPTComment(
             selectItems=selectItems,
-            itemStartValue=4,
+            itemStartValue=8,
             maxlen=100
         )
 
