@@ -53,10 +53,15 @@ class FileWrite:
     @decoInstance.fileRetryAction(maxRetry=2, delay=2)
     def writeToText(self, data: Any, fileName: str, extension: str=".txt"):
         fullPath = self.path.getWriteFilePath(fileName=fileName)
-        filePath = os.path.join(fullPath, f'{self.currentDate}{extension}')
+        filePath = ''.join([str(fullPath), f'{self.currentDate}{extension}'])
+        print(f"filePath: {filePath}")
 
         if data and fileName:
             self.logger.debug(f"data:\n{data}")
+
+        # データがリストだった場合の処理
+        if isinstance(data, list):
+            data = '\n'.join(data)
 
             with open(filePath, 'w', encoding='utf-8') as file:
                 file.write(data)
@@ -196,10 +201,10 @@ class LimitFileWrite:
 # text
 
     @decoInstance.fileRetryAction(maxRetry=2, delay=2)
-    def writeToText(self, data: Any, subDirName: str, extension: str=Extension.text.value):
-        filePath = self.path.writeFileDateNamePath(subDirName=subDirName, extension=extension)
+    def writeToText(self, data: Any, fileName: str, extension: str=Extension.text.value):
+        filePath = self.path.getResultFilePath(fileName=fileName)
 
-        if data and subDirName:
+        if data and fileName:
             with open(filePath, 'w', encoding='utf-8') as file:
                 file.write(data)
 

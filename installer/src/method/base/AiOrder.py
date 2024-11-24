@@ -120,7 +120,7 @@ class ChatGPTOrder:
         wordCount = len(assistantMsg)
 
         if wordCount > maxlen:
-            newResult = await self.reRequest(fixedPrompt=fixedPrompt, beforeResult=result, model=model, apiKey=apiKey, maxTokens=maxTokens)
+            newResult = await self.reRequest(fixedPrompt=fixedPrompt, beforeResult=result, endpointUrl=endpointUrl, model=model, apiKey=apiKey, maxTokens=maxTokens)
             return newResult
         else:
             return result

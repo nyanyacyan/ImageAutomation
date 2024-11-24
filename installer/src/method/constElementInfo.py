@@ -140,7 +140,7 @@ class ImageInfo(Enum):
     #! 修正必要
     FONT_PATH = "/Users/nyanyacyan/Desktop/Project_file/ImageAutomation/installer/src/method/inputData/MPLUSRounded1c-ExtraBold.ttf"
     # /Users/nyanyacyan/Library/Mobile Documents/com~apple~CloudDocs/Downloads/MPLUSRounded1c-ExtraBold.ttf
-    FONT_NAME = "MPLUSRounded1c-ExtraBold.ttf"
+    FONT_NAME = "MPLUSRounded1c-Medium.ttf"
 
 
     IMAGE_NUM = {
@@ -164,17 +164,17 @@ class ImageInfo(Enum):
             "IMAGE_BOTTOM_LEFT": (20, 550, 450, 970),
             "TEXT_TOP_RIGHT": (600, 200, 1080, 500),
             "TEXT_BOTTOM_RIGHT": (725, 620, 995, 850),
-            "TEXT_UNDER_BOTTOM": (460, 1020, 700, 1050)
+            "TEXT_UNDER_BOTTOM": (440, 1020, 720, 1050)
         },
         "C": {
             "IMAGE_TOP_LEFT": (20, 190, 550, 500),
             "IMAGE_BOTTOM_LEFT": (20, 550, 480, 970),
             "TEXT_TOP_RIGHT": (600, 200, 1080, 440),
-            "TEXT_BOTTOM_RIGHT": (790, 605, 1030, 750)
+            "TEXT_BOTTOM_RIGHT": (790, 605, 1030, 745)
         },
         "D": {
-            "IMAGE_TOP_LEFT": (20, 190, 550, 550),
-            "IMAGE_BOTTOM_LEFT": (20, 550, 480, 970),
+            "IMAGE_TOP_LEFT": (20, 190, 550, 575),
+            "IMAGE_BOTTOM_LEFT": (20, 585, 480, 970),
             "TEXT_TOP_RIGHT": (600, 200, 1080, 440),
             "TEXT_BOTTOM_RIGHT": (745, 530, 1015, 760)
         }

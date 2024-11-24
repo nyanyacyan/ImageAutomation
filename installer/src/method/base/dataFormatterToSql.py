@@ -8,6 +8,7 @@
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
 import os
+from datetime import datetime
 from typing import List, Dict
 from selenium.webdriver.chrome.webdriver import WebDriver
 
@@ -39,7 +40,7 @@ class DataFormatterToSql:
         self.textManager = TextManager(debugMode=debugMode)
         self.imageEditor = ImageEditor(debugMode=debugMode)
         self.fileWrite = FileWrite(debugMode=debugMode)
-
+        self.currentDate = datetime.now().strftime('%y%m%d')
 
 # ----------------------------------------------------------------------------------
 # 各データをパターンごとにまとめる辞書
@@ -51,13 +52,14 @@ class DataFormatterToSql:
         adCommentList = []
         for key, valueDict in allDataDict.items():
             self.logger.warning(f"key: {key}\nvalueDict: {valueDict}")
-            dataDict, fileName, ad = self.allDataCreate(dataDict=valueDict)
-            self.imageEditor.executePatternEditors(dataDict=dataDict, buildingName=fileName)
+            dataDict, name, ad = self.allDataCreate(dataDict=valueDict)
+            self.imageEditor.executePatternEditors(dataDict=dataDict, buildingName=name)
 
             # TODO adのリストを作成
-            adComment = f"{fileName} : {ad}"
+            adComment = f"{name} : {ad}"
             adCommentList.append(adComment)
 
+        fileName = f"AD一覧テキスト"
         self.fileWrite.writeToText(data=adCommentList, fileName=fileName)
 
 
@@ -66,8 +68,8 @@ class DataFormatterToSql:
 
     def allDataCreate(self, dataDict: Dict):
         print(f"dataDict: {dataDict}")
-        fileName = dataDict['text']['name']
-        print(f"fileName: {fileName}")
+        name = dataDict['text']['name']
+        print(f"物件名: {name}")
         ad = dataDict['text']['ad']
         data = {
             'A': self.dataA_create(dataDict),
@@ -76,7 +78,7 @@ class DataFormatterToSql:
             'D': self.dataD_create(dataDict)
         }
 
-        return data, fileName, ad
+        return data, name, ad
 
 # ----------------------------------------------------------------------------------
 # TODO データ型に入れ込む
@@ -210,10 +212,10 @@ class DataFormatterToSql:
 # 専有面積とselectItem[0]~[3]
 
     def _dataB_text_1(self, dataDict: Dict, startNum: int = 0, endNum: int = 4):
-        area = '専有面積 ' + dataDict['area']
+        area = '専有面積  ' + dataDict['area'] + 'm²'
         items = dataDict['selectItems'][startNum:endNum]
         print(f"items: {items}")
-        result = f"・{area}\n\n・{items[0]}\n\n・{items[1]}\n\n・{items[2]}\n\n・{items[3]}"
+        result = f"・{area}\n・{items[0]}\n・{items[1]}\n・{items[2]}\n・{items[3]}"
         print(f"text_1: {result}")
         return result
 
@@ -225,7 +227,7 @@ class DataFormatterToSql:
         print(f"dataDict: {dataDict}")
         print(f"selectItems: {dataDict['selectItems']}")
         items = dataDict['selectItems'][startNum:endNum]
-        result = f"・{items[0]}\n\n・{items[1]}\n\n・{items[2]}\n\n・{items[3]}"
+        result = f"・{items[0]}\n・{items[1]}\n・{items[2]}\n・{items[3]}"
         print(f"text_1: {result}")
         return result
 

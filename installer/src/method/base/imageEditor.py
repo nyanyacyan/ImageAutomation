@@ -183,7 +183,7 @@ class ImageEditor:
                 self.drawTextWithOutline(draw, data['text_1'], positions['TEXT_TOP_RIGHT'], fontPath, initialFontSize=fontSize, fill=fontColor, lineHeight=40, outline_fill=(255, 255, 255), outline_width=2)
 
             if 'text_2' in data and 'TEXT_BOTTOM_RIGHT' in positions:
-                self.drawTextWithOutline(draw, data['text_2'], positions['TEXT_BOTTOM_RIGHT'], fontPath, initialFontSize=fontSize, fill=fontColor, lineHeight=40, outline_fill=(255, 255, 255), outline_width=2)
+                self.drawTextWithOutline(draw, data['text_2'], positions['TEXT_BOTTOM_RIGHT'], fontPath, initialFontSize=fontSize, fill=fontColor, lineHeight=40, outline_fill=(255, 255, 255), outline_width=2, center=True)
 
             if 'text_3' in data and 'TEXT_UNDER_BOTTOM' in positions:
                 self.drawTextWithOutline(draw, data['text_3'], positions['TEXT_UNDER_BOTTOM'], fontPath, initialFontSize=underBottomSize, fill=underBottomColor, lineHeight=40, outline_fill=(255, 255, 255), outline_width=2)
@@ -256,8 +256,8 @@ class ImageEditor:
             fill: Tuple[int, int, int] = (0, 0, 0),
             outline_fill: Tuple[int, int, int] = (255, 255, 255),
             outline_width: int = 2,
-            center: bool = False,  # この行を追加
-            right: bool = False
+            center: bool = False,  # 中央揃えオプション
+            right: bool = False    # 右揃えオプション
         ):
         """
         アウトライン付きのテキストを描画し、必要であればフォントサイズを小さくして枠に収まるように調整します。
@@ -282,106 +282,43 @@ class ImageEditor:
                 return
             font = ImageFont.truetype(font_path_str, font_size)
 
+        # 改行を含むテキストを分割
+        lines = text.split('\n')
+
         # 初期位置を設定
         x = boundingBox[0]
         y = boundingBox[1]
 
-        # 中央揃えオプション
+        # 中央揃えオプションが有効な場合
         if center:
-            x += (box_width - text_width) // 2
-            y += (box_height - text_height) // 2
-
-        elif right:
-            x = boundingBox[2] - text_width
-
-        # アウトラインの描画
-        for offset_x in range(-outline_width, outline_width + 1):
-            for offset_y in range(-outline_width, outline_width + 1):
-                if offset_x == 0 and offset_y == 0:
-                    continue
-                draw.text((x + offset_x, y + offset_y), text, font=font, fill=outline_fill)
-
-        # テキスト本体を描画
-        draw.text((x, y), text, font=font, fill=fill)
-
-
-
-
-
-
-
-# ----------------------------------------------------------------------------------
-
-
-    def drawVerticalTextWithOutline(
-            self,
-            draw: ImageDraw.ImageDraw,
-            text: str,
-            font: ImageFont.FreeTypeFont,
-            boundingBox: Tuple[int, int, int, int],
-            fill: Tuple[int, int, int] = (0, 0, 0),
-            outline_fill: Tuple[int, int, int] = (255, 255, 255),
-            outline_width: int = 2,
-            center: bool = False
-        ):
-        """
-        縦書きのテキストをアウトライン付きで描画し、必要に応じてフォントサイズを調整します。
-        """
-        # バウンディングボックスの幅と高さを取得
-        box_width = boundingBox[2] - boundingBox[0]
-        box_height = boundingBox[3] - boundingBox[1]
-
-        # 初期フォントサイズ
-        font_size = font.size
-
-        # 各文字の高さを取得し、文字間を詰めるために倍率を調整
-        line_spacing = font.getbbox('あ')[3] * 0.9  # 任意の文字で高さを取得し、間隔を少し詰める
-        total_text_height = len(text) * line_spacing
-
-        # 枠内に収まるようにフォントサイズを調整
-        while total_text_height > box_height and font_size > 10:
-            font_size -= 2
-            font = ImageFont.truetype(font.path, font_size)  # フォントサイズを更新
-            line_spacing = font.getbbox('あ')[3] * 0.9
-            total_text_height = len(text) * line_spacing
-
-        # 初期位置をバウンディングボックスの上側に設定
-        x = boundingBox[0]
-        y = boundingBox[1]
-
-        # テキストの中央揃えを行う
-        if center:
-            y += int((box_height - total_text_height) // 2)
+            # ボックス内で垂直方向に中央揃え
+            total_text_height = lineHeight * len(lines)
+            y += (box_height - total_text_height) // 2
 
         # 各行を描画
-        for index, line in enumerate(text):
-            char_x = x
-            char_y = y + int(index * line_spacing)
+        for line in lines:
+            line_width = draw.textlength(line, font=font)
 
-            # バウンディングボックスの高さを超えないように描画する
-            if char_y + line_spacing > boundingBox[3]:
-                break
-
-            # 文字の幅と高さを取得して、中央に揃えるための調整を行う
-            char_bbox = font.getbbox(line)
-            char_width = char_bbox[2] - char_bbox[0]
-            char_height = char_bbox[3] - char_bbox[1]
-
-            # 記号や数字など、特定の文字に対しては位置を微調整
-            adjusted_x = x + (box_width - char_width) // 2
-            if line in "・ー−〜、。":
-                # 記号の場合、横の中央に揃うように調整
-                adjusted_x += 2  # 適宜調整
+            # 中央揃えオプションが有効な場合は各行を中央に揃える
+            if center:
+                x = boundingBox[0] + (box_width - line_width) // 2
+            elif right:
+                x = boundingBox[2] - line_width
 
             # アウトラインの描画
             for offset_x in range(-outline_width, outline_width + 1):
                 for offset_y in range(-outline_width, outline_width + 1):
                     if offset_x == 0 and offset_y == 0:
                         continue
-                    draw.text((adjusted_x + offset_x, char_y + offset_y), line, font=font, fill=outline_fill, direction='ttb')
+                    draw.text((x + offset_x, y + offset_y), line, font=font, fill=outline_fill)
 
             # テキスト本体を描画
-            draw.text((adjusted_x, char_y), line, font=font, fill=fill, direction='ttb')
+            draw.text((x, y), line, font=font, fill=fill)
+
+            # 次の行のy位置を計算（中央揃えオプションが有効な場合のみ行ごとに）
+            y += lineHeight
+
+
 
 
 # ----------------------------------------------------------------------------------
@@ -421,7 +358,6 @@ class ImageEditor:
 
         for char in text:
             # 1文字ずつ追加して幅を計算
-            print(f"char: {char}")
             if draw.textlength(current_line + char, font=font) <= box_width:
                 current_line += char
             else:

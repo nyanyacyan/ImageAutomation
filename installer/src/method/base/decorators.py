@@ -225,7 +225,7 @@ class Decorators:
                             return result
                         else:
                             retryCount += 1
-                            self.logger.warning(f"文字数がオーバーのため再リクエスト")
+                            self.logger.warning(f"文字数がオーバーのため再リクエスト:\nwordCount: {wordCount}\nmaxlen: {maxlen}")
 
                         if retryCount >= maxCount:
                             overRetryComment = f"[指定回数以上の実施が合ったためエラー] {result}回実施: {func.__name__}"

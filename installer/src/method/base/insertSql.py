@@ -455,7 +455,7 @@ class InsertSql:
 
 
 # ----------------------------------------------------------------------------------
-# 3ページ目のChatGPT
+# ChatGPTのコメント生成
 
     @decoInstance.funcBase
     async def chatGPTComment(self, selectItems: List, itemStartValue: int, maxlen: int):
@@ -469,8 +469,8 @@ class InsertSql:
             maxlen=maxlen,
             maxTokens=ChatgptUtils.MaxToken.value
         )
-        self.logger.info(f"3ページ目のコメント: {result}")
-        self.logger.info(f"3ページ目のコメント文字数: {len(result)}文字")
+        self.logger.info(f"コメント: {result}")
+        self.logger.info(f"コメント文字数（文字制限:{maxlen}文字まで）: {len(result)}文字")
         return result
 
 
@@ -523,14 +523,19 @@ class InsertSql:
         station = resultDict.get('station', '-')
         walking = resultDict.get('walking', '-')
         rent = resultDict.get('rent', '-')
-        managementCost = resultDict.get('managementCost', '-')
+        managementCost = resultDict.get('managementCost', 'なし')
+
+        rent_int = self._int_to_Str(rent)
+        managementCost_int = self._int_to_Str(managementCost)
 
         commentParts = [
             "今回は",
-            f"{trainName} の {station}駅 から {walking} の物件です。",
-            f"賃料は {rent}",
-            f"管理費等は {managementCost}",
-            "紹介するよ"
+            f"{trainName} の",
+            f"{station} から",
+            f"{walking} の物件です。",
+            f"賃料は {rent_int} 円",
+            f"管理費等は {managementCost_int} 円",
+            "紹介するよ！"
         ]
 
         self.logger.info(f"secondComment:\n{commentParts}")
@@ -540,7 +545,18 @@ class InsertSql:
 
 
 # ----------------------------------------------------------------------------------
-# # 一覧ページから取得
+# テキストから数値を抜き出す→円がある場合にはそれまでの数値を抜き出す
+
+    def _int_to_Str(self, strData: str):
+        if '円' in strData:
+            strData = strData.split('円')[0]
+        number = int(''.join(filter(str.isdigit, strData)))
+        self.logger.info(f"文字列から数値に変換: {number}")
+        return number
+
+
+# ----------------------------------------------------------------------------------
+# 一覧ページから取得
 # tableValueは何個目かどうか
 
     @decoInstance.funcBase
