@@ -34,6 +34,7 @@ class FileWrite:
         # インスタンス
         self.errorhandler = FileWriteError(debugMode=debugMode)
         self.path = BaseToPath(debugMode=debugMode)
+        self.currentDate = datetime.now().strftime('%y%m%d_%H%M%S')
 
 
 # ----------------------------------------------------------------------------------

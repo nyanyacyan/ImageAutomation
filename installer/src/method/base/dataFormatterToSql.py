@@ -141,7 +141,7 @@ class DataFormatterToSql:
     def dataC_create(self, dataDict: Dict, imageNum: int = 2):
         # 写真データ
         imageData = dataDict['image']
-        priorityOrder = TableSchemas.IMAGE_PRIORITY_2
+        priorityOrder = TableSchemas.IMAGE_PRIORITY_3
 
         # 優先度を優先したデータ
         imageUrlList = self._priorityData(dataDict=imageData, priorityList=priorityOrder)
@@ -149,7 +149,7 @@ class DataFormatterToSql:
         # テキストデータ
         textDataDict = dataDict['text']
         print(f"textDataDict: {textDataDict}")
-        text_1 = self._data_C_D_text_1(dataDict=textDataDict, startNum=3, endNum=8)
+        text_1 = self._data_C_D_text_1(dataDict=textDataDict, startNum=4, endNum=8)
         text_2 = textDataDict['thirdComment']
 
         self.logger.warning(f"\nimageData: {imageData}\ntext_2: {text_2}")
@@ -170,7 +170,7 @@ class DataFormatterToSql:
     def dataD_create(self, dataDict: Dict):
         # 写真データ
         imageData = dataDict['image']
-        priorityOrder = TableSchemas.IMAGE_PRIORITY_2
+        priorityOrder = TableSchemas.IMAGE_PRIORITY_4
 
         # 優先度を優先したデータ
         imageUrlList = self._priorityData(dataDict=imageData, priorityList=priorityOrder)
@@ -237,10 +237,12 @@ class DataFormatterToSql:
         rent_str = dataDict['rent']
         deposit_str = dataDict['deposit']
         keyMoney_str = dataDict['keyMoney']
+        self.logger.debug(f"rent: {rent_str}\ndeposit: {deposit_str}\nkeyMoney: {keyMoney_str}")
 
         rent = self._int_to_Str(rent_str)
         deposit = self._int_to_Str(deposit_str)
         keyMoney = self._int_to_Str(keyMoney_str)
+        self.logger.debug(f"rent: {rent}\ndeposit: {deposit}\nkeyMoney: {keyMoney}")
 
         total = rent * (deposit + keyMoney)
 
@@ -249,9 +251,11 @@ class DataFormatterToSql:
         return depositTotal
 
 # ----------------------------------------------------------------------------------
-# テキストから数値を抜き出す
+# テキストから数値を抜き出す→円がある場合にはそれまでの数値を抜き出す
 
     def _int_to_Str(self, strData: str):
+        if '円' in strData:
+            strData = strData.split('円')[0]
         number = int(''.join(filter(str.isdigit, strData)))
         self.logger.info(f"文字列から数値に変換: {number}")
         return number

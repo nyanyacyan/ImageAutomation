@@ -169,8 +169,27 @@ class ImageEditor:
             if 'text_3' in data and 'TEXT_BOTTOM_LEFT' in positions:
                 self.drawTextWithOutline(draw, data['text_3'], positions['TEXT_BOTTOM_LEFT'], fontPath, initialFontSize=fontSize, lineHeight=40, fill=fontColor, outline_fill=(255, 255, 255), outline_width=2)
 
+        # Pattern B の場合
+        elif pattern == 'B':
+            if 'imagePath_1' in data:
+                self.drawImageWithMode(base_image, data['imagePath_1'], positions['IMAGE_TOP_LEFT'])
+
+            if 'imagePath_2' in data:
+                self.drawImageWithMode(base_image, data['imagePath_2'], positions['IMAGE_BOTTOM_LEFT'])
+
+            # テキストの配置
+            draw = ImageDraw.Draw(base_image)
+            if 'text_1' in data and 'TEXT_TOP_RIGHT' in positions:
+                self.drawTextWithOutline(draw, data['text_1'], positions['TEXT_TOP_RIGHT'], fontPath, initialFontSize=fontSize, fill=fontColor, lineHeight=40, outline_fill=(255, 255, 255), outline_width=2)
+
+            if 'text_2' in data and 'TEXT_BOTTOM_RIGHT' in positions:
+                self.drawTextWithOutline(draw, data['text_2'], positions['TEXT_BOTTOM_RIGHT'], fontPath, initialFontSize=fontSize, fill=fontColor, lineHeight=40, outline_fill=(255, 255, 255), outline_width=2)
+
+            if 'text_3' in data and 'TEXT_UNDER_BOTTOM' in positions:
+                self.drawTextWithOutline(draw, data['text_3'], positions['TEXT_UNDER_BOTTOM'], fontPath, initialFontSize=underBottomSize, fill=underBottomColor, lineHeight=40, outline_fill=(255, 255, 255), outline_width=2)
+
         else:
-            # Pattern B, C, D の場合
+            # Pattern C, D の場合
             if 'imagePath_1' in data:
                 self.drawImageWithMode(base_image, data['imagePath_1'], positions['IMAGE_TOP_LEFT'])
 
@@ -399,20 +418,16 @@ class ImageEditor:
         current_line = ""
 
         print(f"text: {text}")
-        textLines = text.split("\n")
-        print(f"textLines: {textLines}")
 
-        for line in textLines:
-
-            for char in text:
-                # 1文字ずつ追加して幅を計算
-                print(f"char: {char}")
-                if draw.textlength(current_line + char, font=font) <= box_width:
-                    current_line += char
-                else:
-                    # 枠の幅を超える場合は新しい行を追加
-                    lines.append(current_line)
-                    current_line = char
+        for char in text:
+            # 1文字ずつ追加して幅を計算
+            print(f"char: {char}")
+            if draw.textlength(current_line + char, font=font) <= box_width:
+                current_line += char
+            else:
+                # 枠の幅を超える場合は新しい行を追加
+                lines.append(current_line)
+                current_line = char
 
         # 最後の行を追加
         if current_line:
@@ -430,9 +445,6 @@ class ImageEditor:
 
             draw.text((x, y), line, font=font, fill=fill)
             y += lineHeight
-
-
-
 
 
 # ----------------------------------------------------------------------------------

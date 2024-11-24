@@ -170,7 +170,7 @@ class ImageInfo(Enum):
             "IMAGE_TOP_LEFT": (20, 190, 550, 500),
             "IMAGE_BOTTOM_LEFT": (20, 550, 480, 970),
             "TEXT_TOP_RIGHT": (600, 200, 1080, 440),
-            "TEXT_BOTTOM_RIGHT": (790, 600, 1030, 750)
+            "TEXT_BOTTOM_RIGHT": (790, 605, 1030, 750)
         },
         "D": {
             "IMAGE_TOP_LEFT": (20, 190, 550, 550),
