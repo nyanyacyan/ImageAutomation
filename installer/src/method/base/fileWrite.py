@@ -12,7 +12,7 @@ from fpdf import FPDF
 
 # 自作モジュール
 from .utils import Logger
-from const import Extension
+from ..const import Extension
 from .path import BaseToPath
 from .errorHandlers import FileWriteError
 from .decorators import Decorators

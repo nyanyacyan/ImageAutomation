@@ -19,13 +19,13 @@ from .utils import Logger
 from .elementManager import ElementManager
 from .AiOrder import ChatGPTOrder
 from .textManager import TextManager
-from dataclass import ListPageInfo, DetailPageInfo
+from ..dataclass import ListPageInfo, DetailPageInfo
 from .SQLite import SQLite
 from .decorators import Decorators
 from .jumpTargetPage import JumpTargetPage
-from const import ChatGptPrompt, ChatgptUtils, TableName
-from constElementInfo import ElementPath, ElementSpecify
-from constSqliteTable import TableSchemas
+from ..const import ChatGptPrompt, ChatgptUtils, TableName
+from ..constElementInfo import ElementPath, ElementSpecify
+from ..constSqliteTable import TableSchemas
 
 decoInstance = Decorators(debugMode=True)
 

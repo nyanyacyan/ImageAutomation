@@ -18,14 +18,14 @@ import os, asyncio
 from dotenv import load_dotenv
 
 # 自作モジュール
-from base.utils import Logger
-from base.chrome import ChromeManager
-from base.cookieManager import CookieManager
-from base.loginWithCookie import CookieLogin
-from base.insertSql import InsertSql
-from base.dataFormatterToSql import DataFormatterToSql
-from const import SiteUrl
-from constElementInfo import LoginElement
+from .base.utils import Logger
+from .base.chrome import ChromeManager
+from .base.cookieManager import CookieManager
+from .base.loginWithCookie import CookieLogin
+from .base.insertSql import InsertSql
+from .base.dataFormatterToSql import DataFormatterToSql
+from .const import SiteUrl
+from .constElementInfo import LoginElement
 
 load_dotenv()
 

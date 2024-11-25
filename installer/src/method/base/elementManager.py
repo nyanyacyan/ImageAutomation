@@ -10,7 +10,7 @@ from typing import Dict, Any, List, Tuple
 
 # 自作モジュール
 from .utils import Logger
-from const import NGWordList, Address
+from ..const import NGWordList, Address
 from .decorators import Decorators
 from .textManager import TextManager
 from .driverDeco import ClickDeco

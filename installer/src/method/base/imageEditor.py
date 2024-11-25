@@ -12,8 +12,8 @@ from io import BytesIO
 # 自作モジュール
 from .utils import Logger
 from .path import BaseToPath
-from constElementInfo import ImageInfo
-from const import Extension
+from ..constElementInfo import ImageInfo
+from ..const import Extension
 
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
