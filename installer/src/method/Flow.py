@@ -5,6 +5,7 @@
 # sudo tree /Users/nyanyacyan/Desktop/Project_file/SNS_auto_upper -I 'venv|pyvenv.cfg|__pycache__'
 # Mac mini PYTHONPATH=/Users/nyanyacyan/Desktop/Project_file/ImageAutomation/installer/src
 # MacBook export PYTHONPATH="/Users/nyanyacyan/Desktop/Project_file/ImageAutomation/installer/src"
+# Windows $env:PYTHONPATH="C:\Users\User\Desktop\imageAutomation\installer\src"
 
 
 # 辞書データデバッグ
