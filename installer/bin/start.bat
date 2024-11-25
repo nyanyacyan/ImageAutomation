@@ -1,5 +1,9 @@
 @echo on
 chcp 65001 > nul
+set PYTHONIOENCODING=utf-8
+
+REM デバッグ: 開始メッセージ
+echo スクリプトを開始します。
 
 REM ログファイルの設定
 set LOG_FILE=log.txt
@@ -7,118 +11,81 @@ echo > %LOG_FILE%
 
 REM バッチファイルのパスを取得（バッチファイルがあるディレクトリ）
 set BIN_DIR=%~dp0
+echo BIN_DIR: %BIN_DIR%
+
 set PROJECT_ROOT=%BIN_DIR%..\..
-echo バッチファイルのパス: %BIN_DIR% >> %LOG_FILE%
+echo PROJECT_ROOT: %PROJECT_ROOT%
 
+set VENV_DIR=%BIN_DIR%venv
+echo VENV_DIR: %VENV_DIR%
 
-REM requirements.txt のパスを固定
-set REQUIREMENTS_FILE=%BIN_DIR%requirements.txt
+REM requirements.txt のパスを設定
+set REQUIREMENTS_FILE=%PROJECT_ROOT%\installer\bin\requirements.txt
 if not exist "%REQUIREMENTS_FILE%" (
-    echo ERROR: requirements.txt が見つかりませんでした。 >> %LOG_FILE%
+    echo ERROR: requirements.txt が見つかりません。
     exit /b 1
-
+)
+echo REQUIREMENTS_FILE: %REQUIREMENTS_FILE%
 
 REM 仮想環境の作成（初回のみ）
 if not exist "%VENV_DIR%" (
-    echo Creating virtual environment... >> %LOG_FILE%
-    python -m venv "%VENV_DIR%" >> %LOG_FILE% 2>&1
+    echo 仮想環境を作成します...
+    python -m venv "%VENV_DIR%"
     if errorlevel 1 (
-        echo ERROR: 仮想環境の作成に失敗しました。 >> %LOG_FILE%
+        echo ERROR: 仮想環境の作成に失敗しました。
         exit /b 1
     )
 ) else (
-    echo 仮想環境が既に存在します。 >> %LOG_FILE%
+    echo 仮想環境が既に存在します。
 )
 
-REM 仮想環境を有効化
-call "%VENV_DIR%\Scripts\activate"
-
-
+REM 仮想環境の有効化
 if not exist "%VENV_DIR%\Scripts\activate" (
-    echo ERROR: 仮想環境の有効化スクリプトが見つかりませんでした。 >> %LOG_FILE%
+    echo ERROR: 仮想環境の有効化スクリプトが見つかりませんでした。
     exit /b 1
 )
 call "%VENV_DIR%\Scripts\activate"
-
+echo 仮想環境が有効化されました。
 
 REM requirements.txt のインストール（初回のみ）
 set INSTALL_FLAG=%BIN_DIR%requirements_installed.flag
 if not exist "%INSTALL_FLAG%" (
-    echo Installing requirements from %REQUIREMENTS_FILE% >> %LOG_FILE%
-    pip install --upgrade pip >> %LOG_FILE% 2>&1
-    pip install -r "%REQUIREMENTS_FILE%" >> %LOG_FILE% 2>&1
+    echo requirements.txt をインストールします...
+    pip install --upgrade pip
+    pip install -r "%REQUIREMENTS_FILE%"
     if errorlevel 1 (
-        echo ERROR: requirements.txt のインストールに失敗しました。 >> %LOG_FILE%
+        echo ERROR: requirements.txt のインストールに失敗しました。
         exit /b 1
     )
-    type nul > "%INSTALL_FLAG%"
+    echo > "%INSTALL_FLAG%"
 ) else (
-    echo Requirements already installed. Skipping installation. >> %LOG_FILE%
+    echo requirements.txt は既にインストール済みです。
 )
 
-
-REM Flow.py を検索
-for /r "%PROJECT_ROOT%" %%f in (Flow.py) do (
+REM main.py の検索
+for /r "%PROJECT_ROOT%\installer\src" %%f in (main.py) do (
     set MAIN_FILE=%%f
     goto :found_main
 )
 :found_main
-
-REM 仮想環境のディレクトリ
-set VENV_DIR=%BIN_DIR%venv
-
-REM 仮想環境を作成（初回のみ）
-if not exist "%VENV_DIR%" (
-    echo Creating virtual environment... >> %LOG_FILE%
-    python -m venv "%VENV_DIR%" >> %LOG_FILE% 2>&1
-    if errorlevel 1 (
-        echo ERROR: 仮想環境の作成に失敗しました。 >> %LOG_FILE%
-        exit /b 1
-    )
-) else (
-    echo 仮想環境が既に存在します。 >> %LOG_FILE%
-)
-
-REM 仮想環境を有効化
-call "%VENV_DIR%\Scripts\activate"
-
-REM requirements.txt のインストール（初回のみ）
-if defined REQUIREMENTS_FILE (
-    set INSTALL_FLAG=%BIN_DIR%requirements_installed.flag
-    if not exist "%INSTALL_FLAG%" (
-        echo Installing requirements from %REQUIREMENTS_FILE% >> %LOG_FILE%
-        pip install --upgrade pip >> %LOG_FILE% 2>&1
-        pip install -r "%REQUIREMENTS_FILE%" >> %LOG_FILE% 2>&1
-        if errorlevel 1 (
-            echo ERROR: requirements.txt のインストールに失敗しました。 >> %LOG_FILE%
-            exit /b 1
-        )
-        echo Installation complete. Creating flag file. >> %LOG_FILE%
-        type nul > "%INSTALL_FLAG%"
-    ) else (
-        echo Requirements already installed. Skipping installation. >> %LOG_FILE%
-    )
-) else (
-    echo ERROR: requirements.txt が見つかりませんでした。 >> %LOG_FILE%
+if not defined MAIN_FILE (
+    echo ERROR: main.py が見つかりませんでした。
     exit /b 1
 )
+echo MAIN_FILE: %MAIN_FILE%
 
 REM main.py の実行
-if defined MAIN_FILE (
-    echo Running main.py from %MAIN_FILE%... >> %LOG_FILE%
-    python "%MAIN_FILE%" >> %LOG_FILE% 2>&1
-    if errorlevel 1 (
-        echo ERROR: main.py の実行中にエラーが発生しました。 >> %LOG_FILE%
-        exit /b 1
-    )
-) else (
-    echo ERROR: main.py が見つかりませんでした。 >> %LOG_FILE%
+echo main.py を実行します...
+python "%MAIN_FILE%"
+if errorlevel 1 (
+    echo ERROR: main.py の実行中にエラーが発生しました。
     exit /b 1
 )
 
 REM 仮想環境を無効化
 deactivate
+echo 仮想環境を無効化しました。
 
-REM 正常終了メッセージ
-echo バッチファイルの実行が完了しました。 >> %LOG_FILE%
+REM 完了メッセージ
+echo スクリプトの実行が完了しました。
 pause
