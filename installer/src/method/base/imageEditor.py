@@ -43,7 +43,9 @@ class ImageEditor:
 
             # パターン固有のデータを取得
             pattern_data = dataDict[pattern]
-            baseImagePath = ImageInfo.BASE_IMAGE_PATH.value[pattern]
+            baseImageFileName = ImageInfo.BASE_IMAGE_FILE_NAME.value[pattern]
+            baseImagePath = self.inputDataFolderPath(fileName=baseImageFileName)
+
             fontSize = ImageInfo.FONT_SIZES.value[pattern]
             commentSize = ImageInfo.COMMENT_SIZE.value
             fontFileName = ImageInfo.FONT_NAME.value
