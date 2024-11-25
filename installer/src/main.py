@@ -34,7 +34,9 @@ class Main:
 
       diff_time = end_time - start_time
 
-      self.logger.info(f"処理時間 : {diff_time}秒")
+      process_time = f"処理時間 : {diff_time}秒"
+
+      
 
 
 # ------------------------------------------------------------------------------

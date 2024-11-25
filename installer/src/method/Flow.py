@@ -79,8 +79,6 @@ class Flow:
         self.createImage.flowAllDataCreate(allDataDict=allData)
 
 
-# TODO batFileの作成→実行、install
-
 # TODO 手順書の作成
 
 

@@ -20,6 +20,7 @@ from ..base.textManager import TextManager
 from ..constSqliteTable import TableSchemas
 from ..base.imageEditor import ImageEditor
 from ..base.fileWrite import LimitSabDirFileWrite
+from ..base.popup import Popup
 
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
@@ -41,6 +42,7 @@ class DataFormatterToSql:
         self.imageEditor = ImageEditor(debugMode=debugMode)
         self.fileWrite = LimitSabDirFileWrite(debugMode=debugMode)
         self.currentDate = datetime.now().strftime('%y%m%d')
+        self.popup = Popup(debugMode=debugMode)
 
 # ----------------------------------------------------------------------------------
 # 各データをパターンごとにまとめる辞書
@@ -49,19 +51,28 @@ class DataFormatterToSql:
         self.logger.info(f"すべてのデータ数: {len(allDataDict)}")
         self.logger.debug(f"allDataDict: {allDataDict}")
 
+        count = 0
         adCommentList = []
         for key, valueDict in allDataDict.items():
             self.logger.warning(f"key: {key}\nvalueDict: {valueDict}")
             dataDict, name, ad = self.allDataCreate(dataDict=valueDict)
             self.imageEditor.executePatternEditors(dataDict=dataDict, buildingName=name)
 
-            # TODO adのリストを作成
+            # adのリストを作成
             adComment = f"{name} : {ad}"
             adCommentList.append(adComment)
+            count += 1
 
         dirName = f'AD一覧テキスト'
         fileName = f"{dirName}_{self.currentDate}"
         self.fileWrite.writeSabDirToText(data=adCommentList, subDirName=dirName, fileName=fileName)
+
+        self.chrome.close()
+
+        title = "物件情報抽出"
+        comment = f"すべての処理が完了しました。\n全 {count} 件数を実施"
+
+        self.popup.popupCommentOnly(popupTitle=title, comment=comment)
 
 
 # ----------------------------------------------------------------------------------

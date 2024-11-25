@@ -118,6 +118,8 @@ class ChatGPTOrder:
         self.logger.debug(chatHistory)
         self.logger.debug(assistantMsg[10:])
         wordCount = len(assistantMsg)
+        self.logger.debug(assistantMsg)
+        self.logger.info(f"wordCount: {wordCount}\maxlen: {maxlen}")
 
         if wordCount > maxlen:
             newResult = await self.reRequest(fixedPrompt=fixedPrompt, beforeResult=result, endpointUrl=endpointUrl, model=model, apiKey=apiKey, maxTokens=maxTokens)
