@@ -68,11 +68,11 @@ class SQLite:
         dirPath = os.path.dirname(filePath)
         files = os.listdir(dirPath)
 
-        self.logger.warning(f"現在の {extension} ファイル数: {len(files)}個\n上限数: {keepWrites}\n{files}")
+        self.logger.warning(f"現在の {extension} ファイル数: {len(files)}個\n上限数: {keepWrites}")
 
         # 6桁の数字で始まるファイルを検知
-        validPrefixes = tuple(str(i).zfill(startIntNum) for i in range(10000))
-        self.logger.warning(f"数字 {startIntNum} で始まるファイル数: {len(validPrefixes)}個\n上限数: {keepWrites}\n{validPrefixes}")
+        validPrefixes = tuple(str(i).zfill(startIntNum) for i in range(1000000))
+        self.logger.warning(f"数字 {startIntNum} で始まるファイル数: {len(validPrefixes)}個\n上限数: {keepWrites}")
 
         # 拡張子でSort
         writeFiles = [
