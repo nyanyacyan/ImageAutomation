@@ -113,6 +113,13 @@ class ImageInfo(Enum):
         "D": "/Users/nyanyacyan/Desktop/Project_file/ImageAutomation/installer/src/method/inputData/D.png",
     }
 
+    BASE_IMAGE_FILE_NAME = {
+        "A": "A.png",
+        "B": "B.png",
+        "C": "C.png",
+        "D": "D.png",
+    }
+
     BASE_IMAGE_SIZE = (1080, 1080)
 
     FONT_SIZES = {
