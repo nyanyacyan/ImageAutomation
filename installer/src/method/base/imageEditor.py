@@ -13,6 +13,7 @@ from io import BytesIO
 from .utils import Logger
 from .path import BaseToPath
 from constElementInfo import ImageInfo
+from const import Extension
 
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
@@ -48,13 +49,12 @@ class ImageEditor:
             commentSize = ImageInfo.COMMENT_SIZE.value
             fontFileName = ImageInfo.FONT_NAME.value
             fontPath = self.inputDataFolderPath(fileName=fontFileName)
-            outputFolder = self.resultOutputFilePath
             fontColor = ImageInfo.FONT_COLORS.value[pattern]  # パターンに対応するフォントカラーを取得
             underBottomSize = ImageInfo.UNDER_BOTTOM_SIZE.value
             underBottomColor = ImageInfo.UNDER_BOTTOM_COLOR.value
 
             # 画像作成メソッドにパターン固有の情報を渡す
-            if not self.createImage(pattern_data, fontPath, baseImagePath, fontSize, commentSize, outputFolder, pattern, fontColor, underBottomSize, underBottomColor, buildingName):
+            if not self.createImage(pattern_data, fontPath, baseImagePath, fontSize, commentSize, pattern, fontColor, underBottomSize, underBottomColor, buildingName):
                 self.logger.error(f"パターン {pattern} の画像データが揃ってないため、以降のパターンをスキップします。")
                 break
 
@@ -98,7 +98,7 @@ class ImageEditor:
 # ----------------------------------------------------------------------------------
 
 
-    def createImage(self, data: dict, fontPath: str, baseImagePath: str, fontSize: int, commentSize, outputFolder: str, pattern: str, fontColor: Tuple[int, int, int], underBottomSize: int, underBottomColor: Tuple[int, int, int], buildingName: str):
+    def createImage(self, data: dict, fontPath: str, baseImagePath: str, fontSize: int, commentSize, pattern: str, fontColor: Tuple[int, int, int], underBottomSize: int, underBottomColor: Tuple[int, int, int], buildingName: str):
         '''
         fontPath→使用したいフォントを指定する
         baseImagePath→ベース画像を指定する
@@ -208,7 +208,9 @@ class ImageEditor:
                 self.drawTextWithOutline(draw, data['text_3'], positions['TEXT_UNDER_BOTTOM'], fontPath, initialFontSize=underBottomSize, fill=underBottomColor, lineHeight=40, outline_fill=(255, 255, 255), outline_width=2)
 
         # 画像の保存
-        outputFilePath = os.path.join(outputFolder, f"{buildingName}_{pattern}.png")
+        extension = Extension.PNG.value
+        fileName = f"{buildingName}_{pattern}"
+        outputFilePath = self.getResultSubDirFilePath(subDirName=buildingName, fileName=fileName, extension=extension)
         base_image.save(outputFilePath, format="PNG")
         self.logger.info(f"保存完了: {outputFilePath}")
 
@@ -441,9 +443,9 @@ class ImageEditor:
 # ----------------------------------------------------------------------------------
 # resultOutput
 
-    @property
-    def resultOutputFilePath(self):
-        return self.path.getResultOutputPath()
+
+    def getResultSubDirFilePath(self, subDirName: str, fileName: str, extension: str):
+        return self.path.getResultSubDirFilePath(subDirName, fileName, extension)
 
 
 # ----------------------------------------------------------------------------------

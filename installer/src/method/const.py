@@ -81,6 +81,7 @@ class Extension(Enum):
     yaml='.yaml'
     cookie='cookie.pkl'
     DB='.db'
+    PNG='.png'
 
 
 # ----------------------------------------------------------------------------------

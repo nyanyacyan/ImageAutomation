@@ -84,6 +84,7 @@ class BaseToPath:
 
     def getResultOutputPath(self, levelsUp: int = 4, dirName: str=Dir.result.value):
         currentDirPath = self.currentDir
+        self.logger.info(f"levelsUp の型: {type(levelsUp)}: {levelsUp}")
 
         # スタートが0で1つ上の階層にするため→levelsUpに１をいれたら１個上の階層にするため
         resultOutputPath = currentDirPath.parents[levelsUp - 1] / dirName
@@ -163,12 +164,14 @@ class BaseToPath:
 # ----------------------------------------------------------------------------------
 # Result > SubDir > File
 
-    def getResultSubDirFilePath(self, subDirName: str, fileName: str):
+    def getResultSubDirFilePath(self, subDirName: str, fileName: str, extension: str):
         resultOutputPath = self.getResultOutputPath()
-        FilePath = resultOutputPath / subDirName / fileName
+        dirPath = resultOutputPath / subDirName
+        file = fileName + extension
+        FilePath = dirPath / file
         self.logger.warning(f"FilePath: {FilePath}")
         self.logger.debug(f"FilePathの型: {type(FilePath)}")
-        self.isDirExists(path=FilePath)
+        self.isDirExists(path=dirPath)
         self.logger.debug(f"FilePath: {FilePath}")
         return FilePath
 

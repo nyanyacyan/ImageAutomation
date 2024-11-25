@@ -19,7 +19,7 @@ from base.insertSql import InsertSql
 from base.textManager import TextManager
 from constSqliteTable import TableSchemas
 from base.imageEditor import ImageEditor
-from base.fileWrite import FileWrite
+from base.fileWrite import LimitSabDirFileWrite
 
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
@@ -39,7 +39,7 @@ class DataFormatterToSql:
         self.insertSql = InsertSql(chrome=self.chrome, debugMode=debugMode)
         self.textManager = TextManager(debugMode=debugMode)
         self.imageEditor = ImageEditor(debugMode=debugMode)
-        self.fileWrite = FileWrite(debugMode=debugMode)
+        self.fileWrite = LimitSabDirFileWrite(debugMode=debugMode)
         self.currentDate = datetime.now().strftime('%y%m%d')
 
 # ----------------------------------------------------------------------------------
@@ -59,8 +59,9 @@ class DataFormatterToSql:
             adComment = f"{name} : {ad}"
             adCommentList.append(adComment)
 
-        fileName = f"AD一覧テキスト"
-        self.fileWrite.writeToText(data=adCommentList, fileName=fileName)
+        dirName = f'AD一覧テキスト'
+        fileName = f"{dirName}_{self.currentDate}"
+        self.fileWrite.writeSabDirToText(data=adCommentList, subDirName=dirName, fileName=fileName)
 
 
 # ----------------------------------------------------------------------------------

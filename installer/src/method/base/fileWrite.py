@@ -77,6 +77,10 @@ class FileWrite:
         fullPath = self.path.getWriteFilePath(fileName=fileName)
         filePath = os.path.join(fullPath, f'{self.currentDate}{extension}')
 
+        # データがリストだった場合の処理
+        if isinstance(data, list):
+            data = '\n'.join(data)
+
         if data and fileName:
             #? newline=''→Windows環境にて余計な空行を防ぐOP
             with open(filePath, 'w', newline='', encoding='utf-8') as file:
@@ -93,6 +97,10 @@ class FileWrite:
     def writeToJson(self, data: Any, fileName: str, extension: str=".json"):
         fullPath = self.path.getWriteFilePath(fileName=fileName)
         filePath = os.path.join(fullPath, f'{self.currentDate}{extension}')
+
+        # データがリストだった場合の処理
+        if isinstance(data, list):
+            data = '\n'.join(data)
 
         if data and fileName:
             with open(filePath, 'w', encoding='utf-8') as file:
@@ -111,6 +119,10 @@ class FileWrite:
     def writeToPickle(self, data: Any, fileName: str, extension: str=".pkl"):
         fullPath = self.path.getWriteFilePath(fileName=fileName)
         filePath = os.path.join(fullPath, f'{self.currentDate}{extension}')
+
+        # データがリストだった場合の処理
+        if isinstance(data, list):
+            data = '\n'.join(data)
 
         if data and fileName:
             with open(filePath, 'wb') as file:
@@ -492,3 +504,70 @@ class PDFWhite(FPDF):
 
 
 # **********************************************************************************
+# ファイルに書き込みする基底クラス
+
+class LimitSabDirFileWrite:
+    def __init__(self, debugMode=True):
+
+        # logger
+        self.getLogger = Logger(__name__, debugMode=debugMode)
+        self.logger = self.getLogger.getLogger()
+
+        # インスタンス
+        self.errorhandler = FileWriteError(debugMode=debugMode)
+        self.path = BaseToPath(debugMode=debugMode)
+        self.currentDate = datetime.now().strftime('%y%m%d')
+
+
+# ----------------------------------------------------------------------------------
+
+
+    def _existsCheck(self, filePath: str):
+        if os.path.exists(filePath):
+            self.logger.info(f"【存在確認済】テキストファイル書き込み完了: {filePath}")
+        else:
+            self.logger.error(f"Fileの書込に失敗してます{__name__}, Path:{filePath}")
+
+
+# ----------------------------------------------------------------------------------
+
+
+    def cleanWriteFiles(self, filePath, extension: str, keepWrites: int=3):
+        dirName = os.path.dirname(filePath)
+        validPrefixes = tuple(str(i).zfill(4) for i in range(10000))
+
+        writeFiles = [
+            file for file in os.listdir(dirName)
+            if file.startswith(validPrefixes) and file.endswith(extension)
+        ]
+
+        if len(writeFiles) > keepWrites:
+            writeFiles.sort()
+
+            oldFile = writeFiles[0]
+            fileToRemove = os.path.join(dirName, oldFile)
+            if os.path.exists(fileToRemove):
+                os.remove(fileToRemove)
+                self.logger.info(f"{keepWrites}つ以上のファイルを検知: {oldFile} を削除")
+
+
+# ----------------------------------------------------------------------------------
+# text
+
+    @decoInstance.fileRetryAction(maxRetry=2, delay=2)
+    def writeSabDirToText(self, data: Any, subDirName:str, fileName: str, extension: str=Extension.text.value):
+        filePath = self.path.getResultSubDirFilePath(subDirName=subDirName, fileName=fileName, extension=extension)
+
+        # データがリストだった場合の処理
+        if isinstance(data, list):
+            data = '\n'.join(data)
+
+        if data and fileName:
+            with open(filePath, 'w', encoding='utf-8') as file:
+                file.write(data)
+
+            self._existsCheck(filePath=filePath)
+            self.cleanWriteFiles(filePath=filePath, extension=extension)
+
+
+# ----------------------------------------------------------------------------------
