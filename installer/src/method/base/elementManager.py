@@ -156,9 +156,19 @@ class ElementManager:
 # ----------------------------------------------------------------------------------
 # NGWordを除外リスト
 
-    def textCleaner(self, textList: List):
+    def textCleaner(self, textList: List, minLen: int = 12):
         ngWords = NGWordList.ngWords.value
         filterWordsList = self.textManager.filterWords(textList=textList, ngWords=ngWords)
+
+        self.logger.warning(f"filterWordsList: {filterWordsList}\ntextList: {textList}")
+        filterWordsListNum = len(filterWordsList)
+
+        print(f"filterWordsListNum: {filterWordsListNum}")
+        if minLen >= filterWordsListNum:
+            newTextList = textList.split('，')
+            print(f"newTextList: {newTextList}")
+            return newTextList
+
         return filterWordsList
 
 

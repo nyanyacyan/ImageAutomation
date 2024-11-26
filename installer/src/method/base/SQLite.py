@@ -70,11 +70,12 @@ class SQLite:
 
         self.logger.warning(f"現在の {extension} ファイル数: {len(files)}個\n上限数: {keepWrites}")
 
-        # 6桁の数字で始まるファイルを検知
-        validPrefixes = tuple(str(i).zfill(startIntNum) for i in range(1000000))
+        # 6桁の数字をすべてリスト化する
+        upperLimit = int('1' + '0' * startIntNum)
+        validPrefixes = tuple(str(i).zfill(startIntNum) for i in range(upperLimit))
         self.logger.warning(f"数字 {startIntNum} で始まるファイル数: {len(validPrefixes)}個\n上限数: {keepWrites}")
 
-        # 拡張子でSort
+        # 拡張子によってファイルを厳選
         writeFiles = [
             file for file in os.listdir(dirPath)
             if file.startswith(validPrefixes) and file.endswith(extension)
@@ -82,7 +83,8 @@ class SQLite:
         self.logger.info(f"writeFiles :{writeFiles}")
 
         if len(writeFiles) > keepWrites:
-            writeFiles.sort()
+            sortWriteFiles = writeFiles.sort()
+            self.logger.debug(f"sortWriteFiles: {sortWriteFiles}")
 
             oldFile = writeFiles[0]
             fileToRemove = os.path.join(dirPath, oldFile)

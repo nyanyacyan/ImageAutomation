@@ -18,6 +18,7 @@ class ElementSpecify(Enum):
     ID='id'
     XPATH='xpath'
     CSS='css'
+    TAG='tag'
 
 
 # **********************************************************************************
@@ -174,8 +175,8 @@ class ImageInfo(Enum):
             "TEXT_UNDER_BOTTOM": (440, 1020, 720, 1050)
         },
         "C": {
-            "IMAGE_TOP_LEFT": (20, 190, 550, 500),
-            "IMAGE_BOTTOM_LEFT": (20, 550, 480, 970),
+            "IMAGE_TOP_LEFT": (20, 190, 550, 570),
+            "IMAGE_BOTTOM_LEFT": (20, 580, 480, 970),
             "TEXT_TOP_RIGHT": (600, 200, 1080, 440),
             "TEXT_BOTTOM_RIGHT": (790, 605, 1030, 745)
         },
@@ -207,3 +208,12 @@ class ImageInfo(Enum):
 
 
 # ----------------------------------------------------------------------------------
+
+
+
+class ErrorElement(Enum):
+    ERROR_PAGE_BY = 'tag'
+    ERROR_PAGE_VALUE = ''
+
+    ERROR_CLICK_BY = 'xpath'
+    ERROR_CLICK_VALUE = "//a[text()='トップページ']"

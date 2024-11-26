@@ -270,7 +270,16 @@ class DataFormatterToSql:
     def _int_to_Str(self, strData: str):
         if '円' in strData:
             strData = strData.split('円')[0]
-        number = int(''.join(filter(str.isdigit, strData)))
+
+        # 数値になる文字列のみを残す
+        filteredStr = ''.join(filter(str.isdigit, strData))
+
+        # もし数値になる文字列がなかったら
+        if not filteredStr:
+            self.logger.error(f"数値ではない文字列を検知しました: {strData}")
+            return 0
+
+        number = int(filteredStr)
         self.logger.info(f"文字列から数値に変換: {number}")
         return number
 

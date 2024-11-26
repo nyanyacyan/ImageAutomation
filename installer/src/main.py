@@ -36,7 +36,7 @@ class Main:
 
       process_time = f"処理時間 : {diff_time}秒"
 
-      
+      self.logger.info(process_time)
 
 
 # ------------------------------------------------------------------------------

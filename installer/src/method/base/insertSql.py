@@ -12,6 +12,7 @@ from pprint import pprint
 
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import TimeoutException
 
 
 # 自作モジュール
@@ -24,7 +25,7 @@ from .SQLite import SQLite
 from .decorators import Decorators
 from .jumpTargetPage import JumpTargetPage
 from ..const import ChatGptPrompt, ChatgptUtils, TableName
-from ..constElementInfo import ElementPath, ElementSpecify
+from ..constElementInfo import ElementPath, ElementSpecify, ErrorElement
 from ..constSqliteTable import TableSchemas
 
 decoInstance = Decorators(debugMode=True)
@@ -60,10 +61,10 @@ class InsertSql:
 # 一覧の物件リストから詳細ページへ移動して取得する
 
     @decoInstance.funcBase
-    def getListPageInfo(self, delay: int = 2):
+    def getListPageInfo(self):
 
         # ジャンプしてURLへ移動して検索画面を消去まで実施
-        self._navigateToTargetPage(delay=delay)
+        self.popupRemove()
 
         #! テスト中に設定ｚ
         maxRetries = 1
@@ -436,8 +437,9 @@ class InsertSql:
 # ----------------------------------------------------------------------------------
 
 
-    @decoInstance.funcBase
+    @decoInstance.retryAction
     def _navigateToTargetPage(self, delay: int):
+
         # self.jumpTargetPage.flowJumpTargetPage(targetUrl=targetUrl)
         # time.sleep(delay)
 
@@ -452,6 +454,45 @@ class InsertSql:
         )
         time.sleep(delay)
         self.logger.debug(f"新しいページに移動後、Refresh完了")
+
+
+# ----------------------------------------------------------------------------------
+
+
+    @decoInstance.retryAction
+    def popupRemove(self, delay: int = 2):
+        try:
+            # 検索画面を消去
+            self.element.clickElement(
+                by=ElementSpecify.XPATH.value,
+                value=ElementPath.SEARCH_DELETE_BTN_PATH.value
+            )
+            # エラーが起きる可能性があるため検知しやすくするためスリープ
+            time.sleep(delay)
+
+        # 別のページが開いてる
+        except TimeoutException:
+            self.errorPageDetect(
+                by=ErrorElement.ERROR_PAGE_BY.value,
+                value=ErrorElement.ERROR_CLICK_BY.value,
+                errorPageActionFunc=lambda: self.element.clickElement(
+                    by=ErrorElement.ERROR_CLICK_BY.value,
+                    value=ErrorElement.ERROR_CLICK_VALUE.value
+                )
+            )
+
+
+# ----------------------------------------------------------------------------------
+
+
+    def errorPageDetect(self, by: str, value: str, errorMessage: str, errorPageActionFunc):
+        self.logger.warning(f"エラーページが表示されている可能性があります。")
+
+        errorElement = self.element.getElement(by=by, value=value)
+        if errorMessage in errorElement:
+            self.logger.warning(f"エラーページを検知しました。")
+
+            errorPageActionFunc()
 
 
 # ----------------------------------------------------------------------------------
@@ -550,7 +591,16 @@ class InsertSql:
     def _int_to_Str(self, strData: str):
         if '円' in strData:
             strData = strData.split('円')[0]
-        number = int(''.join(filter(str.isdigit, strData)))
+
+        # 数値になる文字列のみを残す
+        filteredStr = ''.join(filter(str.isdigit, strData))
+
+        # もし数値になる文字列がなかったら
+        if not filteredStr:
+            self.logger.error(f"数値ではない文字列を検知しました: {strData}")
+            return 0
+
+        number = int(filteredStr)
         self.logger.info(f"文字列から数値に変換: {number}")
         return number
 
