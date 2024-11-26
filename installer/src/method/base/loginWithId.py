@@ -41,23 +41,24 @@ class LoginID:
 # IDログイン
 # loginInfoはconstから取得
     @decoInstance.jsCompleteWaitRetry()
-    def flowLoginID(self, url: str, loginInfo: dict, delay: int=1):
+    def flowLoginID(self, url: str, loginInfo: dict, delay: int = 2):
 
         # サイトを開いてCookieを追加
         # self.openSite(url=url)
         # time.sleep(delay)
 
         self.inputId(by=loginInfo['idBy'], value=loginInfo['idValue'], inputText=loginInfo['idText'])
-        time.sleep(delay)
 
         self.inputPass(by=loginInfo['passBy'], value=loginInfo['passValue'], inputText=loginInfo['passText'])
-        time.sleep(delay)
 
         self.clickLoginBtn(by=loginInfo['btnBy'], value=loginInfo['btnValue'])
+
+        # 検索ページなどが出てくる対策
+        # PCのスペックに合わせて設定
         time.sleep(delay)
 
         # ログイン後に別のサイトへアクセスしてることを考慮して
-        self.openSite(url=url)
+        # self.openSite(url=url)
 
         return self.loginCheck(url)
 

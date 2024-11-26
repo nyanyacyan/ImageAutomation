@@ -3,7 +3,6 @@
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
-import time
 from selenium.webdriver.chrome.webdriver import WebDriver
 from datetime import datetime
 from typing import Dict, Any, List, Tuple
@@ -106,13 +105,13 @@ class ElementManager:
 
 
     @decoInstance.funcBase
-    def clickClearInput(self, by: str, value: str, inputText: str, delay: int = 2):
+    def clickClearInput(self, by: str, value: str, inputText: str):
+        self.clickWait.canWaitClick(chrome=self.chrome, by=by, value=value, timeout=3)
         element = self.getElement(by=by, value=value)
         element.click()
-        time.sleep(delay)
         element.clear()
-        time.sleep(delay)
         element.send_keys(inputText)
+        self.clickWait.jsPageChecker(chrome=self.chrome)
 
 
 # ----------------------------------------------------------------------------------
@@ -155,7 +154,7 @@ class ElementManager:
 
 
 # ----------------------------------------------------------------------------------
-
+# NGWordを除外リスト
 
     def textCleaner(self, textList: List):
         ngWords = NGWordList.ngWords.value

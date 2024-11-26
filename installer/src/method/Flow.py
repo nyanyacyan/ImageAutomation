@@ -52,7 +52,7 @@ class Flow:
 
         # インスタンス
         self.cookieManager = CookieManager(chrome=self.chrome, loginUrl=self.loginUrl, homeUrl=self.homeUrl, debugMode=debugMode)
-        self.cookieLogin = CookieLogin(chrome=self.chrome, loginUrl=self.loginUrl, homeUrl=self.homeUrl, signInUrl=self.signInUrl, debugMode=debugMode)
+        self.cookieLogin = CookieLogin(chrome=self.chrome, loginUrl=self.loginUrl, homeUrl=self.homeUrl, targetUrl=self.targetUrl, signInUrl=self.signInUrl, debugMode=debugMode)
         self.insertSql = InsertSql(chrome=self.chrome, debugMode=debugMode)
         self.createImage = DataFormatterToSql(chrome=self.chrome, debugMode=debugMode)
 
@@ -70,7 +70,7 @@ class Flow:
         cookies = self.cookieManager.startBoolFilePath(url=self.homeUrl, loginInfo=loginInfo)
 
         # cookiesの出力によってログイン方法を分ける
-        self.cookieLogin.flowSwitchLogin(cookies=cookies, url=self.homeUrl, loginInfo=loginInfo)
+        self.cookieLogin.flowSwitchLogin(cookies=cookies, url=self.targetUrl, loginInfo=loginInfo)
 
         # text, imageを取得してSQLiteに入れ込む→入れ込んだIDのリストを返す
         listPageInfoDict = self.insertSql.getListPageInfo()

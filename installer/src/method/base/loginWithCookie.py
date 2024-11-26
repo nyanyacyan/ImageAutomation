@@ -26,7 +26,7 @@ decoInstance = jsCompleteWaitDeco(debugMode=True)
 
 
 class CookieLogin:
-    def __init__(self, chrome: WebDriver, loginUrl: str, homeUrl: str, signInUrl: str, debugMode=True):
+    def __init__(self, chrome: WebDriver, loginUrl: str, homeUrl: str, targetUrl: str, signInUrl: str, debugMode=True):
         # logger
         self.getLogger = Logger(__name__, debugMode=debugMode)
         self.logger = self.getLogger.getLogger()
@@ -35,6 +35,7 @@ class CookieLogin:
         self.loginUrl = loginUrl
         self.homeUrl = homeUrl
         self.signInUrl = signInUrl
+        self.targetUrl = targetUrl
 
         # インスタンス
         self.browser = SeleniumBasicOperations(chrome=self.chrome, homeUrl=self.homeUrl, debugMode=debugMode)
@@ -47,8 +48,8 @@ class CookieLogin:
 # ----------------------------------------------------------------------------------
 # 2段階ログイン
 
-    def flowSwitchLogin(self, cookies: dict, url: str, loginInfo: dict, delay: int = 1):
-        if self.chrome.current_url == self.homeUrl:
+    def flowSwitchLogin(self, cookies: dict, url: str, loginInfo: dict, delay: int = 2):
+        if self.chrome.current_url == self.targetUrl:
             return
 
         if cookies is None:
