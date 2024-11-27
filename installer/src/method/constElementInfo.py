@@ -31,7 +31,7 @@ class ElementPath(Enum):
 # flowMoveGetElement
 
     # 検索画面の消去する
-    SEARCH_DELETE_BTN_PATH="//a[@class='w_close']"
+    SEARCH_DELETE_BTN_PATH="//div[@class='w_caption']//a[@class='w_close' and @href='#']"
 
 
     # 詳細ページの要素（.formatにて追記することで引数に充当）

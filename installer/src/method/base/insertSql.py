@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 from pprint import pprint
 
 from selenium.webdriver.remote.webelement import WebElement
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException
 from selenium.common.exceptions import TimeoutException
 
 
@@ -66,8 +66,8 @@ class InsertSql:
         # ジャンプしてURLへ移動して検索画面を消去まで実施
         self.popupRemove()
 
-        #! テスト中に設定ｚ
-        maxRetries = 1
+        #! テスト中に設定
+        maxRetries = 10
         pageCount = 0
         count = 0
         listPageInfoDict = {}
@@ -83,8 +83,8 @@ class InsertSql:
 
 
             #! テスト時はnewElementの要素を制限
-            if len(newElement) > 2:
-                newElement = newElement[:2]  # 最初の2つの要素のみを使用
+            # if len(newElement) > 2:
+            #     newElement = newElement[:2]  # 最初の2つの要素のみを使用
 
 
             if len(newElement) == 0:
@@ -117,22 +117,28 @@ class InsertSql:
                 print(f"{count} 個目 listPageInfo: \n{listPageInfoDict[count]}")
 
 
-                #! テスト中に設定
-                pageCount += 1
-
-
-            #! テスト中はコメントアウト→本番の際には解除
-            # try:
-            #     # 次へのページをClick
-            #     self.element.clickElement(
-            #         by='xpath',
-            #         value='//div[@class="numberArea"]//a[contains(text(), ">")]'
-            #     )
+                # #! テスト中に設定
                 # pageCount += 1
 
-            # except NoSuchElementException:
-            #     self.logger.error(f"次のページが見当たらないため処理を終了: {count}目実施")
-            #     break
+
+            # ! テスト中はコメントアウト→本番の際には解除
+            try:
+                # 次へのページをClick
+                self.element.clickElement(
+                    by='xpath',
+                    value='//div[@class="numberArea"]//a[contains(text(), ">")]'
+                )
+                pageCount += 1
+
+            except NoSuchElementException:
+                self.logger.error(f"次のページが見当たらないため処理を終了: {count}目実施")
+                break
+
+            except ElementClickInterceptedException:
+                self.logger.error(f"再度検索画面が出現。")
+                self.popupRemove()
+                continue
+
 
         print(f"listPageInfo{count}個 全データ:\n{listPageInfoDict}")
         return listPageInfoDict
@@ -459,16 +465,27 @@ class InsertSql:
 # ----------------------------------------------------------------------------------
 
 
-    @decoInstance.retryAction
+
     def popupRemove(self, delay: int = 2):
         try:
-            # 検索画面を消去
-            self.element.clickElement(
-                by=ElementSpecify.XPATH.value,
-                value=ElementPath.SEARCH_DELETE_BTN_PATH.value
-            )
-            # エラーが起きる可能性があるため検知しやすくするためスリープ
-            time.sleep(delay)
+            while True:
+                # self.chrome.refresh()
+                # time.sleep(delay)
+
+                # 検索画面を消去
+                popupElement = self.element.clickElement(
+                    by=ElementSpecify.XPATH.value,
+                    value=ElementPath.SEARCH_DELETE_BTN_PATH.value
+                )
+                # エラーが起きる可能性があるため検知しやすくするためスリープ
+                time.sleep(delay)
+
+                if not popupElement:
+                    self.logger.info(f"除去完了")
+                    return True
+
+                self.logger.info(f"除去が終わってません。再試行")
+
 
         # 別のページが開いてる
         except TimeoutException:
