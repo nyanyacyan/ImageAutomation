@@ -194,12 +194,12 @@ class Decorators:
 
 
 # ----------------------------------------------------------------------------------
+#  -> Optional[str]:はNoneをエラーとしない
 
-
-    def characterLimitRetryAction(self, maxlen: int=200, maxCount: int=3 ,timeout: int=30, delay: int=2, notifyFunc: Optional[Callable[[str], None]]=None):
-        def decorator(func):
+    def characterLimitRetryAction(self, maxlen: int=100, maxCount: int=3 ,timeout: int=30, delay: int=2, notifyFunc: Optional[Callable[[str], None]]=None) -> Callable:# -> Callable[..., _Wrapped[Callable[..., Any], Any, Callable[...:# -> Callable[..., _Wrapped[Callable[..., Any], Any, Callable[...:
+        def decorator(func) -> Callable:
             @wraps(func)
-            async def wrapper(*args, **kwargs):
+            async def wrapper(*args, **kwargs) -> Optional[str]:
                 self.logger.info(f"引数:\nargs={args}, kwargs={kwargs}")
 
                 # 初期化

@@ -131,7 +131,7 @@ class ChatGPTOrder:
 # ----------------------------------------------------------------------------------
 
 
-    @decoInstance.characterLimitRetryAction(maxlen=5, maxCount=3 ,timeout=30, delay=2, notifyFunc=None)
+    @decoInstance.characterLimitRetryAction(maxlen=100, maxCount=3 ,timeout=30, delay=2, notifyFunc=None)
     async def reRequest(self, fixedPrompt :str, beforeResult: dict, endpointUrl: str, model: str, apiKey: str, maxTokens: int):
 
         assistantMsg = beforeResult['assistantMsg']
