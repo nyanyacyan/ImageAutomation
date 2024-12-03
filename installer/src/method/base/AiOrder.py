@@ -61,9 +61,16 @@ class ChatGPTOrder:
 
         result = await self.wordCountCheck(prompt=prompt, fixedPrompt=fixedPrompt, endpointUrl=endpointUrl, model=model, apiKey=apiKey, maxTokens=maxTokens, maxlen=maxlen)
 
-        userMsg = result['userMsg']
-        assistantMsg = result['assistantMsg']
-        chatHistory = result['chatHistory']
+        if result is None:
+            userMsg = f"文字作成に失敗しております。必要な場合には再度実行してください。"
+            assistantMsg = f"文字作成に失敗しております。必要な場合には再度実行してください。"
+            chatHistory = f"文字作成に失敗しております。必要な場合には再度実行してください。"
+
+        else:
+            userMsg = result['userMsg']
+            assistantMsg = result['assistantMsg']
+            chatHistory = result['chatHistory']
+
         dateStamp = time.strftime("%Y%m%d")
         fileName = f"{snsKinds}_{dateStamp}"
 
@@ -131,7 +138,7 @@ class ChatGPTOrder:
 # ----------------------------------------------------------------------------------
 
 
-    @decoInstance.characterLimitRetryAction(maxlen=100, maxCount=3 ,timeout=30, delay=2, notifyFunc=None)
+    @decoInstance.characterLimitRetryAction(maxResponseLen=100, maxCount=3 ,timeout=30, delay=2, notifyFunc=None)
     async def reRequest(self, fixedPrompt :str, beforeResult: dict, endpointUrl: str, model: str, apiKey: str, maxTokens: int):
 
         assistantMsg = beforeResult['assistantMsg']

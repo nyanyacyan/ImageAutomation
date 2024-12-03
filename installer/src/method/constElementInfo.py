@@ -106,7 +106,6 @@ class LoginElement(Enum):
 
 
 class ImageInfo(Enum):
-    #! 修正必要
     BASE_IMAGE_PATH = {
         "A": "/Users/nyanyacyan/Desktop/Project_file/ImageAutomation/installer/src/method/inputData/A.png",
         "B": "/Users/nyanyacyan/Desktop/Project_file/ImageAutomation/installer/src/method/inputData/B.png",

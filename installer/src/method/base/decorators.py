@@ -196,7 +196,7 @@ class Decorators:
 # ----------------------------------------------------------------------------------
 #  -> Optional[str]:はNoneをエラーとしない
 
-    def characterLimitRetryAction(self, maxlen: int=100, maxCount: int=3 ,timeout: int=30, delay: int=2, notifyFunc: Optional[Callable[[str], None]]=None) -> Callable:# -> Callable[..., _Wrapped[Callable[..., Any], Any, Callable[...:# -> Callable[..., _Wrapped[Callable[..., Any], Any, Callable[...:
+    def characterLimitRetryAction(self, maxResponseLen: int=100, maxCount: int=3 ,timeout: int=30, delay: int=2, notifyFunc: Optional[Callable[[str], None]]=None) -> Callable:# -> Callable[..., _Wrapped[Callable[..., Any], Any, Callable[...:# -> Callable[..., _Wrapped[Callable[..., Any], Any, Callable[...:
         def decorator(func) -> Callable:
             @wraps(func)
             async def wrapper(*args, **kwargs) -> Optional[str]:
@@ -206,6 +206,10 @@ class Decorators:
                 retryCount = 0
                 wordCount = 0
                 startTime = time.time()
+
+                if maxResponseLen < 100:
+                    self.logger.warning(f"maxResponseLen が {maxResponseLen} なので、100 に設定します。")
+                    maxResponseLen = 100
 
                 while retryCount < maxCount:
                     elapsedTime = time.time() - startTime
@@ -220,12 +224,12 @@ class Decorators:
                         self.logger.debug(assistantMsg)
                         wordCount = len(assistantMsg)
 
-                        if wordCount <= maxlen:
+                        if wordCount <= maxResponseLen:
                             self.logger.debug(f"[文字数は条件を満たしてます] 文字数: {wordCount}")
                             return result
                         else:
                             retryCount += 1
-                            self.logger.warning(f"文字数がオーバーのため再リクエスト:\nwordCount: {wordCount}\nmaxlen: {maxlen}")
+                            self.logger.warning(f"文字数がオーバーのため再リクエスト:\nwordCount: {wordCount}\nmaxResponseLen: {maxResponseLen}")
 
                         if retryCount >= maxCount:
                             overRetryComment = f"[指定回数以上の実施が合ったためエラー] {result}回実施: {func.__name__}"
