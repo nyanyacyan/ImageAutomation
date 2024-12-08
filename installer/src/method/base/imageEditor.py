@@ -3,7 +3,7 @@
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
-import os, requests
+import os, requests, time
 from PIL import Image, ImageDraw, ImageFont
 from typing import Tuple
 from io import BytesIO
@@ -114,6 +114,7 @@ class ImageEditor:
 
         # ベース画像の読み込み
         base_image = Image.open(baseImagePath).resize(self.imageSize).convert("RGBA")
+        time.sleep(0.1)
 
         # 各パターンの配置情報を取得
         positions = ImageInfo.POSITIONS.value[pattern]
@@ -124,6 +125,7 @@ class ImageEditor:
             if 'imagePath_1' in data:
                 # 1. Image1 の配置
                 self.drawImageWithMode(base_image, data['imagePath_1'], positions['IMAGE_CENTER'])
+                time.sleep(0.1)
 
             # 2. 半透明のラインの描画（BACK_BOTTOM）
             if "BACK_TOP" in positions:
@@ -138,6 +140,7 @@ class ImageEditor:
 
                 # ベース画像とラインを合成
                 base_image = Image.alpha_composite(base_image, overlay)
+                time.sleep(0.1)
 
             # 2. 半透明のラインの描画（BACK_BOTTOM）
             if "BACK_BOTTOM" in positions:
@@ -162,57 +165,72 @@ class ImageEditor:
             # テキスト1を右揃えで配置（アウトライン付き）
             if 'text_1' in data and 'TEXT_LEFT_TOP' in positions:
                 self.drawTextWithOutline(draw, data['text_1'], positions['TEXT_LEFT_TOP'], fontPath, initialFontSize=fontSize, lineHeight=fontSize, fill=fontColor, outline_fill=(255, 255, 255), outline_width=2, center=False)
+                time.sleep(0.1)
 
             # テキスト2を枠の中央に配置（アウトライン付き）
             if 'text_2' in data and 'TEXT_RIGHT_TOP' in positions:
                 self.drawTextWithOutline(draw, data['text_2'], positions['TEXT_RIGHT_TOP'], fontPath, initialFontSize=fontSize, lineHeight=fontSize, fill=fontColor, outline_fill=(255, 255, 255), outline_width=2, right=True)
+                time.sleep(0.1)
 
             # テキスト3は通常の横書き（アウトライン付き）
             if 'text_3' in data and 'TEXT_BOTTOM_LEFT' in positions:
                 self.drawTextWithOutline(draw, data['text_3'], positions['TEXT_BOTTOM_LEFT'], fontPath, initialFontSize=fontSize, lineHeight=40, fill=fontColor, outline_fill=(255, 255, 255), outline_width=2)
+                time.sleep(0.1)
 
         # Pattern B の場合
         elif pattern == 'B':
             if 'imagePath_1' in data:
                 self.drawImageWithMode(base_image, data['imagePath_1'], positions['IMAGE_TOP_LEFT'])
+                time.sleep(0.1)
 
             if 'imagePath_2' in data:
                 self.drawImageWithMode(base_image, data['imagePath_2'], positions['IMAGE_BOTTOM_LEFT'])
+                time.sleep(0.1)
 
             # テキストの配置
             draw = ImageDraw.Draw(base_image)
             if 'text_1' in data and 'TEXT_TOP_RIGHT' in positions:
                 self.drawTextWithOutline(draw, data['text_1'], positions['TEXT_TOP_RIGHT'], fontPath, initialFontSize=fontSize, fill=fontColor, lineHeight=40, outline_fill=(255, 255, 255), outline_width=2)
+                time.sleep(0.1)
 
             if 'text_2' in data and 'TEXT_BOTTOM_RIGHT' in positions:
                 self.drawTextWithOutline(draw, data['text_2'], positions['TEXT_BOTTOM_RIGHT'], fontPath, initialFontSize=fontSize, fill=fontColor, lineHeight=40, outline_fill=(255, 255, 255), outline_width=2, center=True)
+                time.sleep(0.1)
 
             if 'text_3' in data and 'TEXT_UNDER_BOTTOM' in positions:
                 self.drawTextWithOutline(draw, data['text_3'], positions['TEXT_UNDER_BOTTOM'], fontPath, initialFontSize=underBottomSize, fill=underBottomColor, lineHeight=40, outline_fill=(255, 255, 255), outline_width=2)
+                time.sleep(0.1)
 
         else:
             # Pattern C, D の場合
             if 'imagePath_1' in data:
                 self.drawImageWithMode(base_image, data['imagePath_1'], positions['IMAGE_TOP_LEFT'])
+                time.sleep(0.1)
 
             if 'imagePath_2' in data:
                 self.drawImageWithMode(base_image, data['imagePath_2'], positions['IMAGE_BOTTOM_LEFT'])
+                time.sleep(0.1)
 
             # テキストの配置
             draw = ImageDraw.Draw(base_image)
             if 'text_1' in data and 'TEXT_TOP_RIGHT' in positions:
                 self.drawTextWithOutline(draw, data['text_1'], positions['TEXT_TOP_RIGHT'], fontPath, initialFontSize=fontSize, fill=fontColor, lineHeight=40, outline_fill=(255, 255, 255), outline_width=2)
+                time.sleep(0.1)
 
             if 'text_2' in data and 'TEXT_BOTTOM_RIGHT' in positions:
                 self.drawTextWithWrapping(draw, data['text_2'], fontPath, positions['TEXT_BOTTOM_RIGHT'], initialFontSize=commentSize, lineHeight=fontSize, fill=fontColor)
+                time.sleep(0.1)
 
             if 'text_3' in data and 'TEXT_UNDER_BOTTOM' in positions:
                 self.drawTextWithOutline(draw, data['text_3'], positions['TEXT_UNDER_BOTTOM'], fontPath, initialFontSize=underBottomSize, fill=underBottomColor, lineHeight=40, outline_fill=(255, 255, 255), outline_width=2)
+                time.sleep(0.1)
 
         # 画像の保存
         extension = Extension.PNG.value
         fileName = f"{buildingName}_{pattern}"
         outputFilePath = self.getResultSubDirFilePath(subDirName=buildingName, fileName=fileName, extension=extension)
+        time.sleep(0.1)
+
         base_image.save(outputFilePath, format="PNG")
         self.logger.info(f"保存完了: {outputFilePath}")
 
