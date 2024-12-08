@@ -4,7 +4,7 @@ set PYTHONIOENCODING=utf-8
 
 REM デバッグ: 開始メッセージ
 echo スクリプトを開始します。
-
+pause
 REM ログファイルの設定
 set LOG_FILE=log.txt
 echo > %LOG_FILE%

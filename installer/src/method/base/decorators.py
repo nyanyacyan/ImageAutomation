@@ -207,6 +207,11 @@ class Decorators:
                 wordCount = 0
                 startTime = time.time()
 
+                # maxResponseLen の初期化
+                if maxResponseLen is None or not isinstance(maxResponseLen, int):
+                    self.logger.warning(f"maxResponseLen が不正または None です。デフォルト値 100 を設定します。")
+                    maxResponseLen = 100
+
                 if maxResponseLen < 100:
                     self.logger.warning(f"maxResponseLen が {maxResponseLen} なので、100 に設定します。")
                     maxResponseLen = 100
