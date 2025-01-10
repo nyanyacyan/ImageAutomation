@@ -208,7 +208,7 @@ class Decorators:
                 startTime = time.time()
 
                 # maxResponseLen の初期化
-                if maxResponseLen is None or not isinstance(maxResponseLen, int):
+                if not isinstance(maxResponseLen, int) or maxResponseLen is None:
                     self.logger.warning(f"maxResponseLen が不正または None です。デフォルト値 100 を設定します。")
                     maxResponseLen = 100
 

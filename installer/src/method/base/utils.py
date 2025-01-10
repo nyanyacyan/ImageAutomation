@@ -5,7 +5,7 @@
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
 import logging
-import os
+import os, sys
 import shutil
 from datetime import datetime
 
@@ -78,6 +78,9 @@ class Logger:
             # ログをコンソール（ターミナル）に表示させる設定
             consoleHandler = logging.StreamHandler()
             consoleHandler.setLevel(loggingLevel)
+
+            # コンソール用のエンコーディングを utf-8 に設定
+            consoleHandler.stream = open(sys.stdout.fileno(), mode='w', encoding='utf-8', buffering=1)
 
             # ログメッセージの基本フォーマット→時間→ログレベル→エラーメッセージ
             consoleHandler.setFormatter(LoggerBasicColor("%(asctime)s - %(levelname)s - %(message)s"))
