@@ -8,6 +8,7 @@ import logging
 import os, sys
 import shutil
 from datetime import datetime
+from logging.handlers import RotatingFileHandler
 
 # 自作モジュール
 from pathlib import Path
@@ -87,14 +88,32 @@ class Logger:
             self.logger.addHandler(consoleHandler)
 
             # Handlerは、ログFileを出力を定義→ログメッセージの配送係みたいなイメージ
-            fileHandler = logging.FileHandler(self.logsFileName)
-            fileHandler.setLevel(logging.DEBUG)
-            fileHandler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
-            self.logger.addHandler(fileHandler)
+            try:
+                safeFileHandler = SafeRotatingFileHandler(
+                    self.logsFileName, maxBytes=1024 * 1024 * 5, backupCount=keepLogs, encoding='utf-8'
+                )
+                safeFileHandler.setLevel(logging.DEBUG)
+                safeFileHandler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
+                self.logger.addHandler(safeFileHandler)
+            except IOError as e:
+                self.logger.error(f"Failed to set up SafeRotatingFileHandler: {e}")
 
+            # プロパゲートを無効化
             self.logger.propagate = False
 
         self.cleanLogs(keepLogs=keepLogs)
+
+        # ファイルハンドラーの設定（ローテーション対応）
+        try:
+            fileHandler = RotatingFileHandler(self.logsFileName, maxBytes=1024 * 1024 * 5, backupCount=keepLogs, encoding='utf-8')
+            fileHandler.setLevel(logging.DEBUG)
+            fileHandler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
+            self.logger.addHandler(fileHandler)
+        except IOError as e:
+            self.logger.error(f"Failed to set up file handler: {e}")
+
+        # プロパゲートを無効化
+        self.logger.propagate = False
 
 
 # ----------------------------------------------------------------------------------
@@ -179,6 +198,18 @@ class Logger:
             self.logger.info(f"{path.name} がないため作成")
 
         return path
+
+
+# ----------------------------------------------------------------------------------
+
+
+class SafeRotatingFileHandler(RotatingFileHandler):
+    def emit(self, record):
+        try:
+            super().emit(record)  # 通常のログ出力処理
+        except Exception as e:
+            # 例外を無視
+            print(f"Logging error ignored: {e}")
 
 
 # ----------------------------------------------------------------------------------

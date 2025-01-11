@@ -72,7 +72,7 @@ class DataFormatterToSql:
         title = "物件情報抽出"
         comment = f"すべての処理が完了しました。\n全 {count} 件数を実施"
 
-        self.popup.popupCommentOnly(popupTitle=title, comment=comment)
+        return self.popup.popupCommentOnly(popupTitle=title, comment=comment)
 
 
 # ----------------------------------------------------------------------------------

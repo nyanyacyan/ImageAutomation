@@ -24,6 +24,7 @@ from .base.cookieManager import CookieManager
 from .base.loginWithCookie import CookieLogin
 from .base.insertSql import InsertSql
 from .base.dataFormatterToSql import DataFormatterToSql
+from .base.popup import Popup
 from .const import SiteUrl
 from .constElementInfo import LoginElement
 
@@ -55,6 +56,7 @@ class Flow:
         self.cookieLogin = CookieLogin(chrome=self.chrome, loginUrl=self.loginUrl, homeUrl=self.homeUrl, targetUrl=self.targetUrl, signInUrl=self.signInUrl, debugMode=debugMode)
         self.insertSql = InsertSql(chrome=self.chrome, debugMode=debugMode)
         self.createImage = DataFormatterToSql(chrome=self.chrome, debugMode=debugMode)
+        self.popup = Popup(debugMode=debugMode)
 
 
 # ----------------------------------------------------------------------------------
@@ -78,8 +80,6 @@ class Flow:
 
         self.createImage.flowAllDataCreate(allDataDict=allData)
 
-
-# TODO 手順書の作成
 
 
 
